@@ -1,0 +1,87 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<article>
+  <section>
+    <title>bti</title>
+    <refentry>
+      <refentryinfo>
+        <title>bti</title>
+        <date>May 2008</date>
+        <productname>bti</productname>
+      </refentryinfo>
+
+      <refmeta>
+        <refentrytitle>bti</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo class="version"></refmiscinfo>
+      </refmeta>
+
+      <refnamediv>
+        <refname>bti</refname><refpurpose>send a tweet to twitter.com from stdinput</refpurpose>
+      </refnamediv>
+
+      <refsynopsisdiv>
+        <cmdsynopsis>
+          <command>bti</command>
+          <arg><option>--account account</option></arg>
+          <arg><option>--password password</option></arg>
+	  <arg><option>--quiet</option></arg>
+          <arg><option>--debug</option></arg>
+          <arg><option>--version</option></arg>
+          <arg><option>--help</option></arg>
+        </cmdsynopsis>
+      </refsynopsisdiv>
+
+      <refsect1><title>DESCRIPTION</title>
+        <para>bti sends a twitter message to twitter.com.
+	</para>
+      </refsect1>
+
+      <refsect1><title>OPTIONS</title>
+        <variablelist>
+          <varlistentry>
+            <term><option>--account account</option></term>
+            <listitem>
+              <para>
+	        Specify the twitter.com account name.
+	      </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--password password</option></term>
+            <listitem>
+              <para>
+	        Specify the password of your twitter.com account.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--debug</option></term>
+            <listitem>
+              <para>Print a whole bunch of debugging messages to stdout.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--version</option></term>
+            <listitem>
+              <para>Print version number.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--help</option></term>
+            <listitem>
+              <para>Print help text.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </refsect1>
+
+      <refsect1><title>AUTHOR</title>
+        <para>Written by Greg Kroah-Hartman <email>greg@kroah.com</email>.</para>
+      </refsect1>
+
+    </refentry>
+  </section>
+</article>
