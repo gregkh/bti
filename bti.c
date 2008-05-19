@@ -303,6 +303,9 @@ int main(int argc, char *argv[], char *envp[])
 	char *tweet;
 	int retval;
 	int option;
+	char *home = getenv("HOME");
+	char *pwd = getenv("PWD");
+	char *dir;
 
 	session = session_alloc();
 	if (!session) {
@@ -356,11 +359,21 @@ int main(int argc, char *argv[], char *envp[])
 		session->password = get_string_from_stdin();
 	}
 
-	/* Add the "$ " to the start of the tweet to show it's coming from
-	 * a shell */
+	if (strcmp(pwd, home) == 0)
+		dir = "~";
+	else {
+		dir = strrchr(pwd, '/');
+		if (dir)
+			dir++;
+		else
+			dir = "?";
+	}
+
+	/* Add the "PWD $ " to the start of the tweet to show it is
+	 * coming from a shell */
 	tweet = get_string_from_stdin();
-	session->tweet = zalloc(strlen(tweet) + 10);
-	sprintf(session->tweet, "$ %s", tweet);
+	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
+	sprintf(session->tweet, "%s/ $ %s", dir, tweet);
 	free(tweet);
 
 	if (strlen(session->tweet) == 0) {
