@@ -299,6 +299,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ }
 	};
 	struct session *session;
+	char *tweet;
 	int retval;
 	int option;
 
@@ -354,7 +355,12 @@ int main(int argc, char *argv[], char *envp[])
 		session->password = get_string_from_stdin();
 	}
 
-	session->tweet = get_string_from_stdin();
+	/* Add the "$ " to the start of the tweet to show it's coming from
+	 * a shell */
+	tweet = get_string_from_stdin();
+	session->tweet = zalloc(strlen(tweet) + 10);
+	sprintf(session->tweet, "$ %s", tweet);
+	free(tweet);
 
 	if (strlen(session->tweet) == 0) {
 		dbg("no tweet?\n");
@@ -370,6 +376,7 @@ int main(int argc, char *argv[], char *envp[])
 		fprintf(stderr, "tweet failed\n");
 		return -1;
 	}
+	//printf("tweet = %s\n", session->tweet);
 
 	session_free(session);
 exit:
