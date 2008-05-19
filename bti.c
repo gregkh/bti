@@ -299,6 +299,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ }
 	};
 	struct session *session;
+	pid_t child;
 	char *tweet;
 	int retval;
 	int option;
@@ -371,12 +372,20 @@ int main(int argc, char *argv[], char *envp[])
 	dbg("password = %s\n", session->password);
 	dbg("tweet = %s\n", session->tweet);
 
+	/* fork ourself so that the main shell can get on
+	 * with it's life as we try to connect and handle everything
+	 */
+	child = fork();
+	if (child) {
+		dbg("child is %d\n", child);
+		exit(0);
+	}
+
 	retval = send_tweet(session);
 	if (retval) {
 		fprintf(stderr, "tweet failed\n");
 		return -1;
 	}
-	//printf("tweet = %s\n", session->tweet);
 
 	session_free(session);
 exit:
