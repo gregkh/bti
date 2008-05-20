@@ -44,7 +44,7 @@ struct session {
 	char *password;
 	char *account;
 	char *tweet;
-	int quiet;
+	int clean;
 };
 
 struct bti_curl_buffer {
@@ -293,9 +293,9 @@ int main(int argc, char *argv[], char *envp[])
 		{ "debug", 0, NULL, 'd' },
 		{ "account", 1, NULL, 'a' },
 		{ "password", 1, NULL, 'p' },
-		{ "bash", 1, NULL, 'b' },
 		{ "help", 0, NULL, 'h' },
-		{ "quiet", 0, NULL, 'q' },
+		{ "clean", 0, NULL, 'c' },
+		{ "version", 0, NULL, 'v' },
 		{ }
 	};
 	struct session *session;
@@ -337,11 +337,14 @@ int main(int argc, char *argv[], char *envp[])
 			session->password = strdup(optarg);
 			dbg("password = %s\n", session->password);
 			break;
-		case 'q':
-			session->quiet = 1;
+		case 'c':
+			session->clean = 1;
 			break;
 		case 'h':
 			display_help();
+			goto exit;
+		case 'v':
+			display_version();
 			goto exit;
 		default:
 			display_help();
@@ -370,16 +373,19 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	/* Add the "PWD $ " to the start of the tweet to show it is
-	 * coming from a shell */
+	 * coming from a shell unless --clean is specified. */
 	tweet = get_string_from_stdin();
-	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
-	sprintf(session->tweet, "%s $ %s", dir, tweet);
-	free(tweet);
-
-	if (strlen(session->tweet) == 0) {
+	if (strlen(tweet) == 0) {
 		dbg("no tweet?\n");
 		return -1;
 	}
+
+	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
+	if (session->clean)
+		sprintf(session->tweet, "%s", tweet);
+	else
+		sprintf(session->tweet, "%s $ %s", dir, tweet);
+	free(tweet);
 
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
