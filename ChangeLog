@@ -1,3 +1,13 @@
 Summary of changes from v000 to v001
 ============================================
 
+Greg Kroah-Hartman (8):
+      add .gitignore
+      initial commit of bti, everything's working now
+      add the '$ ' to the beginning of the line.
+      added HOWTO
+      meta files added (COPYING, ChangeLog, RELEASE_NOTES)
+      added fork functionality to get rid of annoying command line mess
+      added PWD to twit
+      more messing with directory format
+
