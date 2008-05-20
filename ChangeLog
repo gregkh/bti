@@ -1,3 +1,16 @@
+Summary of changes from v001 to v002
+============================================
+Greg Kroah-Hartman (9):
+      increment version number
+      add .gz and .bz2 to .gitignore
+      remove ability to make .bz2 from Makefile
+      add --clean option to bti.c
+      add --version to bti.c
+      update the man page to reflect the new options
+      renamed HOWTO to README and added real information there
+      added bti.example as an example ~/.bti file
+      lots of manpage updates trying to document how to use bti better
+
 Summary of changes from v000 to v001
 ============================================
 

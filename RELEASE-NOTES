@@ -1,3 +1,9 @@
+bti 002
+=============
+better man page
+example ~/.bti file
+ability to send "clean" files to twitter (no path or $ prefix)
+
 bti 001
 =============
 initial release
