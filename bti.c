@@ -373,7 +373,7 @@ int main(int argc, char *argv[], char *envp[])
 	 * coming from a shell */
 	tweet = get_string_from_stdin();
 	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
-	sprintf(session->tweet, "%s/ $ %s", dir, tweet);
+	sprintf(session->tweet, "%s $ %s", dir, tweet);
 	free(tweet);
 
 	if (strlen(session->tweet) == 0) {
