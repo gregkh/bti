@@ -11,7 +11,7 @@
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-bti - send a tweet to twitter.com from stdinput
+bti - send a tweet to twitter.com from the command line
 .SH "SYNOPSIS"
 .HP 4
 \fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-clean\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
@@ -49,6 +49,39 @@ Print version number\.
 .RS 4
 Print help text\.
 .RE
+.SH "DESCRIPTION"
+.PP
+bti provides an easy way to send twitter messages direct from the command line or any script\. It reads the message on standard input and uses the account and password settings either from the command line options, or from a config file, to send the message out\.
+.PP
+It\'s primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\'m doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\'s anything interesting going on\.
+.PP
+To hook bti up to your bash shell, export the following variable:
+.PP
+
+PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti\'
+.PP
+This example assumes that you have the
+\fI~/\.bti\fR
+set up with your account and password information already in it, otherwise you can specify them as an option\.
+.SH "CONFIGURATION"
+.PP
+The account and password can be stored in a configuration file in the users home directory in a file named
+\fI\.bti\fR
+The structure of this file is as follows:
+.PP
+\fBaccount\fR
+.RS 4
+The twitter\.com account name you wish to use to send this message with\.
+.RE
+.PP
+\fBpassword\fR
+.RS 4
+The twitter\.com password for the account you wish to use to send this message with\.
+.RE
+.PP
+There is an example config file called
+\fIbti\.example\fR
+in the source tree that shows the structure of the file if you need an example to work off of\.
 .SH "AUTHOR"
 .PP
 Written by Greg Kroah\-Hartman

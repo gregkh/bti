@@ -19,7 +19,8 @@
       </refmeta>
 
       <refnamediv>
-        <refname>bti</refname><refpurpose>send a tweet to twitter.com from stdinput</refpurpose>
+        <refname>bti</refname>
+        <refpurpose>send a tweet to twitter.com from the command line</refpurpose>
       </refnamediv>
 
       <refsynopsisdiv>
@@ -27,7 +28,7 @@
           <command>bti</command>
           <arg><option>--account account</option></arg>
           <arg><option>--password password</option></arg>
-	  <arg><option>--clean</option></arg>
+          <arg><option>--clean</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--version</option></arg>
           <arg><option>--help</option></arg>
@@ -36,7 +37,7 @@
 
       <refsect1><title>DESCRIPTION</title>
         <para>bti sends a twitter message to twitter.com.
-	</para>
+        </para>
       </refsect1>
 
       <refsect1><title>OPTIONS</title>
@@ -53,7 +54,7 @@
             <term><option>--password password</option></term>
             <listitem>
               <para>
-	        Specify the password of your twitter.com account.
+                Specify the password of your twitter.com account.
               </para>
             </listitem>
           </varlistentry>
@@ -84,9 +85,74 @@
         </variablelist>
       </refsect1>
 
-      <refsect1><title>AUTHOR</title>
-        <para>Written by Greg Kroah-Hartman <email>greg@kroah.com</email>.</para>
-      </refsect1>
+      <refsect1>
+        <title>DESCRIPTION</title>
+        <para>
+          bti provides an easy way to send twitter messages direct from the
+          command line or any script.  It reads the message on standard
+          input and uses the account and password settings either from the
+          command line options, or from a config file, to send the message
+          out.
+        </para>
+        <para>
+          It's primary focus is to allow you to log everything that you
+          type into a bash shell, in a crazy, "this is what I'm doing right
+          now!" type of way, letting the world follow along with you
+          constant moving between directories and refreshing your email
+          queue to see if there's anything interesting going on.
+        </para>
+        <para>
+          To hook bti up to your bash shell, export the following variable:
+        </para>
+        <para>
+            <literal>  PROMPT_COMMAND='history 1 | sed -e "s/^\s*[0-9]*\s*//" | bti'</literal>
+        </para>
+        <para>
+          This example assumes that you have the
+          <filename>~/.bti</filename> set up with your account and password
+          information already in it, otherwise you can specify them as an
+          option.
+        </para>
+       </refsect1>
+
+       <refsect1>
+         <title>CONFIGURATION</title>
+         <para>
+           The account and password can be stored in a configuration file
+           in the users home directory in a file named
+           <filename>.bti</filename>  The structure of this file is as
+           follows:
+         </para>
+         <variablelist>
+           <varlistentry>
+             <term><option>account</option></term>
+             <listitem>
+               <para>
+                 The twitter.com account name you wish to use to send this
+                 message with.
+               </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term><option>password</option></term>
+             <listitem>
+               <para>
+                 The twitter.com password for the account you wish to use
+                 to send this message with.
+               </para>
+             </listitem>
+           </varlistentry>
+         </variablelist>
+         <para>
+           There is an example config file called
+           <filename>bti.example</filename> in the source tree that shows
+           the structure of the file if you need an example to work off of.
+         </para>
+       </refsect1>
+
+       <refsect1><title>AUTHOR</title>
+         <para>Written by Greg Kroah-Hartman <email>greg@kroah.com</email>.</para>
+       </refsect1>
 
     </refentry>
   </section>
