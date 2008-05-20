@@ -100,13 +100,11 @@ clean:
 
 release:
 	$(Q) - rm -f bti-$(VERSION).tar.gz
-	$(Q) - rm -f bti-$(VERSION).tar.bz2
 	head -1 ChangeLog | grep -q "to v$(VERSION)"
 	head -1 RELEASE-NOTES | grep -q "bti $(VERSION)"
 	git commit -a -m "release $(VERSION)"
 	cat .git/refs/heads/master > .git/refs/tags/$(VERSION)
 	@ echo
 	git-archive --format=tar --prefix=bti-$(VERSION)/ HEAD | gzip -9v > bti-$(VERSION).tar.gz
-	git-archive --format=tar --prefix=bti-$(VERSION)/ HEAD | bzip2 -9v > bti-$(VERSION).tar.bz2
 .PHONY: release
 
