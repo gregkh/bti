@@ -1,0 +1,7 @@
+# comments are allowed in the bti config file
+# rename this to ~/.bti so that you do not need
+# to constantly enter your account name and/or
+# password on the command line every time you send
+# a message.
+account=twitmaster
+password=icanhascheezburger
