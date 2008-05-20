@@ -27,7 +27,7 @@
           <command>bti</command>
           <arg><option>--account account</option></arg>
           <arg><option>--password password</option></arg>
-	  <arg><option>--quiet</option></arg>
+	  <arg><option>--clean</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--version</option></arg>
           <arg><option>--help</option></arg>
@@ -61,6 +61,12 @@
             <term><option>--debug</option></term>
             <listitem>
               <para>Print a whole bunch of debugging messages to stdout.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--clean</option></term>
+            <listitem>
+              <para>Don't put the working directory and the '$' in the twitter message.</para>
             </listitem>
           </varlistentry>
           <varlistentry>
