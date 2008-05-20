@@ -2,3 +2,5 @@ bti
 bti_version.h
 *.o
 *.swp
+*.gz
+*.bz2
