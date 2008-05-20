@@ -61,10 +61,15 @@ static void display_help(void)
 	fprintf(stdout, "options are:\n");
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
-	fprintf(stdout, "  --bash\n");
-	fprintf(stdout, "  --quiet\n");
+	fprintf(stdout, "  --clean\n");
 	fprintf(stdout, "  --debug\n");
+	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");
+}
+
+static void display_version(void)
+{
+	fprintf(stdout, "bti - version %s\n", BTI_VERSION);
 }
 
 static char *get_string_from_stdin(void)
