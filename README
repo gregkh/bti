@@ -1,0 +1,14 @@
+bti - bash twitter ididocy
+
+Allows you to pipe your bash input to twitter in an easy and fast manner
+to annoy the whole world.
+
+See the man page bti.1 for how to use it and more information.
+
+Be careful if you use this, it is quite easy to end up sending sensitive
+data to the world with it.
+
+USE AT YOUR OWN RISK!
+
+Any questions, contact Greg Kroah-Hartman <greg@kroah.com> or @gregkh
+on twitter.
