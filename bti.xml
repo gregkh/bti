@@ -28,7 +28,7 @@
           <command>bti</command>
           <arg><option>--account account</option></arg>
           <arg><option>--password password</option></arg>
-          <arg><option>--clean</option></arg>
+          <arg><option>--bash</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--version</option></arg>
           <arg><option>--help</option></arg>
@@ -65,9 +65,13 @@
             </listitem>
           </varlistentry>
           <varlistentry>
-            <term><option>--clean</option></term>
+            <term><option>--bash</option></term>
             <listitem>
-              <para>Don't put the working directory and the '$' in the twitter message.</para>
+              <para>
+		 Add the working directory and a '$' in the twitter message to
+		 help specify it is coming from a command line.  Don't put the
+		 working directory and the '$' in the twitter message.
+	      </para>
             </listitem>
           </varlistentry>
           <varlistentry>
@@ -105,7 +109,7 @@
           To hook bti up to your bash shell, export the following variable:
         </para>
         <para>
-            <literal>  PROMPT_COMMAND='history 1 | sed -e "s/^\s*[0-9]*\s*//" | bti'</literal>
+            <literal>  PROMPT_COMMAND='history 1 | sed -e "s/^\s*[0-9]*\s*//" | bti --bash'</literal>
         </para>
         <para>
           This example assumes that you have the

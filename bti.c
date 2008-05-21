@@ -44,7 +44,7 @@ struct session {
 	char *password;
 	char *account;
 	char *tweet;
-	int clean;
+	int bash;
 };
 
 struct bti_curl_buffer {
@@ -61,7 +61,7 @@ static void display_help(void)
 	fprintf(stdout, "options are:\n");
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
-	fprintf(stdout, "  --clean\n");
+	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");
@@ -299,7 +299,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "account", 1, NULL, 'a' },
 		{ "password", 1, NULL, 'p' },
 		{ "help", 0, NULL, 'h' },
-		{ "clean", 0, NULL, 'c' },
+		{ "bash", 0, NULL, 'b' },
 		{ "version", 0, NULL, 'v' },
 		{ }
 	};
@@ -342,8 +342,8 @@ int main(int argc, char *argv[], char *envp[])
 			session->password = strdup(optarg);
 			dbg("password = %s\n", session->password);
 			break;
-		case 'c':
-			session->clean = 1;
+		case 'b':
+			session->bash= 1;
 			break;
 		case 'h':
 			display_help();
@@ -367,6 +367,7 @@ int main(int argc, char *argv[], char *envp[])
 		session->password = get_string_from_stdin();
 	}
 
+	/* get the current working directory basename */
 	if (strcmp(pwd, home) == 0)
 		dir = "~";
 	else {
@@ -377,8 +378,6 @@ int main(int argc, char *argv[], char *envp[])
 			dir = "?";
 	}
 
-	/* Add the "PWD $ " to the start of the tweet to show it is
-	 * coming from a shell unless --clean is specified. */
 	tweet = get_string_from_stdin();
 	if (strlen(tweet) == 0) {
 		dbg("no tweet?\n");
@@ -386,10 +385,13 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
-	if (session->clean)
-		sprintf(session->tweet, "%s", tweet);
-	else
+
+	/* if --bash is specified, add the "PWD $ " to
+	 * the start of the tweet. */
+	if (session->bash)
 		sprintf(session->tweet, "%s $ %s", dir, tweet);
+	else
+		sprintf(session->tweet, "%s", tweet);
 	free(tweet);
 
 	dbg("account = %s\n", session->account);

@@ -14,7 +14,7 @@
 bti - send a tweet to twitter.com from the command line
 .SH "SYNOPSIS"
 .HP 4
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-clean\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 bti sends a twitter message to twitter\.com\.
@@ -35,9 +35,9 @@ Specify the password of your twitter\.com account\.
 Print a whole bunch of debugging messages to stdout\.
 .RE
 .PP
-\fB\-\-clean\fR
+\fB\-\-bash\fR
 .RS 4
-Don\'t put the working directory and the \'$\' in the twitter message\.
+Add the working directory and a \'$\' in the twitter message to help specify it is coming from a command line\. Don\'t put the working directory and the \'$\' in the twitter message\.
 .RE
 .PP
 \fB\-\-version\fR
@@ -58,7 +58,7 @@ It\'s primary focus is to allow you to log everything that you type into a bash 
 To hook bti up to your bash shell, export the following variable:
 .PP
 
-PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti\'
+PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\'
 .PP
 This example assumes that you have the
 \fI~/\.bti\fR
