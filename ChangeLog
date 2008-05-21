@@ -1,5 +1,16 @@
+Summary of changes from v002 to v003
+============================================
+
+Greg Kroah-Hartman (4):
+      added script
+      bump version number
+      change --clean be the default and add --bash to duplicate old method
+      removed unneeded script
+
+
 Summary of changes from v001 to v002
 ============================================
+
 Greg Kroah-Hartman (9):
       increment version number
       add .gz and .bz2 to .gitignore
@@ -10,6 +21,7 @@ Greg Kroah-Hartman (9):
       renamed HOWTO to README and added real information there
       added bti.example as an example ~/.bti file
       lots of manpage updates trying to document how to use bti better
+
 
 Summary of changes from v000 to v001
 ============================================

@@ -1,3 +1,8 @@
+bti 003
+=============
+--bash emulates a command line, otherwise the message goes through "clean"
+
+
 bti 002
 =============
 better man page
