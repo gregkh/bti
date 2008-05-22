@@ -219,8 +219,8 @@ static int send_tweet(struct session *session)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
 	res = curl_easy_perform(curl);
-	if (res) {
-		printf("error(%d) trying to send tweet\n", res);
+	if (res && !session->bash) {
+		fprintf(stderr, "error(%d) trying to send tweet\n", res);
 		return -EINVAL;
 	}
 
@@ -408,7 +408,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	retval = send_tweet(session);
-	if (retval) {
+	if (retval && !session->bash) {
 		fprintf(stderr, "tweet failed\n");
 		return -1;
 	}
