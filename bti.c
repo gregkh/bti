@@ -401,10 +401,12 @@ int main(int argc, char *argv[], char *envp[])
 	/* fork ourself so that the main shell can get on
 	 * with it's life as we try to connect and handle everything
 	 */
-	child = fork();
-	if (child) {
-		dbg("child is %d\n", child);
-		exit(0);
+	if (session->bash) {
+		child = fork();
+			if (child) {
+			dbg("child is %d\n", child);
+			exit(0);
+		}
 	}
 
 	retval = send_tweet(session);
