@@ -1,7 +1,10 @@
+bti 004
+=============
+--bash fork and quiet modes enabled
+
 bti 003
 =============
 --bash emulates a command line, otherwise the message goes through "clean"
-
 
 bti 002
 =============

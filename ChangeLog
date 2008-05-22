@@ -1,3 +1,12 @@
+Summary of changes from v003 to v004
+============================================
+
+Greg Kroah-Hartman (3):
+      if --bash is set, don't spit out error messages, we don't care.
+      if --bash is enabled, fork and handle the send in the background
+      update the man page about --bash options
+
+
 Summary of changes from v002 to v003
 ============================================
 
