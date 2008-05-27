@@ -308,10 +308,11 @@ int main(int argc, char *argv[], char *envp[])
 	char *tweet;
 	int retval;
 	int option;
+#if 0
 	char *home = getenv("HOME");
 	char *pwd = getenv("PWD");
 	char *dir;
-
+#endif
 	session = session_alloc();
 	if (!session) {
 		fprintf(stderr, "no more memory...\n");
@@ -366,7 +367,7 @@ int main(int argc, char *argv[], char *envp[])
 		fprintf(stdout, "Enter twitter password: ");
 		session->password = get_string_from_stdin();
 	}
-
+#if 0
 	/* get the current working directory basename */
 	if (strcmp(pwd, home) == 0)
 		dir = "~";
@@ -377,19 +378,21 @@ int main(int argc, char *argv[], char *envp[])
 		else
 			dir = "?";
 	}
-
+#endif
 	tweet = get_string_from_stdin();
 	if (strlen(tweet) == 0) {
 		dbg("no tweet?\n");
 		return -1;
 	}
 
-	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
+//	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
+	session->tweet = zalloc(strlen(tweet) + 10);
 
 	/* if --bash is specified, add the "PWD $ " to
 	 * the start of the tweet. */
 	if (session->bash)
-		sprintf(session->tweet, "%s $ %s", dir, tweet);
+//		sprintf(session->tweet, "%s $ %s", dir, tweet);
+		sprintf(session->tweet, "$ %s", tweet);
 	else
 		sprintf(session->tweet, "%s", tweet);
 	free(tweet);
