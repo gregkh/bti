@@ -77,11 +77,11 @@ static char *get_string_from_stdin(void)
 	char *temp;
 	char *string;
 
-	string = zalloc(100);
+	string = zalloc(1000);
 	if (!string)
 		return NULL;
 
-	if (!fgets(string, 99, stdin))
+	if (!fgets(string, 999, stdin))
 		return NULL;
 	temp = strchr(string, '\n');
 	*temp = '\0';
