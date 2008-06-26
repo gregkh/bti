@@ -1,3 +1,11 @@
+Summary of changes from v004 to v005
+============================================
+
+Greg Kroah-Hartman (2):
+      remove the pwd from the bash output, it's messy
+      expand the tweet size, it was only taking 100 chars
+
+
 Summary of changes from v003 to v004
 ============================================
 
