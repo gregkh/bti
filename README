@@ -12,3 +12,8 @@ USE AT YOUR OWN RISK!
 
 Any questions, contact Greg Kroah-Hartman <greg@kroah.com> or @gregkh
 on twitter.
+
+bti is developed using git and the tree can be found at:
+	git://github.com/gregkh/bti.git
+and browsed at:
+	http://github.com/gregkh/bti/
