@@ -1,3 +1,10 @@
+Summary of changes from v005 to v006
+============================================
+
+Greg Kroah-Hartman (2):
+      added github url to the README
+      add identi.ca support to bti
+
 Summary of changes from v004 to v005
 ============================================
 
