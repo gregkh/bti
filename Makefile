@@ -105,6 +105,6 @@ release:
 	git commit -a -m "release $(VERSION)"
 	cat .git/refs/heads/master > .git/refs/tags/$(VERSION)
 	@ echo
-	git-archive --format=tar --prefix=bti-$(VERSION)/ HEAD | gzip -9v > bti-$(VERSION).tar.gz
+	git archive --format=tar --prefix=bti-$(VERSION)/ HEAD | gzip -9v > bti-$(VERSION).tar.gz
 .PHONY: release
 
