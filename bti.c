@@ -40,11 +40,17 @@
 
 static int debug = 0;
 
+enum host {
+	HOST_TWITTER = 0,
+	HOST_IDENTICA = 1,
+};
+
 struct session {
 	char *password;
 	char *account;
 	char *tweet;
 	int bash;
+	enum host host;
 };
 
 struct bti_curl_buffer {
@@ -61,6 +67,7 @@ static void display_help(void)
 	fprintf(stdout, "options are:\n");
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
+	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");
@@ -136,6 +143,7 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 }
 
 static const char *twitter_url = "https://twitter.com/statuses/update.xml";
+static const char *identica_url = "http://identi.ca/api/statuses/update.xml";
 
 static CURL *curl_init(void)
 {
@@ -208,7 +216,16 @@ static int send_tweet(struct session *session)
 		     CURLFORM_END);
 
 	curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-	curl_easy_setopt(curl, CURLOPT_URL, twitter_url);
+
+	switch (session->host) {
+	case HOST_TWITTER:
+		curl_easy_setopt(curl, CURLOPT_URL, twitter_url);
+		break;
+	case HOST_IDENTICA:
+		curl_easy_setopt(curl, CURLOPT_URL, identica_url);
+		break;
+	}
+
 	if (debug)
 		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 	curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -237,6 +254,7 @@ static void parse_configfile(struct session *session)
 	size_t len = 0;
 	char *account = NULL;
 	char *password = NULL;
+	char *host = NULL;
 	char *file;
 	char *home = getenv("HOME");
 
@@ -279,13 +297,25 @@ static void parse_configfile(struct session *session)
 			c += 9;
 			if (c[0] != '\0')
 				password = strdup(c);
+		} else if (!strncasecmp(c, "host", 4) &&
+			   (c[4] == '=')) {
+			c += 5;
+			if (c[0] != '\0')
+				host = strdup(c);
 		}
 	} while (!feof(config_file));
 
 	if (password)
 		session->password = password;
 	if (account)
-		session->account= account;
+		session->account = account;
+	if (host) {
+		if (strcasecmp(host, "twitter") == 0)
+			session->host = HOST_TWITTER;
+		if (strcasecmp(host, "identica") == 0)
+			session->host = HOST_IDENTICA;
+		free(host);
+	}
 
 	/* Free buffer and close file.  */
 	free(line);
@@ -298,6 +328,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "debug", 0, NULL, 'd' },
 		{ "account", 1, NULL, 'a' },
 		{ "password", 1, NULL, 'p' },
+		{ "host", 1, NULL, 'H' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
 		{ "version", 0, NULL, 'v' },
@@ -323,7 +354,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:a:h",
+		option = getopt_long_only(argc, argv, "dqe:p:H:a:h",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -342,6 +373,13 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->password);
 			session->password = strdup(optarg);
 			dbg("password = %s\n", session->password);
+			break;
+		case 'H':
+			if (strcasecmp(optarg, "twitter") == 0)
+				session->host = HOST_TWITTER;
+			if (strcasecmp(optarg, "identica") == 0)
+				session->host = HOST_IDENTICA;
+			dbg("host = %d\n", session->host);
 			break;
 		case 'b':
 			session->bash= 1;
@@ -400,6 +438,7 @@ int main(int argc, char *argv[], char *envp[])
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
 	dbg("tweet = %s\n", session->tweet);
+	dbg("host = %d\n", session->host);
 
 	/* fork ourself so that the main shell can get on
 	 * with it's life as we try to connect and handle everything

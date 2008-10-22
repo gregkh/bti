@@ -1,90 +1,260 @@
 .\"     Title: bti
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.74.0 <http://docbook.sf.net/>
 .\"      Date: May 2008
 .\"    Manual: bti
 .\"    Source: bti
+.\"  Language: English
 .\"
 .TH "BTI" "1" "May 2008" "bti" "bti"
+.\" -----------------------------------------------------------------
+.\" * (re)Define some macros
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" toupper - uppercase a string (locale-aware)
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.de toupper
+.tr aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ
+\\$*
+.tr aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz
+..
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" SH-xref - format a cross-reference to an SH section
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.de SH-xref
+.ie n \{\
+.\}
+.toupper \\$*
+.el \{\
+\\$*
+.\}
+..
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" SH - level-one heading that works better for non-TTY output
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.de1 SH
+.\" put an extra blank line of space above the head in non-TTY output
+.if t \{\
+.sp 1
+.\}
+.sp \\n[PD]u
+.nr an-level 1
+.set-an-margin
+.nr an-prevailing-indent \\n[IN]
+.fi
+.in \\n[an-margin]u
+.ti 0
+.HTML-TAG ".NH \\n[an-level]"
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+\." make the size of the head bigger
+.ps +3
+.ft B
+.ne (2v + 1u)
+.ie n \{\
+.\" if n (TTY output), use uppercase
+.toupper \\$*
+.\}
+.el \{\
+.nr an-break-flag 0
+.\" if not n (not TTY), use normal case (not uppercase)
+\\$1
+.in \\n[an-margin]u
+.ti 0
+.\" if not n (not TTY), put a border/line under subheading
+.sp -.6
+\l'\n(.lu'
+.\}
+..
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" SS - level-two heading that works better for non-TTY output
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.de1 SS
+.sp \\n[PD]u
+.nr an-level 1
+.set-an-margin
+.nr an-prevailing-indent \\n[IN]
+.fi
+.in \\n[IN]u
+.ti \\n[SN]u
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.ps \\n[PS-SS]u
+\." make the size of the head bigger
+.ps +2
+.ft B
+.ne (2v + 1u)
+.if \\n[.$] \&\\$*
+..
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" BB/BE - put background/screen (filled box) around block of text
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.de BB
+.if t \{\
+.sp -.5
+.br
+.in +2n
+.ll -2n
+.gcolor red
+.di BX
+.\}
+..
+.de EB
+.if t \{\
+.if "\\$2"adjust-for-leading-newline" \{\
+.sp -1
+.\}
+.br
+.di
+.in
+.ll
+.gcolor
+.nr BW \\n(.lu-\\n(.i
+.nr BH \\n(dn+.5v
+.ne \\n(BHu+.5v
+.ie "\\$2"adjust-for-leading-newline" \{\
+\M[\\$1]\h'1n'\v'+.5v'\D'P \\n(BWu 0 0 \\n(BHu -\\n(BWu 0 0 -\\n(BHu'\M[]
+.\}
+.el \{\
+\M[\\$1]\h'1n'\v'-.5v'\D'P \\n(BWu 0 0 \\n(BHu -\\n(BWu 0 0 -\\n(BHu'\M[]
+.\}
+.in 0
+.sp -.5v
+.nf
+.BX
+.in
+.sp .5v
+.fi
+.\}
+..
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" BM/EM - put colored marker in margin next to block of text
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.de BM
+.if t \{\
+.br
+.ll -2n
+.gcolor red
+.di BX
+.\}
+..
+.de EM
+.if t \{\
+.br
+.di
+.ll
+.gcolor
+.nr BH \\n(dn
+.ne \\n(BHu
+\M[\\$1]\D'P -.75n 0 0 \\n(BHu -(\\n[.i]u - \\n(INu - .75n) 0 0 -\\n(BHu'\M[]
+.in 0
+.nf
+.BX
+.in
+.fi
+.\}
+..
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
-.SH "NAME"
-bti - send a tweet to twitter.com from the command line
-.SH "SYNOPSIS"
-.HP 4
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "Name"
+bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
+.SH "Synopsis"
+.fam C
+.HP \w'\fBbti\fR\ 'u
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+.fam
 .SH "DESCRIPTION"
 .PP
-bti sends a twitter message to twitter\.com\.
+bti sends a tweet message to twitter\&.com or identi\&.ca\&.
 .SH "OPTIONS"
 .PP
 \fB\-\-account account\fR
 .RS 4
-Specify the twitter\.com account name\.
+Specify the twitter\&.com or identi\&.ca account name\&.
 .RE
 .PP
 \fB\-\-password password\fR
 .RS 4
-Specify the password of your twitter\.com account\.
+Specify the password of your twitter\&.com or identi\&.ca account\&.
+.RE
+.PP
+\fB\-\-host HOST_NAME\fR
+.RS 4
+Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&.
+.sp
+If no host is specified, the default is to send to twitter\&.com\&.
 .RE
 .PP
 \fB\-\-debug\fR
 .RS 4
-Print a whole bunch of debugging messages to stdout\.
+Print a whole bunch of debugging messages to stdout\&.
 .RE
 .PP
 \fB\-\-bash\fR
 .RS 4
-Add the working directory and a \'$\' in the twitter message to help specify it is coming from a command line\. Don\'t put the working directory and the \'$\' in the twitter message\.
+Add the working directory and a \'$\' in the tweet message to help specify it is coming from a command line\&. Don\'t put the working directory and the \'$\' in the tweet message\&.
 .sp
-This mode also does not report back any errors that might have happened when sending the message, and it sends it in the background, returning immediately, allowing the process to continue on\.
+This mode also does not report back any errors that might have happened when sending the message, and it sends it in the background, returning immediately, allowing the process to continue on\&.
 .RE
 .PP
 \fB\-\-version\fR
 .RS 4
-Print version number\.
+Print version number\&.
 .RE
 .PP
 \fB\-\-help\fR
 .RS 4
-Print help text\.
+Print help text\&.
 .RE
 .SH "DESCRIPTION"
 .PP
-bti provides an easy way to send twitter messages direct from the command line or any script\. It reads the message on standard input and uses the account and password settings either from the command line options, or from a config file, to send the message out\.
+bti provides an easy way to send tweet messages direct from the command line or any script\&. It reads the message on standard input and uses the account and password settings either from the command line options, or from a config file, to send the message out\&.
 .PP
-It\'s primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\'m doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\'s anything interesting going on\.
+It\'s primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\'m doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\'s anything interesting going on\&.
 .PP
 To hook bti up to your bash shell, export the following variable:
 .PP
 
-PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\'
+\FC PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\'\F[]
 .PP
 This example assumes that you have the
-\fI~/\.bti\fR
-set up with your account and password information already in it, otherwise you can specify them as an option\.
+\FC~/\&.bti\F[]
+set up with your account and password information already in it, otherwise you can specify them as an option\&.
 .SH "CONFIGURATION"
 .PP
 The account and password can be stored in a configuration file in the users home directory in a file named
-\fI\.bti\fR
+\FC\&.bti\F[]
 The structure of this file is as follows:
 .PP
 \fBaccount\fR
 .RS 4
-The twitter\.com account name you wish to use to send this message with\.
+The twitter\&.com or identi\&.ca account name you wish to use to send this message with\&.
 .RE
 .PP
 \fBpassword\fR
 .RS 4
-The twitter\.com password for the account you wish to use to send this message with\.
+The twitter\&.com or identi\&.ca password for the account you wish to use to send this message with\&.
+.RE
+.PP
+\fBhost\fR
+.RS 4
+The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&.
 .RE
 .PP
 There is an example config file called
-\fIbti\.example\fR
-in the source tree that shows the structure of the file if you need an example to work off of\.
+\FCbti\&.example\F[]
+in the source tree that shows the structure of the file if you need an example to work off of\&.
 .SH "AUTHOR"
 .PP
 Written by Greg Kroah\-Hartman
-<greg@kroah\.com>\.
+\FCgreg@kroah\&.com\F[]\&.

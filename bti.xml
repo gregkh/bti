@@ -20,7 +20,7 @@
 
       <refnamediv>
         <refname>bti</refname>
-        <refpurpose>send a tweet to twitter.com from the command line</refpurpose>
+        <refpurpose>send a tweet to twitter.com or identi.ca from the command line</refpurpose>
       </refnamediv>
 
       <refsynopsisdiv>
@@ -28,6 +28,7 @@
           <command>bti</command>
           <arg><option>--account account</option></arg>
           <arg><option>--password password</option></arg>
+          <arg><option>--host HOST_NAME</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--version</option></arg>
@@ -36,7 +37,7 @@
       </refsynopsisdiv>
 
       <refsect1><title>DESCRIPTION</title>
-        <para>bti sends a twitter message to twitter.com.
+        <para>bti sends a tweet message to twitter.com or identi.ca.
         </para>
       </refsect1>
 
@@ -46,7 +47,7 @@
             <term><option>--account account</option></term>
             <listitem>
               <para>
-	        Specify the twitter.com account name.
+	        Specify the twitter.com or identi.ca account name.
 	      </para>
             </listitem>
           </varlistentry>
@@ -54,7 +55,20 @@
             <term><option>--password password</option></term>
             <listitem>
               <para>
-                Specify the password of your twitter.com account.
+                Specify the password of your twitter.com or identi.ca account.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--host HOST_NAME</option></term>
+            <listitem>
+              <para>
+		Specify the host which you want to send your message to.  Valid
+		options are "twitter" to send to twitter.com and "identica" to
+		send to identi.ca.
+              </para>
+              <para>
+		If no host is specified, the default is to send to twitter.com.
               </para>
             </listitem>
           </varlistentry>
@@ -68,9 +82,9 @@
             <term><option>--bash</option></term>
             <listitem>
               <para>
-		 Add the working directory and a '$' in the twitter message to
+		 Add the working directory and a '$' in the tweet message to
 		 help specify it is coming from a command line.  Don't put the
-		 working directory and the '$' in the twitter message.
+		 working directory and the '$' in the tweet message.
 	      </para>
 	      <para>
 		 This mode also does not report back any errors that might have
@@ -98,7 +112,7 @@
       <refsect1>
         <title>DESCRIPTION</title>
         <para>
-          bti provides an easy way to send twitter messages direct from the
+          bti provides an easy way to send tweet messages direct from the
           command line or any script.  It reads the message on standard
           input and uses the account and password settings either from the
           command line options, or from a config file, to send the message
@@ -138,7 +152,7 @@
              <term><option>account</option></term>
              <listitem>
                <para>
-                 The twitter.com account name you wish to use to send this
+                 The twitter.com or identi.ca account name you wish to use to send this
                  message with.
                </para>
              </listitem>
@@ -147,8 +161,18 @@
              <term><option>password</option></term>
              <listitem>
                <para>
-                 The twitter.com password for the account you wish to use
+                 The twitter.com or identi.ca password for the account you wish to use
                  to send this message with.
+               </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term><option>host</option></term>
+             <listitem>
+               <para>
+		 The host you want to use to send the message to.  Valid
+		 options are either "twitter" or "identica" to send to
+		 twitter.com or identi.ca respectively.
                </para>
              </listitem>
            </varlistentry>
