@@ -418,7 +418,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 #endif
 	tweet = get_string_from_stdin();
-	if (strlen(tweet) == 0) {
+	if (!tweet || strlen(tweet) == 0) {
 		dbg("no tweet?\n");
 		return -1;
 	}
