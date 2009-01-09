@@ -1,3 +1,10 @@
+Summary of changes from v007 to v008
+============================================
+
+Greg Kroah-Hartman (1):
+      Works properly now with twitter due to december twitter server change
+
+
 Summary of changes from v006 to v007
 ============================================
 
