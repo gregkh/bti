@@ -194,6 +194,7 @@ static int send_tweet(struct session *session)
 	CURLcode res;
 	struct curl_httppost *formpost = NULL;
 	struct curl_httppost *lastptr = NULL;
+	struct curl_slist *slist = NULL;
 
 	if (!session)
 		return -EINVAL;
@@ -220,6 +221,12 @@ static int send_tweet(struct session *session)
 	switch (session->host) {
 	case HOST_TWITTER:
 		curl_easy_setopt(curl, CURLOPT_URL, twitter_url);
+		/*
+		 * twitter doesn't like the "Expect: 100-continue" header
+		 * anymore, so turn it off.
+		 */
+		slist = curl_slist_append(slist, "Expect:");
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 		break;
 	case HOST_IDENTICA:
 		curl_easy_setopt(curl, CURLOPT_URL, identica_url);
