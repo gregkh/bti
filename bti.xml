@@ -29,6 +29,7 @@
           <arg><option>--account account</option></arg>
           <arg><option>--password password</option></arg>
           <arg><option>--host HOST_NAME</option></arg>
+          <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--version</option></arg>
@@ -66,6 +67,18 @@
 		Specify the host which you want to send your message to.  Valid
 		options are "twitter" to send to twitter.com and "identica" to
 		send to identi.ca.
+              </para>
+              <para>
+		If no host is specified, the default is to send to twitter.com.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--proxy PROXY:PORT</option></term>
+            <listitem>
+              <para>
+		Specify a http proxy value.  This is not a required option, and
+		only needed by systems that are behind a http proxy.
               </para>
               <para>
 		If no host is specified, the default is to send to twitter.com.
@@ -173,6 +186,14 @@
 		 The host you want to use to send the message to.  Valid
 		 options are either "twitter" or "identica" to send to
 		 twitter.com or identi.ca respectively.
+               </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term><option>proxy</option></term>
+             <listitem>
+               <para>
+		 The http proxy needed to send data out to the Internet.
                </para>
              </listitem>
            </varlistentry>

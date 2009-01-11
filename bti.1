@@ -171,7 +171,7 @@ bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
 .SH "Synopsis"
 .fam C
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .fam
 .SH "DESCRIPTION"
 .PP
@@ -191,6 +191,13 @@ Specify the password of your twitter\&.com or identi\&.ca account\&.
 \fB\-\-host HOST_NAME\fR
 .RS 4
 Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&.
+.sp
+If no host is specified, the default is to send to twitter\&.com\&.
+.RE
+.PP
+\fB\-\-proxy PROXY:PORT\fR
+.RS 4
+Specify a http proxy value\&. This is not a required option, and only needed by systems that are behind a http proxy\&.
 .sp
 If no host is specified, the default is to send to twitter\&.com\&.
 .RE
@@ -249,6 +256,11 @@ The twitter\&.com or identi\&.ca password for the account you wish to use to sen
 \fBhost\fR
 .RS 4
 The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&.
+.RE
+.PP
+\fBproxy\fR
+.RS 4
+The http proxy needed to send data out to the Internet\&.
 .RE
 .PP
 There is an example config file called
