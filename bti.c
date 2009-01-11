@@ -351,6 +351,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "account", 1, NULL, 'a' },
 		{ "password", 1, NULL, 'p' },
 		{ "host", 1, NULL, 'H' },
+		{ "proxy", 1, NULL, 'P' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
 		{ "version", 0, NULL, 'v' },
@@ -376,7 +377,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:H:a:h",
+		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:h",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -395,6 +396,12 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->password);
 			session->password = strdup(optarg);
 			dbg("password = %s\n", session->password);
+			break;
+		case 'P':
+			if (session->proxy)
+				free(session->proxy);
+			session->proxy = strdup(optarg);
+			dbg("proxy = %s\n", session->proxy);
 			break;
 		case 'H':
 			if (strcasecmp(optarg, "twitter") == 0)
