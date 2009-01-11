@@ -49,6 +49,7 @@ struct session {
 	char *password;
 	char *account;
 	char *tweet;
+	char *proxy;
 	int bash;
 	enum host host;
 };
@@ -67,6 +68,7 @@ static void display_help(void)
 	fprintf(stdout, "options are:\n");
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
+	fprintf(stdout, "  --proxy PROXY:PORT\n");
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
@@ -112,6 +114,7 @@ static void session_free(struct session *session)
 	free(session->password);
 	free(session->account);
 	free(session->tweet);
+	free(session->proxy);
 	free(session);
 }
 
@@ -233,12 +236,16 @@ static int send_tweet(struct session *session)
 		break;
 	}
 
+	if (session->proxy)
+		curl_easy_setopt(curl, CURLOPT_PROXY, session->proxy);
+
 	if (debug)
 		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 	curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 	dbg("user_password = %s\n", user_password);
 	dbg("data = %s\n", data);
+	dbg("proxy = %s\n", session->proxy);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
@@ -262,6 +269,7 @@ static void parse_configfile(struct session *session)
 	char *account = NULL;
 	char *password = NULL;
 	char *host = NULL;
+	char *proxy = NULL;
 	char *file;
 	char *home = getenv("HOME");
 
@@ -309,6 +317,11 @@ static void parse_configfile(struct session *session)
 			c += 5;
 			if (c[0] != '\0')
 				host = strdup(c);
+		} else if (!strncasecmp(c, "proxy", 5) &&
+			   (c[5] == '=')) {
+			c += 6;
+			if (c[0] != '\0')
+				proxy = strdup(c);
 		}
 	} while (!feof(config_file));
 
@@ -323,6 +336,8 @@ static void parse_configfile(struct session *session)
 			session->host = HOST_IDENTICA;
 		free(host);
 	}
+	if (proxy)
+		session->proxy = proxy;
 
 	/* Free buffer and close file.  */
 	free(line);
