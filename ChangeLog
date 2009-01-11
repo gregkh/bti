@@ -1,3 +1,12 @@
+Summary of changes from v008 to v009
+============================================
+
+Greg Kroah-Hartman (3):
+      initial cut at adding http proxy support
+      document proxy support
+      add example proxy value to the bti.example file
+
+
 Summary of changes from v007 to v008
 ============================================
 

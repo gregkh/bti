@@ -1,3 +1,7 @@
+bti 009
+=============
+Initial attempt for HTTP proxy support.
+
 bti 008
 =============
 Fix for twitter, due to their server not liking one of the http headers anymore.
