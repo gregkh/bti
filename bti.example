@@ -6,3 +6,4 @@
 account=twitmaster
 password=icanhascheezburger
 host=identica
+#proxy=http://localhost:8080
