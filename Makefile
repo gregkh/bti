@@ -16,7 +16,7 @@
 #
 #
 
-VERSION = 009
+VERSION = 010
 
 PROGRAM = bti
 

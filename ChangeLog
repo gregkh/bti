@@ -1,3 +1,16 @@
+Summary of changes from v009 to v010
+============================================
+
+Greg Kroah-Hartman (3):
+      add --proxy support to command line
+      check in changes to bti.1 from previous xml changes
+      document the order that config options are handled
+
+gregor herrmann (2):
+      Fix up documentation of proxy option
+      use the http_proxy environment variable if it is present
+
+
 Summary of changes from v008 to v009
 ============================================
 

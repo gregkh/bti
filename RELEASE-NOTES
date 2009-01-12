@@ -1,3 +1,9 @@
+bti 010
+=============
+Fix up HTTP proxy support, thanks to gregor herrmann:
+  - command line option now works
+  - http_proxy environment variable is now handled
+
 bti 009
 =============
 Initial attempt for HTTP proxy support.
