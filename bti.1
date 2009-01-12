@@ -266,6 +266,22 @@ The http proxy needed to send data out to the Internet\&.
 There is an example config file called
 \FCbti\&.example\F[]
 in the source tree that shows the structure of the file if you need an example to work off of\&.
+.PP
+Configuration options have the following priority:
+.PP
+.RS 4
+command line option
+.RE
+.PP
+.RS 4
+config file option
+.RE
+.PP
+.RS 4
+environment variables
+.RE
+.PP
+For example, command line options always override any config file option, or any environment variables\&.
 .SH "AUTHOR"
 .PP
 Written by Greg Kroah\-Hartman

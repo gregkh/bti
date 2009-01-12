@@ -204,6 +204,27 @@
            <filename>bti.example</filename> in the source tree that shows
            the structure of the file if you need an example to work off of.
          </para>
+         <para>
+           Configuration options have the following priority:
+	 </para>
+         <variablelist>
+           <varlistentry>
+             <term></term>
+             <listitem><para>command line option</para></listitem>
+           </varlistentry>
+           <varlistentry>
+            <term></term>
+            <listitem><para>config file option</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term></term>
+             <listitem><para>environment variables</para></listitem>
+           </varlistentry>
+         </variablelist>
+	 <para>
+	   For example, command line options always override any config file
+	   option, or any environment variables.
+         </para>
        </refsect1>
 
        <refsect1><title>AUTHOR</title>
