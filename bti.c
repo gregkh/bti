@@ -336,8 +336,11 @@ static void parse_configfile(struct session *session)
 			session->host = HOST_IDENTICA;
 		free(host);
 	}
-	if (proxy)
+	if (proxy) {
+		if (session->proxy)
+			free(session->proxy);
 		session->proxy = proxy;
+	}
 
 	/* Free buffer and close file.  */
 	free(line);
@@ -362,6 +365,7 @@ int main(int argc, char *argv[], char *envp[])
 	char *tweet;
 	int retval;
 	int option;
+	char *http_proxy;
 #if 0
 	char *home = getenv("HOME");
 	char *pwd = getenv("PWD");
@@ -374,6 +378,17 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	curl_global_init(CURL_GLOBAL_ALL);
+
+	/* Set environment variables first, before reading command line options
+	 * or config file values. */
+	http_proxy = getenv("http_proxy");
+	if (http_proxy) {
+		if (session->proxy)
+			free(session->proxy);
+		session->proxy = strdup(http_proxy);
+		dbg("http_proxy = %s\n", session->proxy);
+	}
+
 	parse_configfile(session);
 
 	while (1) {
