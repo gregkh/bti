@@ -81,7 +81,8 @@
 		only needed by systems that are behind a http proxy.
               </para>
               <para>
-		If no host is specified, the default is to send to twitter.com.
+		If --proxy is not specified but the environment variable
+                'http_proxy' is set the latter will be used.
               </para>
             </listitem>
           </varlistentry>
