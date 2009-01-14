@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <curl/curl.h>
 #include "bti_version.h"
@@ -50,6 +51,8 @@ struct session {
 	char *account;
 	char *tweet;
 	char *proxy;
+	char *time;
+	char *homedir;
 	int bash;
 	enum host host;
 };
@@ -115,6 +118,8 @@ static void session_free(struct session *session)
 	free(session->account);
 	free(session->tweet);
 	free(session->proxy);
+	free(session->time);
+	free(session->homedir);
 	free(session);
 }
 
@@ -271,12 +276,11 @@ static void parse_configfile(struct session *session)
 	char *host = NULL;
 	char *proxy = NULL;
 	char *file;
-	char *home = getenv("HOME");
 
 	/* config file is ~/.bti  */
-	file = alloca(strlen(home) + 7);
+	file = alloca(strlen(session->homedir) + 7);
 
-	sprintf(file, "%s/.bti", home);
+	sprintf(file, "%s/.bti", session->homedir);
 
 	config_file = fopen(file, "r");
 
@@ -347,6 +351,40 @@ static void parse_configfile(struct session *session)
 	fclose(config_file);
 }
 
+static void log_session(struct session *session, int retval)
+{
+	FILE *log_file;
+	char *filename;
+	char *host;
+
+	/* logfile is ~/.bti.log  */
+	filename = alloca(strlen(session->homedir) + 10);
+
+	sprintf(filename, "%s/.bti.log", session->homedir);
+
+	log_file = fopen(filename, "a+");
+	if (log_file == NULL)
+		return;
+	switch (session->host) {
+	case HOST_TWITTER:
+		host = "twitter";
+		break;
+	case HOST_IDENTICA:
+		host = "identi.ca";
+		break;
+	default:
+		host = "unknown";
+		break;
+	}
+
+	if (retval)
+		fprintf(log_file, "%s: host=%s tweet failed\n", session->time, host);
+	else
+		fprintf(log_file, "%s: host=%s tweet=%s\n", session->time, host, session->tweet);
+
+	fclose(log_file);
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
 	static const struct option options[] = {
@@ -363,19 +401,27 @@ int main(int argc, char *argv[], char *envp[])
 	struct session *session;
 	pid_t child;
 	char *tweet;
-	int retval;
+	int retval = 0;
 	int option;
 	char *http_proxy;
+	time_t t;
 #if 0
-	char *home = getenv("HOME");
 	char *pwd = getenv("PWD");
 	char *dir;
 #endif
+
 	session = session_alloc();
 	if (!session) {
 		fprintf(stderr, "no more memory...\n");
 		return -1;
 	}
+
+	/* get the current time so that we can log it later */
+	time(&t);
+	session->time = strdup(ctime(&t));
+	session->time[strlen(session->time)-1] = 0x00;
+
+	session->homedir = strdup(getenv("HOME"));
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
@@ -496,12 +542,11 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	retval = send_tweet(session);
-	if (retval && !session->bash) {
+	if (retval && !session->bash)
 		fprintf(stderr, "tweet failed\n");
-		return -1;
-	}
 
-	session_free(session);
+	log_session(session, retval);
 exit:
-	return 0;
+	session_free(session);
+	return retval;;
 }
