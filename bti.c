@@ -544,7 +544,7 @@ int main(int argc, char *argv[], char *envp[])
 	if (retval && !session->bash)
 		fprintf(stderr, "tweet failed\n");
 
-	log_session(session, retval);
+//	log_session(session, retval);
 exit:
 	session_free(session);
 	return retval;;
