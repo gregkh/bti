@@ -27,6 +27,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <curl/curl.h>
+#include <readline/readline.h>
 #include "bti_version.h"
 
 
@@ -86,17 +87,14 @@ static void display_version(void)
 
 static char *get_string_from_stdin(void)
 {
-	char *temp;
-	char *string;
+	static char *string = (char *)NULL;
+	if (string) {
+		free(string);
+		string = (char *)NULL;
+	}
 
-	string = zalloc(1000);
-	if (!string)
-		return NULL;
+	string = readline("tweet: ");
 
-	if (!fgets(string, 999, stdin))
-		return NULL;
-	temp = strchr(string, '\n');
-	*temp = '\0';
 	return string;
 }
 
@@ -410,6 +408,7 @@ int main(int argc, char *argv[], char *envp[])
 	char *dir;
 #endif
 
+	rl_bind_key('\t', rl_insert);
 	session = session_alloc();
 	if (!session) {
 		fprintf(stderr, "no more memory...\n");

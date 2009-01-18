@@ -55,10 +55,11 @@ export E Q
 
 # We need -lcurl for the curl stuff
 # We need -lsocket and -lnsl when on Solaris
+# We need -lreadline for readline support
 # We need -lssl and -lcrypto when using libcurl with SSL support
 # We need -lpthread for the pthread example
 #LIB_OBJS = -lcurl -lnsl -lssl -lcrypto
-LIB_OBJS = -lcurl -lnsl
+LIB_OBJS = -lcurl -lnsl -lreadline
 
 all:	$(PROGRAM) $(MAN_PAGES)
 
