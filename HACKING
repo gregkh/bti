@@ -1,0 +1,26 @@
+Patches are gladly accepted for bti code, please send them to
+greg@kroah.com, or you can use github to send a pull request.
+
+The code tree for smubatch is located at:
+	http://github.com/gregkh/bti
+and can be cloned using git from:
+	git://github.com/gregkh/bti.git
+
+If you have never used git before, there are some useful tutorials on
+the github.com web site to help you through the learning process.
+
+I am trying to follow the Linux kernel coding style with the code
+whereever possible.  This style is documented in the Linux kernel source
+tree in the file Documentation/CodingStyle.  Included in the bti code
+tree is a script called checkpatch.pl that can automatically check if
+your changes are compliant with the guidelines.
+
+To test this, using git, generate a patch:
+	git diff > my_patch
+Then run checkpatch.pl against this patch:
+	./scripts/checkpatch.pl --no-tree my_patch
+
+
+Please run your modifications through valgrind if possible.  It is safe
+to ignore the valgrind errors in the curl and ssl libraries, we can't do
+anything about those at this time.
