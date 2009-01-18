@@ -1,3 +1,7 @@
+bti 011
+=============
+Readline support thanks to Amir Saied
+
 bti 010
 =============
 Fix up HTTP proxy support, thanks to gregor herrmann:

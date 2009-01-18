@@ -1,3 +1,14 @@
+Summary of changes from v010 to v011
+============================================
+Amir Mohammad Saied (1):
+      Readline support for bti
+
+Greg Kroah-Hartman (3):
+      add initial ~/.bti.log support to log what is going on
+      Add documentation about how to send me patches
+      disable log support until I can add some configurations for it
+
+
 Summary of changes from v009 to v010
 ============================================
 
