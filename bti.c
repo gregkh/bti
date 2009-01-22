@@ -224,6 +224,11 @@ static int send_tweet(struct session *session)
 		     CURLFORM_COPYCONTENTS, session->tweet,
 		     CURLFORM_END);
 
+	curl_formadd(&formpost, &lastptr,
+		     CURLFORM_COPYNAME, "source",
+		     CURLFORM_COPYCONTENTS, "bti",
+		     CURLFORM_END);
+
 	curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 
 	switch (session->host) {
