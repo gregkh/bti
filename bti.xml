@@ -30,6 +30,7 @@
           <arg><option>--password password</option></arg>
           <arg><option>--host HOST_NAME</option></arg>
           <arg><option>--proxy PROXY:PORT</option></arg>
+          <arg><option>--logfile LOGFILE</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--version</option></arg>
@@ -83,6 +84,16 @@
               <para>
 		If --proxy is not specified but the environment variable
                 'http_proxy' is set the latter will be used.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--logfile LOGFILE</option></term>
+            <listitem>
+              <para>
+		Specify a logfile for bti to write status messages to.  LOGFILE
+		is in relation to the user's home directory, not an absolute
+		path to a file.
               </para>
             </listitem>
           </varlistentry>
@@ -195,6 +206,17 @@
              <listitem>
                <para>
 		 The http proxy needed to send data out to the Internet.
+               </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term><option>logfile</option></term>
+             <listitem>
+               <para>
+		 The logfile name for bti to write what happened to.
+		 This file is relative to the user's home directory.  If this
+		 file is not specified here or on the command line, no logging
+		 will be written to the disk.
                </para>
              </listitem>
            </varlistentry>

@@ -171,7 +171,7 @@ bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
 .SH "Synopsis"
 .fam C
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-bash\fR] [\fB\-\-debug\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .fam
 .SH "DESCRIPTION"
 .PP
@@ -200,6 +200,11 @@ If no host is specified, the default is to send to twitter\&.com\&.
 Specify a http proxy value\&. This is not a required option, and only needed by systems that are behind a http proxy\&.
 .sp
 If \-\-proxy is not specified but the environment variable \'http_proxy\' is set the latter will be used\&.
+.RE
+.PP
+\fB\-\-logfile LOGFILE\fR
+.RS 4
+Specify a logfile for bti to write status messages to\&. LOGFILE is in relation to the user\'s home directory, not an absolute path to a file\&.
 .RE
 .PP
 \fB\-\-debug\fR
@@ -261,6 +266,11 @@ The host you want to use to send the message to\&. Valid options are either "twi
 \fBproxy\fR
 .RS 4
 The http proxy needed to send data out to the Internet\&.
+.RE
+.PP
+\fBlogfile\fR
+.RS 4
+The logfile name for bti to write what happened to\&. This file is relative to the user\'s home directory\&. If this file is not specified here or on the command line, no logging will be written to the disk\&.
 .RE
 .PP
 There is an example config file called
