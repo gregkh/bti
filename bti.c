@@ -36,11 +36,11 @@
 #define dbg(format, arg...)						\
 	do {								\
 		if (debug)						\
-			printf("%s: " format , __func__ , ## arg );	\
+			printf("%s: " format , __func__ , ## arg);	\
 	} while (0)
 
 
-static int debug = 0;
+static int debug;
 
 enum host {
 	HOST_TWITTER = 0,
@@ -395,9 +395,11 @@ static void log_session(struct session *session, int retval)
 	}
 
 	if (retval)
-		fprintf(log_file, "%s: host=%s tweet failed\n", session->time, host);
+		fprintf(log_file, "%s: host=%s tweet failed\n",
+			session->time, host);
 	else
-		fprintf(log_file, "%s: host=%s tweet=%s\n", session->time, host, session->tweet);
+		fprintf(log_file, "%s: host=%s tweet=%s\n",
+			session->time, host, session->tweet);
 
 	fclose(log_file);
 }
@@ -423,12 +425,10 @@ int main(int argc, char *argv[], char *envp[])
 	int option;
 	char *http_proxy;
 	time_t t;
-#if 0
-	char *pwd = getenv("PWD");
-	char *dir;
-#endif
 
+	debug = 0;
 	rl_bind_key('\t', rl_insert);
+
 	session = session_alloc();
 	if (!session) {
 		fprintf(stderr, "no more memory...\n");
@@ -497,7 +497,7 @@ int main(int argc, char *argv[], char *envp[])
 			dbg("host = %d\n", session->host);
 			break;
 		case 'b':
-			session->bash= 1;
+			session->bash = 1;
 			break;
 		case 'h':
 			display_help();
@@ -520,31 +520,18 @@ int main(int argc, char *argv[], char *envp[])
 		fprintf(stdout, "Enter twitter password: ");
 		session->password = get_string_from_stdin();
 	}
-#if 0
-	/* get the current working directory basename */
-	if (strcmp(pwd, home) == 0)
-		dir = "~";
-	else {
-		dir = strrchr(pwd, '/');
-		if (dir)
-			dir++;
-		else
-			dir = "?";
-	}
-#endif
+
 	tweet = get_string_from_stdin();
 	if (!tweet || strlen(tweet) == 0) {
 		dbg("no tweet?\n");
 		return -1;
 	}
 
-//	session->tweet = zalloc(strlen(tweet) + strlen(dir) + 10);
 	session->tweet = zalloc(strlen(tweet) + 10);
 
 	/* if --bash is specified, add the "PWD $ " to
 	 * the start of the tweet. */
 	if (session->bash)
-//		sprintf(session->tweet, "%s $ %s", dir, tweet);
 		sprintf(session->tweet, "$ %s", tweet);
 	else
 		sprintf(session->tweet, "%s", tweet);
