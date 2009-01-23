@@ -1,3 +1,18 @@
+Summary of changes from v011 to v012
+============================================
+
+Amir Mohammad Saied (2):
+      Source parameter added
+      Add bash completion script
+
+Greg Kroah-Hartman (2):
+      add --logfile option
+      document the logfile option
+
+SanjayKumar J (1):
+      bti: incorrect version fix
+
+
 Summary of changes from v010 to v011
 ============================================
 Amir Mohammad Saied (1):

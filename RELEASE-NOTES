@@ -1,3 +1,9 @@
+bti 012
+=============
+Logfile support added to track status of tweets
+bash completion script added thanks to Amir Saied
+proper "application name" added thanks to Amir Saied
+
 bti 011
 =============
 Readline support thanks to Amir Saied
