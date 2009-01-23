@@ -54,6 +54,7 @@ struct session {
 	char *proxy;
 	char *time;
 	char *homedir;
+	char *logfile;
 	int bash;
 	enum host host;
 };
@@ -74,6 +75,7 @@ static void display_help(void)
 	fprintf(stdout, "  --password password\n");
 	fprintf(stdout, "  --proxy PROXY:PORT\n");
 	fprintf(stdout, "  --host HOST\n");
+	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");
@@ -273,6 +275,7 @@ static void parse_configfile(struct session *session)
 	char *password = NULL;
 	char *host = NULL;
 	char *proxy = NULL;
+	char *logfile = NULL;
 	char *file;
 
 	/* config file is ~/.bti  */
@@ -324,6 +327,11 @@ static void parse_configfile(struct session *session)
 			c += 6;
 			if (c[0] != '\0')
 				proxy = strdup(c);
+		} else if (!strncasecmp(c, "logfile", 7) &&
+			   (c[7] == '=')) {
+			c += 8;
+			if (c[0] != '\0')
+				logfile = strdup(c);
 		}
 	} while (!feof(config_file));
 
@@ -343,6 +351,8 @@ static void parse_configfile(struct session *session)
 			free(session->proxy);
 		session->proxy = proxy;
 	}
+	if (logfile)
+		session->logfile = logfile;
 
 	/* Free buffer and close file.  */
 	free(line);
@@ -355,10 +365,14 @@ static void log_session(struct session *session, int retval)
 	char *filename;
 	char *host;
 
-	/* logfile is ~/.bti.log  */
-	filename = alloca(strlen(session->homedir) + 10);
+	/* Only log something if we have a log file set */
+	if (!session->logfile)
+		return;
 
-	sprintf(filename, "%s/.bti.log", session->homedir);
+	filename = alloca(strlen(session->homedir) +
+			  strlen(session->logfile) + 3);
+
+	sprintf(filename, "%s/%s", session->homedir, session->logfile);
 
 	log_file = fopen(filename, "a+");
 	if (log_file == NULL)
@@ -391,6 +405,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "password", 1, NULL, 'p' },
 		{ "host", 1, NULL, 'H' },
 		{ "proxy", 1, NULL, 'P' },
+		{ "logfile", 1, NULL, 'L' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
 		{ "version", 0, NULL, 'v' },
@@ -462,6 +477,12 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->proxy);
 			session->proxy = strdup(optarg);
 			dbg("proxy = %s\n", session->proxy);
+			break;
+		case 'L':
+			if (session->logfile)
+				free(session->logfile);
+			session->logfile = strdup(optarg);
+			dbg("logfile = %s\n", session->logfile);
 			break;
 		case 'H':
 			if (strcasecmp(optarg, "twitter") == 0)
@@ -544,7 +565,7 @@ int main(int argc, char *argv[], char *envp[])
 	if (retval && !session->bash)
 		fprintf(stderr, "tweet failed\n");
 
-//	log_session(session, retval);
+	log_session(session, retval);
 exit:
 	session_free(session);
 	return retval;;
