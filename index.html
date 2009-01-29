@@ -1,82 +1,42 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <head>
+        <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+        <meta name="description" content="bash twitter identi.ca ididocy" />
+        <title>bti - bash twitter/identi.ca ididocy</title>
+        <style type="text/css" media="screen">
+            *    { margin: 0; padding: 0; }
+            body { font-family: 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif; background-color: #d9c990; color: #ccc; font-size: 15px; }
+            a    { text-decoration: none; color: #22758d; }
+            h1   { font-weight: normal; margin-bottom: -15px; color: #222; font-size: 50px; }
+            h2   { font-weight: normal; margin-bottom: 10px; color: #999; font-size: 30px; }
 
-	<title>gregkh/bti @ GitHub</title>
-	
-	<style type="text/css">
-		body {
-  		margin-top: 1.0em;
-  		background-color: #4107fa;
-		  font-family: "helvetica"; 
-  		color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-		h1 { font-size: 3.8em; color: #bef805; margin-bottom: 3px; }
-		h1 .small { font-size: 0.4em; }
-		h1 a { text-decoration: none }
-		h2 { font-size: 1.5em; color: #bef805; }
-    h3 { text-align: center; color: #bef805; }
-    a { color: #bef805; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-		pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-	</style>
-	
-</head>
+            .desc    { font-weight: normal; margin-bottom: 20px; color: #000; font-size: 25px; }
+            .warning { font-weight: normal; font-style: italic; margin-bottom: 20px;  color: #f00; font-size: 20px; }
+            .contact { font-weight: normal; font-style: italic; color: #222; margin-bottom: 30px;}
+            .links   { font-weight: normal; color: #222; font-size: 15px; }
+            .links a { background:  #00f000; color: #000; padding: 2px; }
 
-<body>
-  <a href="http://github.com/gregkh/bti"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-  
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/gregkh/bti/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/gregkh/bti/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
-      
-    <h1><a href="http://github.com/gregkh/bti">bti</a> 
-      <span class="small">by <a href="http://github.com/gregkh">gregkh</a></small></h1>
-
-    <div class="description">
-      bash twitter ididocy
-    </div>
-
-    <p>This is a command line tool to send messages to twitter or identicus</p><h2>License</h2>
-<p>GPL version 2</p>
-<h2>Authors</h2>
-<p>Greg Kroah-Hartman (greg@kroah.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Greg Kroah-Hartman (greg@kroah.com)<br/>      </p>
-
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/gregkh/bti/zipball/master">zip</a> or
-      <a href="http://github.com/gregkh/bti/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/gregkh/bti</pre>
-    </p>
-      
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/gregkh/bti">gregkh/bti</a>
-    </div>
-    
-  </div>
-
-  
-</body>
+            #container { width: 100%; text-align: center; margin: 100px 0; }
+            #contact   { text-align: left; padding-left: 100px; margin-left: 100px; }
+            #name      { background: #22758d; color: white; }
+        </style>
+    </head>
+    <body>
+        <a href="http://github.com/gregkh/bti/tree/master"><img
+            style="position: absolute; top: 0; left: 0; border: 0;"
+            src="http://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png" alt="Fork me on GitHub" /></a>
+        <div id="container">
+            <h1>bti</h1>
+            <h2>bash twitter/identi.ca ididocy</h2>
+            <p class="desc">Allows you to pipe your bash input to twitter or identi.ca in an easy and fast manner to annoy the whole world.</p>
+            <p class="warning">Be careful if you use this, it is quite easy to end up sending sensitive data to the world with it.</p>
+            <p class="contact">Any questions, contact <a href="mailto:greg@kroah.com"><span id="name">Greg Kroah-Hartman</span></a> or @gregkh on twitter or identi.ca.</p>
+            <p class="links">
+                <a href="http://github.com/gregkh/bti/">browse</a> &nbsp;
+                <a href="http://www.kernel.org/pub/linux/kernel/people/gregkh/bti/bti-012.tar.bz2">download</a> &nbsp;
+                <a href="git://github.com/gregkh/bti.git">clone</a>
+            </p>
+        </div>
+    </body>
 </html>
