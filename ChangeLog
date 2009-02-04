@@ -1,3 +1,12 @@
+Summary of changes from v012 to v013
+============================================
+
+Greg Kroah-Hartman (3):
+      coding style cleanups
+      fix readline support
+      don't duplicate string on password or account prompt
+
+
 Summary of changes from v011 to v012
 ============================================
 

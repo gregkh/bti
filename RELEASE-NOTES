@@ -1,3 +1,7 @@
+bti 013
+=============
+Fix some readline prompt issues
+
 bti 012
 =============
 Logfile support added to track status of tweets
