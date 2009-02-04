@@ -513,12 +513,12 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (!session->account) {
 		fprintf(stdout, "Enter twitter account: ");
-		session->account = get_string_from_stdin("account: ");
+		session->account = get_string_from_stdin("");
 	}
 
 	if (!session->password) {
 		fprintf(stdout, "Enter twitter password: ");
-		session->password = get_string_from_stdin("password: ");
+		session->password = get_string_from_stdin("");
 	}
 
 	if (session->bash)
