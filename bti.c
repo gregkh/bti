@@ -87,7 +87,7 @@ static void display_version(void)
 	fprintf(stdout, "bti - version %s\n", BTI_VERSION);
 }
 
-static char *get_string_from_stdin(void)
+static char *get_string_from_stdin(char *prompt)
 {
 	static char *string = (char *)NULL;
 	if (string) {
@@ -95,7 +95,7 @@ static char *get_string_from_stdin(void)
 		string = (char *)NULL;
 	}
 
-	string = readline("tweet: ");
+	string = readline(prompt);
 
 	return string;
 }
@@ -513,15 +513,18 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (!session->account) {
 		fprintf(stdout, "Enter twitter account: ");
-		session->account = get_string_from_stdin();
+		session->account = get_string_from_stdin("account: ");
 	}
 
 	if (!session->password) {
 		fprintf(stdout, "Enter twitter password: ");
-		session->password = get_string_from_stdin();
+		session->password = get_string_from_stdin("password: ");
 	}
 
-	tweet = get_string_from_stdin();
+	if (session->bash)
+		tweet = get_string_from_stdin("");
+	else
+		tweet = get_string_from_stdin("tweet: ");
 	if (!tweet || strlen(tweet) == 0) {
 		dbg("no tweet?\n");
 		return -1;
