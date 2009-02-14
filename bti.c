@@ -87,19 +87,6 @@ static void display_version(void)
 	fprintf(stdout, "bti - version %s\n", BTI_VERSION);
 }
 
-static char *get_string_from_stdin(char *prompt)
-{
-	static char *string = (char *)NULL;
-	if (string) {
-		free(string);
-		string = (char *)NULL;
-	}
-
-	string = readline(prompt);
-
-	return string;
-}
-
 static struct session *session_alloc(void)
 {
 	struct session *session;
@@ -513,18 +500,18 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (!session->account) {
 		fprintf(stdout, "Enter twitter account: ");
-		session->account = get_string_from_stdin("");
+		session->account = readline(NULL);
 	}
 
 	if (!session->password) {
 		fprintf(stdout, "Enter twitter password: ");
-		session->password = get_string_from_stdin("");
+		session->password = readline(NULL);
 	}
 
 	if (session->bash)
-		tweet = get_string_from_stdin("");
+		tweet = readline(NULL);
 	else
-		tweet = get_string_from_stdin("tweet: ");
+		tweet = readline("tweet: ");
 	if (!tweet || strlen(tweet) == 0) {
 		dbg("no tweet?\n");
 		return -1;
