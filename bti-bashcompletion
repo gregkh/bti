@@ -5,13 +5,17 @@ _bti()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 	if [[ "${cur}" == -* ]] ; then
-		COMPREPLY=( $(compgen -W "-a -p -P -H -b -d -v -h --account \
-			--password --proxy --host --bash --debug --version \
-			--help" -- ${cur}) )
+		COMPREPLY=( $(compgen -W "-a -A -p -P -H -b -d -v -h
+			--account --action --password --proxy --host --bash \
+			--debug --version --help" -- ${cur}) )
 	fi
 
 	if [[ "${prev}" == "--host" ]] ; then
 		COMPREPLY=( $(compgen -W "twitter identica" -- ${cur} ) )
+	fi
+
+	if [[ "${prev}" == "--action" ]] ; then
+		COMPREPLY=( $(compgen -W "friends public update" -- ${cur} ) )
 	fi
 
 	return 0
