@@ -34,7 +34,8 @@ CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)gcc
 AR = $(CROSS_COMPILE)ar
 
-override CFLAGS	+= -g -Wall -pipe -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -O2
+XML2_CFLAGS = `xml2-config --cflags`
+override CFLAGS	+= -g -Wall -pipe -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -O2 $(XML2_CFLAGS)
 
 WARNINGS	= -Wstrict-prototypes -Wsign-compare -Wshadow \
 		  -Wchar-subscripts -Wmissing-declarations -Wnested-externs \
@@ -60,13 +61,14 @@ export E Q
 # We need -lpthread for the pthread example
 #LIB_OBJS = -lcurl -lnsl -lssl -lcrypto
 LIB_OBJS = -lcurl -lnsl -lreadline
+LIB_XML2 = `xml2-config --libs`
 
 all:	$(PROGRAM) $(MAN_PAGES)
 
 # "Static Pattern Rule" to build all programs
 bti: %: $(HEADERS) $(GEN_HEADERS) $(CORE_OBJS)
 	$(E) "  LD      " $@
-	$(Q) $(LD) $(LDFLAGS) $(CORE_OBJS) -o $@ $(LIB_OBJS)
+	$(Q) $(LD) $(LDFLAGS) $(CORE_OBJS) -o $@ $(LIB_OBJS) $(LIB_XML2)
 
 
 # build the objects
