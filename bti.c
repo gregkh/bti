@@ -28,6 +28,9 @@
 #include <sys/stat.h>
 #include <curl/curl.h>
 #include <readline/readline.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include "bti_version.h"
 
 
@@ -47,6 +50,12 @@ enum host {
 	HOST_IDENTICA = 1,
 };
 
+enum action {
+     ACTION_UPDATE = 0,
+     ACTION_PUBLIC = 1,
+     ACTION_FRIENDS = 2,
+};
+
 struct session {
 	char *password;
 	char *account;
@@ -57,10 +66,12 @@ struct session {
 	char *logfile;
 	int bash;
 	enum host host;
+	enum action action;
 };
 
 struct bti_curl_buffer {
 	char *data;
+	enum action action;
 	int length;
 };
 
@@ -77,6 +88,7 @@ static void display_help(void)
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --bash\n");
+	fprintf(stdout, "  --action action\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");
@@ -110,7 +122,7 @@ static void session_free(struct session *session)
 	free(session);
 }
 
-static struct bti_curl_buffer *bti_curl_buffer_alloc(void)
+static struct bti_curl_buffer *bti_curl_buffer_alloc(enum action action)
 {
 	struct bti_curl_buffer *buffer;
 
@@ -126,6 +138,7 @@ static struct bti_curl_buffer *bti_curl_buffer_alloc(void)
 		return NULL;
 	}
 	buffer->length = 0;
+	buffer->action = action;
 	return buffer;
 }
 
@@ -137,8 +150,13 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-static const char *twitter_url = "https://twitter.com/statuses/update.xml";
-static const char *identica_url = "http://identi.ca/api/statuses/update.xml";
+static const char *twitter_update_url  = "https://twitter.com/statuses/update.xml";
+static const char *twitter_public_url  = "http://twitter.com/statuses/public_timeline.xml";
+static const char *twitter_friends_url = "https://twitter.com/statuses/friends_timeline.xml";
+
+static const char *identica_update_url  = "http://identi.ca/api/statuses/update.xml";
+static const char *identica_public_url  = "http://identi.ca/api/statuses/public_timeline.xml";
+static const char *identica_friends_url = "http://identi.ca/api/statuses/friends_timeline.xml";
 
 static CURL *curl_init(void)
 {
@@ -153,6 +171,72 @@ static CURL *curl_init(void)
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
 	return curl;
+}
+
+void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
+{
+	xmlChar *text;
+	xmlChar *user;
+	xmlNodePtr userinfo;
+	current = current->xmlChildrenNode;
+	while (current != NULL) {
+		if (current->type == XML_ELEMENT_NODE) {
+			if (!xmlStrcmp(current->name, (const xmlChar *)"text")) {
+				text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
+				printf("%s", text);
+				xmlFree(text);
+			}
+			if (!xmlStrcmp(current->name, (const xmlChar *)"user")) {
+				userinfo = current->xmlChildrenNode;
+				while (userinfo != NULL) {
+					if ((!xmlStrcmp(userinfo->name, (const xmlChar *)"screen_name"))) {
+						user = xmlNodeListGetString(doc, userinfo->xmlChildrenNode, 1);
+						printf(" [%s]\n", user);
+						xmlFree(user);
+					}
+
+					userinfo = userinfo->next;
+				}
+			}
+		}
+
+		current = current->next;
+	}
+
+	return;
+}
+
+static void parse_timeline(char *document)
+{
+	xmlDocPtr doc;
+	xmlNodePtr current;
+	doc = xmlReadMemory(document, strlen(document), "timeline.xml", NULL, XML_PARSE_NOERROR);
+
+	if (doc == NULL)
+		return;
+
+	current = xmlDocGetRootElement(doc);
+	if (current == NULL) {
+		fprintf(stderr, "empty document\n");
+		xmlFreeDoc(doc);
+		return;
+	}
+
+	if (xmlStrcmp(current->name, (const xmlChar *) "statuses")) {
+		fprintf(stderr, "unexpected document type\n");
+		xmlFreeDoc(doc);
+		return;
+	}
+
+	current = current->xmlChildrenNode;
+	while (current != NULL) {
+		if ((!xmlStrcmp(current->name, (const xmlChar *)"status")))
+			parse_statuses(doc, current);
+		current = current->next;
+	}
+	xmlFreeDoc(doc);
+
+	return;
 }
 
 size_t curl_callback(void *buffer, size_t size, size_t nmemb, void *userp)
@@ -174,13 +258,16 @@ size_t curl_callback(void *buffer, size_t size, size_t nmemb, void *userp)
 	curl_buf->data = temp;
 	memcpy(&curl_buf->data[curl_buf->length], (char *)buffer, buffer_size);
 	curl_buf->length += buffer_size;
+	if ((curl_buf->action == ACTION_FRIENDS) ||
+		(curl_buf->action == ACTION_PUBLIC))
+		parse_timeline(curl_buf->data);
 
 	dbg("%s\n", curl_buf->data);
 
 	return buffer_size;
 }
 
-static int send_tweet(struct session *session)
+static int send_request(struct session *session)
 {
 	char user_password[500];
 	char data[500];
@@ -194,42 +281,67 @@ static int send_tweet(struct session *session)
 	if (!session)
 		return -EINVAL;
 
-	curl_buf = bti_curl_buffer_alloc();
+	curl_buf = bti_curl_buffer_alloc(session->action);
 	if (!curl_buf)
 		return -ENOMEM;
-
-	snprintf(user_password, sizeof(user_password), "%s:%s",
-		 session->account, session->password);
-	snprintf(data, sizeof(data), "status=\"%s\"", session->tweet);
 
 	curl = curl_init();
 	if (!curl)
 		return -EINVAL;
 
-	curl_formadd(&formpost, &lastptr,
-		     CURLFORM_COPYNAME, "status",
-		     CURLFORM_COPYCONTENTS, session->tweet,
-		     CURLFORM_END);
+	switch (session->action) {
+	case ACTION_UPDATE:
+		snprintf(user_password, sizeof(user_password), "%s:%s",
+			 session->account, session->password);
+		snprintf(data, sizeof(data), "status=\"%s\"", session->tweet);
+		curl_formadd(&formpost, &lastptr,
+			     CURLFORM_COPYNAME, "status",
+			     CURLFORM_COPYCONTENTS, session->tweet,
+			     CURLFORM_END);
 
-	curl_formadd(&formpost, &lastptr,
-		     CURLFORM_COPYNAME, "source",
-		     CURLFORM_COPYCONTENTS, "bti",
-		     CURLFORM_END);
+		curl_formadd(&formpost, &lastptr,
+			     CURLFORM_COPYNAME, "source",
+			     CURLFORM_COPYCONTENTS, "bti",
+			     CURLFORM_END);
 
-	curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-
-	switch (session->host) {
-	case HOST_TWITTER:
-		curl_easy_setopt(curl, CURLOPT_URL, twitter_url);
-		/*
-		 * twitter doesn't like the "Expect: 100-continue" header
-		 * anymore, so turn it off.
-		 */
+		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 		slist = curl_slist_append(slist, "Expect:");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+		switch (session->host) {
+		case HOST_TWITTER:
+			curl_easy_setopt(curl, CURLOPT_URL, twitter_update_url);
+			break;
+		case HOST_IDENTICA:
+			curl_easy_setopt(curl, CURLOPT_URL, identica_update_url);
+			break;
+		}
+		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+
 		break;
-	case HOST_IDENTICA:
-		curl_easy_setopt(curl, CURLOPT_URL, identica_url);
+	case ACTION_FRIENDS:
+		snprintf(user_password, sizeof(user_password), "%s:%s",
+			 session->account, session->password);
+		switch (session->host) {
+		case HOST_TWITTER:
+			curl_easy_setopt(curl, CURLOPT_URL, twitter_friends_url);
+			break;
+		case HOST_IDENTICA:
+			curl_easy_setopt(curl, CURLOPT_URL, identica_friends_url);
+			break;
+		}
+		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+
+		break;
+	case ACTION_PUBLIC:
+		switch (session->host) {
+		case HOST_TWITTER:
+			curl_easy_setopt(curl, CURLOPT_URL, twitter_public_url);
+			break;
+		case HOST_IDENTICA:
+			curl_easy_setopt(curl, CURLOPT_URL, identica_public_url);
+			break;
+		}
+
 		break;
 	}
 
@@ -238,7 +350,6 @@ static int send_tweet(struct session *session)
 
 	if (debug)
 		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-	curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 	dbg("user_password = %s\n", user_password);
 	dbg("data = %s\n", data);
@@ -248,12 +359,13 @@ static int send_tweet(struct session *session)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
 	res = curl_easy_perform(curl);
 	if (res && !session->bash) {
-		fprintf(stderr, "error(%d) trying to send tweet\n", res);
+		fprintf(stderr, "error(%d) trying to perform operation\n", res);
 		return -EINVAL;
 	}
 
 	curl_easy_cleanup(curl);
-	curl_formfree(formpost);
+	if (session->action == ACTION_UPDATE)
+		curl_formfree(formpost);
 	bti_curl_buffer_free(curl_buf);
 	return 0;
 }
@@ -268,6 +380,7 @@ static void parse_configfile(struct session *session)
 	char *host = NULL;
 	char *proxy = NULL;
 	char *logfile = NULL;
+	char *action = NULL;
 	char *file;
 
 	/* config file is ~/.bti  */
@@ -324,6 +437,11 @@ static void parse_configfile(struct session *session)
 			c += 8;
 			if (c[0] != '\0')
 				logfile = strdup(c);
+		} else if (!strncasecmp(c, "action", 6) &&
+			   (c[6] == '=')) {
+			c += 7;
+			if (c[0] != '\0')
+				action = strdup(c);
 		}
 	} while (!feof(config_file));
 
@@ -345,6 +463,15 @@ static void parse_configfile(struct session *session)
 	}
 	if (logfile)
 		session->logfile = logfile;
+	if (action) {
+		if (strcasecmp(action, "update") == 0)
+			session->action = ACTION_UPDATE;
+		if (strcasecmp(action, "friends") == 0)
+			session->action = ACTION_FRIENDS;
+		if (strcasecmp(action, "public") == 0)
+			session->action = ACTION_PUBLIC;
+		free(action);
+	}
 
 	/* Free buffer and close file.  */
 	free(line);
@@ -381,12 +508,20 @@ static void log_session(struct session *session, int retval)
 		break;
 	}
 
-	if (retval)
-		fprintf(log_file, "%s: host=%s tweet failed\n",
+	if (session->action == ACTION_UPDATE) {
+		if (retval)
+			fprintf(log_file, "%s: host=%s tweet failed\n",
+				session->time, host);
+		else
+			fprintf(log_file, "%s: host=%s tweet=%s\n",
+				session->time, host, session->tweet);
+	} else if (session->action == ACTION_FRIENDS) {
+		fprintf(log_file, "%s: host=%s retrieving friends timeline\n",
 			session->time, host);
-	else
-		fprintf(log_file, "%s: host=%s tweet=%s\n",
-			session->time, host, session->tweet);
+	} else if (session->action == ACTION_PUBLIC) {
+		fprintf(log_file, "%s: host=%s retrieving public timeline\n",
+			session->time, host);
+	}
 
 	fclose(log_file);
 }
@@ -399,6 +534,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "password", 1, NULL, 'p' },
 		{ "host", 1, NULL, 'H' },
 		{ "proxy", 1, NULL, 'P' },
+		{ "action", 1, NULL, 'A' },
 		{ "logfile", 1, NULL, 'L' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
@@ -444,7 +580,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:h",
+		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:h",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -469,6 +605,15 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->proxy);
 			session->proxy = strdup(optarg);
 			dbg("proxy = %s\n", session->proxy);
+			break;
+		case 'A':
+			if (strcasecmp(optarg, "update") == 0)
+				session->action = ACTION_UPDATE;
+			if (strcasecmp(optarg, "friends") == 0)
+				session->action = ACTION_FRIENDS;
+			if (strcasecmp(optarg, "public") == 0)
+				session->action = ACTION_PUBLIC;
+			dbg("action = %d\n", session->action);
 			break;
 		case 'L':
 			if (session->logfile)
@@ -508,44 +653,45 @@ int main(int argc, char *argv[], char *envp[])
 		session->password = readline(NULL);
 	}
 
-	if (session->bash)
-		tweet = readline(NULL);
-	else
-		tweet = readline("tweet: ");
-	if (!tweet || strlen(tweet) == 0) {
-		dbg("no tweet?\n");
-		return -1;
+	if (session->action == ACTION_UPDATE) {
+		if (session->bash)
+			tweet = readline(NULL);
+		else
+			tweet = readline("tweet: ");
+		if (!tweet || strlen(tweet) == 0) {
+			dbg("no tweet?\n");
+			return -1;
+		}
+
+		session->tweet = zalloc(strlen(tweet) + 10);
+		if (session->bash)
+			sprintf(session->tweet, "$ %s", tweet);
+		else
+			sprintf(session->tweet, "%s", tweet);
+
+		free(tweet);
+		dbg("tweet = %s\n", session->tweet);
 	}
-
-	session->tweet = zalloc(strlen(tweet) + 10);
-
-	/* if --bash is specified, add the "PWD $ " to
-	 * the start of the tweet. */
-	if (session->bash)
-		sprintf(session->tweet, "$ %s", tweet);
-	else
-		sprintf(session->tweet, "%s", tweet);
-	free(tweet);
 
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
-	dbg("tweet = %s\n", session->tweet);
 	dbg("host = %d\n", session->host);
+	dbg("action = %d\n", session->action);
 
 	/* fork ourself so that the main shell can get on
 	 * with it's life as we try to connect and handle everything
 	 */
 	if (session->bash) {
 		child = fork();
-			if (child) {
+		if (child) {
 			dbg("child is %d\n", child);
 			exit(0);
 		}
 	}
 
-	retval = send_tweet(session);
+	retval = send_request(session);
 	if (retval && !session->bash)
-		fprintf(stderr, "tweet failed\n");
+		fprintf(stderr, "operation failed\n");
 
 	log_session(session, retval);
 exit:
