@@ -175,31 +175,34 @@ static CURL *curl_init(void)
 
 void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 {
-	xmlChar *text;
-	xmlChar *user;
+	xmlChar *text = NULL;
+	xmlChar *user = NULL;
 	xmlNodePtr userinfo;
+
 	current = current->xmlChildrenNode;
 	while (current != NULL) {
 		if (current->type == XML_ELEMENT_NODE) {
-			if (!xmlStrcmp(current->name, (const xmlChar *)"text")) {
+			if (!xmlStrcmp(current->name, (const xmlChar *)"text"))
 				text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
-				printf("%s", text);
-				xmlFree(text);
-			}
 			if (!xmlStrcmp(current->name, (const xmlChar *)"user")) {
 				userinfo = current->xmlChildrenNode;
 				while (userinfo != NULL) {
 					if ((!xmlStrcmp(userinfo->name, (const xmlChar *)"screen_name"))) {
+						if (user)
+							xmlFree(user);
 						user = xmlNodeListGetString(doc, userinfo->xmlChildrenNode, 1);
-						printf(" [%s]\n", user);
-						xmlFree(user);
 					}
-
 					userinfo = userinfo->next;
 				}
 			}
+			if (user && text) {
+				printf("[%s] %s\n", user, text);
+				xmlFree(user);
+				xmlFree(text);
+				user = NULL;
+				text = NULL;
+			}
 		}
-
 		current = current->next;
 	}
 
