@@ -51,9 +51,10 @@ enum host {
 };
 
 enum action {
-     ACTION_UPDATE = 0,
-     ACTION_PUBLIC = 1,
-     ACTION_FRIENDS = 2,
+	ACTION_UPDATE = 0,
+	ACTION_PUBLIC = 1,
+	ACTION_USER = 2,
+	ACTION_FRIENDS = 4
 };
 
 struct session {
@@ -64,6 +65,7 @@ struct session {
 	char *time;
 	char *homedir;
 	char *logfile;
+	char *user;
 	int bash;
 	enum host host;
 	enum action action;
@@ -89,6 +91,7 @@ static void display_help(void)
 	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --action action\n");
+	fprintf(stdout, "  --user screenname\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");
@@ -119,6 +122,7 @@ static void session_free(struct session *session)
 	free(session->proxy);
 	free(session->time);
 	free(session->homedir);
+	free(session->user);
 	free(session);
 }
 
@@ -153,10 +157,12 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 static const char *twitter_update_url  = "https://twitter.com/statuses/update.xml";
 static const char *twitter_public_url  = "http://twitter.com/statuses/public_timeline.xml";
 static const char *twitter_friends_url = "https://twitter.com/statuses/friends_timeline.xml";
+static const char *twitter_user_url    = "http://twitter.com/statuses/user_timeline/";
 
 static const char *identica_update_url  = "http://identi.ca/api/statuses/update.xml";
 static const char *identica_public_url  = "http://identi.ca/api/statuses/public_timeline.xml";
 static const char *identica_friends_url = "http://identi.ca/api/statuses/friends_timeline.xml";
+static const char *identica_user_url    = "http://identi.ca/api/statuses/user_timeline/";
 
 static CURL *curl_init(void)
 {
@@ -261,8 +267,7 @@ size_t curl_callback(void *buffer, size_t size, size_t nmemb, void *userp)
 	curl_buf->data = temp;
 	memcpy(&curl_buf->data[curl_buf->length], (char *)buffer, buffer_size);
 	curl_buf->length += buffer_size;
-	if ((curl_buf->action == ACTION_FRIENDS) ||
-		(curl_buf->action == ACTION_PUBLIC))
+	if (curl_buf->action)
 		parse_timeline(curl_buf->data);
 
 	dbg("%s\n", curl_buf->data);
@@ -274,6 +279,8 @@ static int send_request(struct session *session)
 {
 	char user_password[500];
 	char data[500];
+	/* is there usernames longer than 22 chars? */
+	char user_url[70];
 	struct bti_curl_buffer *curl_buf;
 	CURL *curl = NULL;
 	CURLcode res;
@@ -335,6 +342,19 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 		break;
+	case ACTION_USER:
+		switch (session->host) {
+		case HOST_TWITTER:
+			sprintf(user_url, "%s%s.xml", twitter_user_url, session->user);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
+			break;
+		case HOST_IDENTICA:
+			sprintf(user_url, "%s%s.xml", identica_user_url, session->user);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
+			break;
+		}
+
+		break;
 	case ACTION_PUBLIC:
 		switch (session->host) {
 		case HOST_TWITTER:
@@ -384,6 +404,7 @@ static void parse_configfile(struct session *session)
 	char *proxy = NULL;
 	char *logfile = NULL;
 	char *action = NULL;
+	char *user = NULL;
 	char *file;
 
 	/* config file is ~/.bti  */
@@ -445,6 +466,11 @@ static void parse_configfile(struct session *session)
 			c += 7;
 			if (c[0] != '\0')
 				action = strdup(c);
+		} else if (!strncasecmp(c, "user", 4) &&
+				(c[4] == '=')) {
+			c += 5;
+			if (c[0] != '\0')
+				user = strdup(c);
 		}
 	} while (!feof(config_file));
 
@@ -471,9 +497,14 @@ static void parse_configfile(struct session *session)
 			session->action = ACTION_UPDATE;
 		if (strcasecmp(action, "friends") == 0)
 			session->action = ACTION_FRIENDS;
+		if (strcasecmp(action, "user") == 0)
+			session->action = ACTION_USER;
 		if (strcasecmp(action, "public") == 0)
 			session->action = ACTION_PUBLIC;
 		free(action);
+	}
+	if (user) {
+		session->user = user;
 	}
 
 	/* Free buffer and close file.  */
@@ -538,6 +569,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "host", 1, NULL, 'H' },
 		{ "proxy", 1, NULL, 'P' },
 		{ "action", 1, NULL, 'A' },
+		{ "user", 1, NULL, 'u' },
 		{ "logfile", 1, NULL, 'L' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
@@ -583,7 +615,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:h",
+		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:u:h",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -614,9 +646,17 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_UPDATE;
 			if (strcasecmp(optarg, "friends") == 0)
 				session->action = ACTION_FRIENDS;
+			if (strcasecmp(optarg, "user") == 0)
+				session->action = ACTION_USER;
 			if (strcasecmp(optarg, "public") == 0)
 				session->action = ACTION_PUBLIC;
 			dbg("action = %d\n", session->action);
+			break;
+		case 'u':
+			if (session->user)
+				free(session->user);
+			session->user = strdup(optarg);
+			dbg("user = %s\n", session->user);
 			break;
 		case 'L':
 			if (session->logfile)
@@ -675,6 +715,9 @@ int main(int argc, char *argv[], char *envp[])
 		free(tweet);
 		dbg("tweet = %s\n", session->tweet);
 	}
+
+	if (!session->user)
+		session->user = session->account;
 
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
