@@ -52,9 +52,10 @@ enum host {
 
 enum action {
 	ACTION_UPDATE = 0,
-	ACTION_PUBLIC = 1,
+	ACTION_FRIENDS = 1,
 	ACTION_USER = 2,
-	ACTION_FRIENDS = 4
+	ACTION_REPLIES = 4,
+	ACTION_PUBLIC = 8
 };
 
 struct session {
@@ -154,15 +155,17 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
+static const char *twitter_user_url    = "http://twitter.com/statuses/user_timeline/";
 static const char *twitter_update_url  = "https://twitter.com/statuses/update.xml";
 static const char *twitter_public_url  = "http://twitter.com/statuses/public_timeline.xml";
 static const char *twitter_friends_url = "https://twitter.com/statuses/friends_timeline.xml";
-static const char *twitter_user_url    = "http://twitter.com/statuses/user_timeline/";
+static const char *twitter_replies_url = "http://twitter.com/statuses/replies.xml";
 
+static const char *identica_user_url    = "http://identi.ca/api/statuses/user_timeline/";
 static const char *identica_update_url  = "http://identi.ca/api/statuses/update.xml";
 static const char *identica_public_url  = "http://identi.ca/api/statuses/public_timeline.xml";
 static const char *identica_friends_url = "http://identi.ca/api/statuses/friends_timeline.xml";
-static const char *identica_user_url    = "http://identi.ca/api/statuses/user_timeline/";
+static const char *identica_replies_url = "http://identi.ca/api/statuses/replies.xml";
 
 static CURL *curl_init(void)
 {
@@ -355,6 +358,20 @@ static int send_request(struct session *session)
 		}
 
 		break;
+	case ACTION_REPLIES:
+		snprintf(user_password, sizeof(user_password), "%s:%s",
+			 session->account, session->password);
+		switch (session->host) {
+		case HOST_TWITTER:
+			curl_easy_setopt(curl, CURLOPT_URL, twitter_replies_url);
+			break;
+		case HOST_IDENTICA:
+			curl_easy_setopt(curl, CURLOPT_URL, identica_replies_url);
+			break;
+		}
+		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+
+		break;
 	case ACTION_PUBLIC:
 		switch (session->host) {
 		case HOST_TWITTER:
@@ -499,6 +516,8 @@ static void parse_configfile(struct session *session)
 			session->action = ACTION_FRIENDS;
 		if (strcasecmp(action, "user") == 0)
 			session->action = ACTION_USER;
+		if (strcasecmp(action, "replies") == 0)
+			session->action = ACTION_REPLIES;
 		if (strcasecmp(action, "public") == 0)
 			session->action = ACTION_PUBLIC;
 		free(action);
@@ -648,6 +667,8 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_FRIENDS;
 			if (strcasecmp(optarg, "user") == 0)
 				session->action = ACTION_USER;
+			if (strcasecmp(optarg, "replies") == 0)
+				session->action = ACTION_REPLIES;
 			if (strcasecmp(optarg, "public") == 0)
 				session->action = ACTION_PUBLIC;
 			dbg("action = %d\n", session->action);
