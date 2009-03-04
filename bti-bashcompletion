@@ -7,7 +7,7 @@ _bti()
 	if [[ "${cur}" == -* ]] ; then
 		COMPREPLY=( $(compgen -W "-a -A -p -P -H -b -d -v -h
 			--account --action --password --proxy --host --bash \
-			--debug --version --help" -- ${cur}) )
+			--user --debug --version --help" -- ${cur}) )
 	fi
 
 	if [[ "${prev}" == "--host" ]] ; then
@@ -15,7 +15,7 @@ _bti()
 	fi
 
 	if [[ "${prev}" == "--action" ]] ; then
-		COMPREPLY=( $(compgen -W "friends public update" -- ${cur} ) )
+		COMPREPLY=( $(compgen -W "friends public update user replies" -- ${cur} ) )
 	fi
 
 	return 0
