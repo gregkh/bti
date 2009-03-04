@@ -561,19 +561,31 @@ static void log_session(struct session *session, int retval)
 		break;
 	}
 
-	if (session->action == ACTION_UPDATE) {
+	switch (session->action) {
+	case ACTION_UPDATE:
 		if (retval)
 			fprintf(log_file, "%s: host=%s tweet failed\n",
 				session->time, host);
 		else
 			fprintf(log_file, "%s: host=%s tweet=%s\n",
 				session->time, host, session->tweet);
-	} else if (session->action == ACTION_FRIENDS) {
+		break;
+	case ACTION_FRIENDS:
 		fprintf(log_file, "%s: host=%s retrieving friends timeline\n",
 			session->time, host);
-	} else if (session->action == ACTION_PUBLIC) {
+		break;
+	case ACTION_USER:
+		fprintf(log_file, "%s: host=%s retrieving %s's timeline\n",
+			session->time, host, session->user);
+		break;
+	case ACTION_REPLIES:
+		fprintf(log_file, "%s: host=%s retrieving replies\n",
+			session->time, host);
+		break;
+	case ACTION_PUBLIC:
 		fprintf(log_file, "%s: host=%s retrieving public timeline\n",
 			session->time, host);
+		break;
 	}
 
 	fclose(log_file);
