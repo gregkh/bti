@@ -55,7 +55,8 @@ enum action {
 	ACTION_FRIENDS = 1,
 	ACTION_USER = 2,
 	ACTION_REPLIES = 4,
-	ACTION_PUBLIC = 8
+	ACTION_PUBLIC = 8,
+	ACTION_UNKNOWN = 16
 };
 
 struct session {
@@ -384,6 +385,8 @@ static int send_request(struct session *session)
 		}
 
 		break;
+	default:
+		break;
 	}
 
 	if (session->proxy)
@@ -513,14 +516,16 @@ static void parse_configfile(struct session *session)
 	if (action) {
 		if (strcasecmp(action, "update") == 0)
 			session->action = ACTION_UPDATE;
-		if (strcasecmp(action, "friends") == 0)
+		else if (strcasecmp(action, "friends") == 0)
 			session->action = ACTION_FRIENDS;
-		if (strcasecmp(action, "user") == 0)
+		else if (strcasecmp(action, "user") == 0)
 			session->action = ACTION_USER;
-		if (strcasecmp(action, "replies") == 0)
+		else if (strcasecmp(action, "replies") == 0)
 			session->action = ACTION_REPLIES;
-		if (strcasecmp(action, "public") == 0)
+		else if (strcasecmp(action, "public") == 0)
 			session->action = ACTION_PUBLIC;
+		else
+			session->action = ACTION_UNKNOWN;
 		free(action);
 	}
 	if (user) {
@@ -586,6 +591,8 @@ static void log_session(struct session *session, int retval)
 	case ACTION_PUBLIC:
 		fprintf(log_file, "%s: host=%s retrieving public timeline\n",
 			session->time, host);
+		break;
+	default:
 		break;
 	}
 
@@ -676,14 +683,16 @@ int main(int argc, char *argv[], char *envp[])
 		case 'A':
 			if (strcasecmp(optarg, "update") == 0)
 				session->action = ACTION_UPDATE;
-			if (strcasecmp(optarg, "friends") == 0)
+			else if (strcasecmp(optarg, "friends") == 0)
 				session->action = ACTION_FRIENDS;
-			if (strcasecmp(optarg, "user") == 0)
+			else if (strcasecmp(optarg, "user") == 0)
 				session->action = ACTION_USER;
-			if (strcasecmp(optarg, "replies") == 0)
+			else if (strcasecmp(optarg, "replies") == 0)
 				session->action = ACTION_REPLIES;
-			if (strcasecmp(optarg, "public") == 0)
+			else if (strcasecmp(optarg, "public") == 0)
 				session->action = ACTION_PUBLIC;
+			else
+				session->action = ACTION_UNKNOWN;
 			dbg("action = %d\n", session->action);
 			break;
 		case 'u':
@@ -718,6 +727,12 @@ int main(int argc, char *argv[], char *envp[])
 			display_help();
 			goto exit;
 		}
+	}
+
+	if (session->action == ACTION_UNKNOWN) {
+		fprintf(stderr, "Unknown action, valid actions are:\n");
+		fprintf(stderr, "'update', 'friends', 'public', 'replies' or 'user'.\n");
+		goto exit;
 	}
 
 	if (!session->account) {
