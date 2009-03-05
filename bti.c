@@ -80,19 +80,20 @@ struct bti_curl_buffer {
 
 static void display_help(void)
 {
-	fprintf(stdout, "bti - send tweet to twitter\n");
+	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n");
 	fprintf(stdout, "Version: " BTI_VERSION "\n");
 	fprintf(stdout, "Usage:\n");
 	fprintf(stdout, "  bti [options]\n");
 	fprintf(stdout, "options are:\n");
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
+	fprintf(stdout, "  --action action\n");
+	fprintf(stdout, "    ('update', 'friends', 'public', 'replies' or 'user')\n");
+	fprintf(stdout, "  --user screenname\n");
 	fprintf(stdout, "  --proxy PROXY:PORT\n");
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --bash\n");
-	fprintf(stdout, "  --action action\n");
-	fprintf(stdout, "  --user screenname\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");

@@ -28,6 +28,8 @@
           <command>bti</command>
           <arg><option>--account account</option></arg>
           <arg><option>--password password</option></arg>
+	   <arg><option>--action action</option></arg>
+	   <arg><option>--user screenname</option></arg>
           <arg><option>--host HOST_NAME</option></arg>
           <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--logfile LOGFILE</option></arg>
@@ -58,6 +60,27 @@
             <listitem>
               <para>
                 Specify the password of your twitter.com or identi.ca account.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--action action</option></term>
+            <listitem>
+              <para>
+		Specify the action which you want to perform.  Valid options
+		are "update" to send a message, "friends" to see your friends
+		timeline, "public" to track public timeline, "replies" to see
+		replies to your messages and "user" to see a specific user's
+		timeline.
+              </para>
+            </listitem>
+          </varlistentry>
+	  <varlistentry>
+            <term><option>--user screenname</option></term>
+            <listitem>
+              <para>
+		Specify the user you want to see his/her messages while the
+		action is "user".
               </para>
             </listitem>
           </varlistentry>
@@ -190,6 +213,27 @@
                  to send this message with.
                </para>
              </listitem>
+           </varlistentry>
+	   <varlistentry>
+            <term><option>--action action</option></term>
+            <listitem>
+              <para>
+		Specify the action which you want to perform.  Valid options
+		are "update" to send a message, "friends" to see your friends
+		timeline, "public" to track public timeline, "replies" to see
+		replies to your messages and "user" to see a specific user's
+		timeline.
+              </para>
+            </listitem>
+           </varlistentry>
+	   <varlistentry>
+            <term><option>--user screenname</option></term>
+            <listitem>
+              <para>
+		Specify the user you want to see his/her messages while the
+		action is "user".
+              </para>
+            </listitem>
            </varlistentry>
            <varlistentry>
              <term><option>host</option></term>
