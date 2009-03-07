@@ -766,7 +766,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (!session->user)
-		session->user = session->account;
+		session->user = strdup(session->account);
 
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
