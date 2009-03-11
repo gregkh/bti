@@ -599,6 +599,22 @@ static void log_session(struct session *session, int retval)
 	fclose(log_file);
 }
 
+static char *get_string_from_stdin(void)
+{
+	char *temp;
+	char *string;
+
+	string = zalloc(1000);
+	if (!string)
+		return NULL;
+
+	if (!fgets(string, 999, stdin))
+		return NULL;
+	temp = strchr(string, '\n');
+	*temp = '\0';
+	return string;
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
 	static const struct option options[] = {
@@ -747,7 +763,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->action == ACTION_UPDATE) {
 		if (session->bash)
-			tweet = readline(NULL);
+			tweet = get_string_from_stdin();
 		else
 			tweet = readline("tweet: ");
 		if (!tweet || strlen(tweet) == 0) {
