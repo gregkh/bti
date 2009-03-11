@@ -1,3 +1,9 @@
+bti 015
+=============
+--action support, bti now can output data from the twitter
+and identica servers!  Thanks to Amir Saied for the work he put into this.
+minor bugfixes for bash mode, bah, readline is a pain at times.
+
 bti 014
 =============
 Fix reported readline bugs

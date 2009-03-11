@@ -1,3 +1,23 @@
+Summary of changes from v014 to v015
+============================================
+
+Amir Mohammad Saied (11):
+      Actions support for bti
+      libxml2 libs and cflags
+      action and values for bash completion
+      Added action option in example bti config file
+      User action
+      Replies action
+      Updating bashcompletion and example config file for new actions
+      logging more
+      Updating documents
+      Handling unknown actions
+      Fixing an assignment issue
+
+Greg Kroah-Hartman (2):
+      Change the formatting of --action output
+      fix readline mess when in --bash mode
+
 Summary of changes from v013 to v014
 ============================================
 
