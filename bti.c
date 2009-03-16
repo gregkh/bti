@@ -69,6 +69,7 @@ struct session {
 	char *logfile;
 	char *user;
 	int bash;
+	int page;
 	enum host host;
 	enum action action;
 };
@@ -338,10 +339,12 @@ static int send_request(struct session *session)
 			 session->account, session->password);
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_friends_url);
+			sprintf(user_url, "%s?page=%d", twitter_friends_url, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_friends_url);
+			sprintf(user_url, "%s?page=%d", identica_friends_url, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		}
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -350,11 +353,11 @@ static int send_request(struct session *session)
 	case ACTION_USER:
 		switch (session->host) {
 		case HOST_TWITTER:
-			sprintf(user_url, "%s%s.xml", twitter_user_url, session->user);
+			sprintf(user_url, "%s%s.xml?page=%d", twitter_user_url, session->user, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		case HOST_IDENTICA:
-			sprintf(user_url, "%s%s.xml", identica_user_url, session->user);
+			sprintf(user_url, "%s%s.xml?page=%d", identica_user_url, session->user, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		}
@@ -365,10 +368,12 @@ static int send_request(struct session *session)
 			 session->account, session->password);
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_replies_url);
+			sprintf(user_url, "%s?page=%d", twitter_replies_url, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_replies_url);
+			sprintf(user_url, "%s?page=%d", identica_replies_url, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		}
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -377,10 +382,12 @@ static int send_request(struct session *session)
 	case ACTION_PUBLIC:
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_public_url);
+			sprintf(user_url, "%s?page=%d", twitter_public_url, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_public_url);
+			sprintf(user_url, "%s?page=%d", identica_public_url, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		}
 
@@ -628,6 +635,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "logfile", 1, NULL, 'L' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
+		{ "page", 1, NULL, 'g' },
 		{ "version", 0, NULL, 'v' },
 		{ }
 	};
@@ -638,6 +646,7 @@ int main(int argc, char *argv[], char *envp[])
 	int option;
 	char *http_proxy;
 	time_t t;
+	int page_nr;
 
 	debug = 0;
 	rl_bind_key('\t', rl_insert);
@@ -670,7 +679,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:u:h",
+		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:u:hg:",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -683,6 +692,11 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->account);
 			session->account = strdup(optarg);
 			dbg("account = %s\n", session->account);
+			break;
+		case 'g':
+			page_nr = atoi(optarg);
+			dbg("page = %d\n", page_nr);
+			session->page = page_nr;
 			break;
 		case 'p':
 			if (session->password)
@@ -784,6 +798,8 @@ int main(int argc, char *argv[], char *envp[])
 	if (!session->user)
 		session->user = strdup(session->account);
 
+	if (session->page == 0)
+		session->page = 1;
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
 	dbg("host = %d\n", session->host);
