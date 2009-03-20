@@ -43,6 +43,12 @@ WARNINGS	= -Wstrict-prototypes -Wsign-compare -Wshadow \
 CFLAGS		+= $(WARNINGS)
 LDFLAGS		+= -Wl,-warn-common,--as-needed
 
+DEST		?=
+PREFIX		?= /usr/local
+
+INSTALL		= install
+INSTALL_BIN	= ${INSTALL} -m 0755 -t ${DEST}${PREFIX}/bin
+INSTALL_MAN	= ${INSTALL} -m 0644 -t ${DEST}${PREFIX}/share/man
 
 ifeq ($(strip $(V)),)
 	E = @echo
@@ -111,3 +117,8 @@ release:
 	git archive --format=tar --prefix=bti-$(VERSION)/ HEAD | gzip -9v > bti-$(VERSION).tar.gz
 .PHONY: release
 
+install: all
+	$(E) "  INSTALL  " ${DEST}${PREFIX}
+	${Q} ${INSTALL_BIN} ${PROGRAM}
+	${Q} ${INSTALL_MAN} ${MAN_PAGES}
+.PHONY: install
