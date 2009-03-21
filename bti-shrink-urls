@@ -1,0 +1,96 @@
+#!/bin/bash
+# Copyright (C) 2009 Bart Trojanowski <bart@jukie.net>
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+needs_escape=true
+
+while test -n "$1" ; do
+        word="$1"
+        shift
+        case "$word" in
+            --escaped)
+                needs_escape=
+                ;;
+            --help|-h)
+                cat <<END
+bti-shrink-urls - convert URLs to a shorter form using a web service
+
+    $0 [--escaped] [<url>]
+
+Currently only http://2tu.us/ is supported.
+END
+                exit 0
+                ;;
+            *)
+                URL=$word
+                ;;
+        esac
+done
+
+function convert_url() {
+        local url=$1
+        test -n "$url" || return 1
+        test "${url%:*}" = 'http' || return 1
+
+        local urllen="${#url}"
+
+        # http://en.wikipedia.org/wiki/Percent-encoding
+        if test -n "$needs_escape" ; then
+                url=$(echo "$url" | sed -e 's/\%/%25/g' \
+                                        -e 's/!/%21/g' \
+                                        -e 's/*/%2A/g' \
+                                        -e "s/'/%27/g" \
+                                        -e 's/(/%28/g' \
+                                        -e 's/)/%29/g' \
+                                        -e 's/;/%3B/g' \
+                                        -e 's/:/%3A/g' \
+                                        -e 's/@/%40/g' \
+                                        -e 's/&/%26/g' \
+                                        -e 's/=/%3D/g' \
+                                        -e 's/+/%2B/g' \
+                                        -e 's/\$/%24/g' \
+                                        -e 's/,/%2C/g' \
+                                        -e 's,/,%2F,g' \
+                                        -e 's/?/%3F/g' \
+                                        -e 's/#/%23/g' \
+                                        -e 's/\[/%5B/g' \
+                                        -e 's/]/%5D/g')
+        fi
+
+        # http://2tu.us/
+        local submit="http://2tu.us/?save=y&url=$url"
+
+        local res=$(wget -q -O - "$submit" | awk -F"'" '/Your tight URL is:/ { print $2 }')
+        if test "${res%:*}" = 'http' -a "${#res}" -lt "$urllen" ; then
+                echo $res
+                return 0
+        fi
+        return 1
+}
+
+function die() {
+        echo >&2 $@
+        exit 1
+}
+
+if test -n "$URL" ; then
+        convert_url "$URL" || die "Failed to shrink '$URL'"
+        exit $?
+fi
+
+test -t 0 && echo >&2 "Type in some urls and I'll try to shrink them for you..."
+while read line ; do
+        convert_url "$line" || echo $line
+done

@@ -19,6 +19,7 @@
 VERSION = 015
 
 PROGRAM = bti
+SCRIPTS = bti-shrink-urls
 
 CORE_OBJS = \
 	bti.o
@@ -35,7 +36,8 @@ LD = $(CROSS_COMPILE)gcc
 AR = $(CROSS_COMPILE)ar
 
 XML2_CFLAGS = `xml2-config --cflags`
-override CFLAGS	+= -g -Wall -pipe -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -O2 $(XML2_CFLAGS)
+PCRE_CFLAGS = `pcre-config --cflags`
+override CFLAGS	+= -g -Wall -pipe -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -O2 $(XML2_CFLAGS) $(PCRE_CFLAGS)
 
 WARNINGS	= -Wstrict-prototypes -Wsign-compare -Wshadow \
 		  -Wchar-subscripts -Wmissing-declarations -Wnested-externs \
@@ -68,14 +70,14 @@ export E Q
 #LIB_OBJS = -lcurl -lnsl -lssl -lcrypto
 LIB_OBJS = -lcurl -lnsl -lreadline
 LIB_XML2 = `xml2-config --libs`
+LIB_PCRE = `pcre-config --libs`
 
 all:	$(PROGRAM) $(MAN_PAGES)
 
 # "Static Pattern Rule" to build all programs
 bti: %: $(HEADERS) $(GEN_HEADERS) $(CORE_OBJS)
 	$(E) "  LD      " $@
-	$(Q) $(LD) $(LDFLAGS) $(CORE_OBJS) -o $@ $(LIB_OBJS) $(LIB_XML2)
-
+	$(Q) $(LD) $(LDFLAGS) $(CORE_OBJS) -o $@ $(LIB_OBJS) $(LIB_XML2) $(LIB_PCRE)
 
 # build the objects
 %.o: %.c $(HEADERS) $(GEN_HEADERS)
@@ -119,6 +121,6 @@ release:
 
 install: all
 	$(E) "  INSTALL  " ${DEST}${PREFIX}
-	${Q} ${INSTALL_BIN} ${PROGRAM}
+	${Q} ${INSTALL_BIN} ${PROGRAM} ${SCRIPTS}
 	${Q} ${INSTALL_MAN} ${MAN_PAGES}
 .PHONY: install
