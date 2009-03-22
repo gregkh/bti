@@ -74,6 +74,7 @@ struct session {
 	char *user;
 	int bash;
 	int shrink_urls;
+	int dry_run;
 	enum host host;
 	enum action action;
 };
@@ -407,10 +408,12 @@ static int send_request(struct session *session)
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
-	res = curl_easy_perform(curl);
-	if (res && !session->bash) {
-		fprintf(stderr, "error(%d) trying to perform operation\n", res);
-		return -EINVAL;
+	if (!session->dry_run) {
+		res = curl_easy_perform(curl);
+		if (res && !session->bash) {
+			fprintf(stderr, "error(%d) trying to perform operation\n", res);
+			return -EINVAL;
+		}
 	}
 
 	curl_easy_cleanup(curl);
@@ -896,6 +899,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "shrink-urls", 0, NULL, 's' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
+		{ "dry-run", 0, NULL, 'n' },
 		{ "version", 0, NULL, 'v' },
 		{ }
 	};
@@ -1007,6 +1011,9 @@ int main(int argc, char *argv[], char *envp[])
 		case 'h':
 			display_help();
 			goto exit;
+		case 'n':
+			session->dry_run = 1;
+			break;
 		case 'v':
 			display_version();
 			goto exit;
