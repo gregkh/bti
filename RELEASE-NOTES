@@ -1,3 +1,9 @@
+bti 016
+=============
+--dry-run option thanks to Bart Trojanowski
+url shortner script and option thanks to Bart Trojanowski
+make install target thanks to Bart Trojanowski
+
 bti 015
 =============
 --action support, bti now can output data from the twitter

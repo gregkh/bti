@@ -16,7 +16,7 @@
 #
 #
 
-VERSION = 015
+VERSION = 016
 
 PROGRAM = bti
 SCRIPTS = bti-shrink-urls

@@ -1,3 +1,20 @@
+Summary of changes from v015 to v016
+============================================
+
+Bart Trojanowski (6):
+      add make install target
+      add bti --shrink-urls
+      add bti --dry-run option
+      bti.xml and bti.example updates
+      fix an array overrun in shrink_urls()
+      bti-shrink-urls - properly handle urls with :
+
+Greg Kroah-Hartman (3):
+      fix up some compiler warnings due to new patches
+      add new options to bash completion script
+      update bti.1 with new info from xml file
+
+
 Summary of changes from v014 to v015
 ============================================
 
