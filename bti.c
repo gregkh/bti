@@ -702,7 +702,7 @@ static int find_urls(const char *tweet, int **pranges)
  * execution it can then write to element 0 (stdin of exe), and read from
  * element 1 (stdout) and 2 (stderr).
  */
-static int popenRW(int *rwepipe, const char *exe, const char *const argv[])
+static int popenRWE(int *rwepipe, const char *exe, const char *const argv[])
 {
 	int in[2];
 	int out[2];
@@ -762,7 +762,7 @@ error_in:
 	return -1;
 }
 
-static int pcloseRW(int pid, int *rwepipe)
+static int pcloseRWE(int pid, int *rwepipe)
 {
 	int rc, status;
 	close(rwepipe[0]);
@@ -819,12 +819,12 @@ static char *shrink_urls(char *text)
 		NULL
 	};
 	int shrink_pid;
-	int shrink_pipe[2];
+	int shrink_pipe[3];
 	int inlen = strlen(text);
 
 	dbg("before len=%u\n", inlen);
 
-	shrink_pid = popenRW(shrink_pipe, shrink_args[0], shrink_args);
+	shrink_pid = popenRWE(shrink_pipe, shrink_args[0], shrink_args);
 	if (shrink_pid < 0)
 		return text;
 
@@ -878,7 +878,7 @@ static char *shrink_urls(char *text)
 
 	free(ranges);
 
-	(void)pcloseRW(shrink_pid, shrink_pipe);
+	(void)pcloseRWE(shrink_pid, shrink_pipe);
 
 	text[outofs] = 0;
 	dbg("after len=%u\n", outofs);
