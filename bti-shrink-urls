@@ -42,7 +42,7 @@ done
 function convert_url() {
         local url=$1
         test -n "$url" || return 1
-        test "${url%:*}" = 'http' || return 1
+        test "${url%%:*}" = 'http' || return 1
 
         local urllen="${#url}"
 
@@ -73,7 +73,7 @@ function convert_url() {
         local submit="http://2tu.us/?save=y&url=$url"
 
         local res=$(wget -q -O - "$submit" | awk -F"'" '/Your tight URL is:/ { print $2 }')
-        if test "${res%:*}" = 'http' -a "${#res}" -lt "$urllen" ; then
+        if test "${res%%:*}" = 'http' -a "${#res}" -lt "$urllen" ; then
                 echo $res
                 return 0
         fi
