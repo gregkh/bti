@@ -5,9 +5,10 @@ _bti()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 	if [[ "${cur}" == -* ]] ; then
-		COMPREPLY=( $(compgen -W "-a -A -p -P -H -b -d -v -h
+		COMPREPLY=( $(compgen -W "-a -A -p -P -H -b -d -v -s -n -h
 			--account --action --password --proxy --host --bash \
-			--user --debug --version --help" -- ${cur}) )
+			--user --debug --dry-run --shrink-urls --version \
+			--help" -- ${cur}) )
 	fi
 
 	if [[ "${prev}" == "--host" ]] ; then
