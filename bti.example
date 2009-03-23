@@ -10,3 +10,4 @@ logfile=.bti.log
 #action=update
 #user=gregkh
 #proxy=http://localhost:8080
+#shrink-urls=yes

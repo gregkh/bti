@@ -34,7 +34,9 @@
           <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--logfile LOGFILE</option></arg>
           <arg><option>--bash</option></arg>
+          <arg><option>--shrink-urls</option></arg>
           <arg><option>--debug</option></arg>
+          <arg><option>--dry-run</option></arg>
           <arg><option>--version</option></arg>
           <arg><option>--help</option></arg>
         </cmdsynopsis>
@@ -121,9 +123,32 @@
             </listitem>
           </varlistentry>
           <varlistentry>
+            <term><option>--shrink-urls</option></term>
+            <listitem>
+              <para>
+                Scans the tweet text for valid URL patterns and passes each
+                through the supplied bti-shrink-urls script.  The script will
+                pass the URL to a web service that shrinks the URLs, making it
+                more suitable for micro-blogging.
+              </para>
+              <para>
+                Currently, only http://2tu.us/ is used as a URL shrinking service.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
             <term><option>--debug</option></term>
             <listitem>
               <para>Print a whole bunch of debugging messages to stdout.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--dry-run</option></term>
+            <listitem>
+              <para>
+                Performs all steps that would normally be done for a given
+                action, but will not connect to the service to post or retrieve data.
+              </para>
             </listitem>
           </varlistentry>
           <varlistentry>
@@ -261,6 +286,16 @@
 		 This file is relative to the user's home directory.  If this
 		 file is not specified here or on the command line, no logging
 		 will be written to the disk.
+               </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term><option>shrink-urls</option></term>
+             <listitem>
+               <para>
+                 Setting this variable to 'true' or 'yes' will enable the URL
+                 shrinking feature.  This is equivalent to using the
+                 --shrink-urls option.
                </para>
              </listitem>
            </varlistentry>
