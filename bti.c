@@ -736,11 +736,11 @@ static int popenRWE(int *rwepipe, const char *exe, const char *const argv[])
 		close(out[0]);
 		close(err[0]);
 		close(0);
-		dup(in[0]);
+		rc = dup(in[0]);
 		close(1);
-		dup(out[1]);
+		rc = dup(out[1]);
 		close(2);
-		dup(err[1]);
+		rc = dup(err[1]);
 
 		execvp(exe, (char**)argv);
 		exit(1);
