@@ -1,3 +1,20 @@
+Summary of changes from v016 to v017
+============================================
+
+Bart Trojanowski (1):
+      fix a bug with shrink_urls() when ran on text that contains no urls
+
+Dave Barry (1):
+      Add support for api page numbers in read mode
+
+Greg Kroah-Hartman (5):
+      Lots of checkpatch cleanups to the code
+      Merge branch 'master' of git://github.com/psykoyiko/bti
+      document the --page option
+      add --page to bti-bashcompletion
+      update bti.1
+
+
 Summary of changes from v015 to v016
 ============================================
 
