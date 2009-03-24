@@ -95,7 +95,8 @@ static void display_help(void)
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
 	fprintf(stdout, "  --action action\n");
-	fprintf(stdout, "    ('update', 'friends', 'public', 'replies' or 'user')\n");
+	fprintf(stdout, "    ('update', 'friends', 'public', 'replies' "
+		"or 'user')\n");
 	fprintf(stdout, "  --user screenname\n");
 	fprintf(stdout, "  --proxy PROXY:PORT\n");
 	fprintf(stdout, "  --host HOST\n");
@@ -231,8 +232,9 @@ static void parse_timeline(char *document)
 {
 	xmlDocPtr doc;
 	xmlNodePtr current;
-	doc = xmlReadMemory(document, strlen(document), "timeline.xml", NULL, XML_PARSE_NOERROR);
 
+	doc = xmlReadMemory(document, strlen(document), "timeline.xml",
+			    NULL, XML_PARSE_NOERROR);
 	if (doc == NULL)
 		return;
 
@@ -331,10 +333,12 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_update_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 twitter_update_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_update_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 identica_update_url);
 			break;
 		}
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -345,10 +349,12 @@ static int send_request(struct session *session)
 			 session->account, session->password);
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_friends_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 twitter_friends_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_friends_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 identica_friends_url);
 			break;
 		}
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -357,11 +363,13 @@ static int send_request(struct session *session)
 	case ACTION_USER:
 		switch (session->host) {
 		case HOST_TWITTER:
-			sprintf(user_url, "%s%s.xml", twitter_user_url, session->user);
+			sprintf(user_url, "%s%s.xml", twitter_user_url,
+				session->user);
 			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		case HOST_IDENTICA:
-			sprintf(user_url, "%s%s.xml", identica_user_url, session->user);
+			sprintf(user_url, "%s%s.xml", identica_user_url,
+				session->user);
 			curl_easy_setopt(curl, CURLOPT_URL, user_url);
 			break;
 		}
@@ -372,10 +380,12 @@ static int send_request(struct session *session)
 			 session->account, session->password);
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_replies_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 twitter_replies_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_replies_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 identica_replies_url);
 			break;
 		}
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -384,10 +394,12 @@ static int send_request(struct session *session)
 	case ACTION_PUBLIC:
 		switch (session->host) {
 		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL, twitter_public_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 twitter_public_url);
 			break;
 		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL, identica_public_url);
+			curl_easy_setopt(curl, CURLOPT_URL,
+					 identica_public_url);
 			break;
 		}
 
@@ -411,7 +423,8 @@ static int send_request(struct session *session)
 	if (!session->dry_run) {
 		res = curl_easy_perform(curl);
 		if (res && !session->bash) {
-			fprintf(stderr, "error(%d) trying to perform operation\n", res);
+			fprintf(stderr, "error(%d) trying to perform "
+				"operation\n", res);
 			return -EINVAL;
 		}
 	}
@@ -544,9 +557,8 @@ static void parse_configfile(struct session *session)
 			session->action = ACTION_UNKNOWN;
 		free(action);
 	}
-	if (user) {
+	if (user)
 		session->user = user;
-	}
 	session->shrink_urls = shrink_urls;
 
 	/* Free buffer and close file.  */
@@ -634,7 +646,10 @@ static char *get_string_from_stdin(void)
 
 static int find_urls(const char *tweet, int **pranges)
 {
-	// magic obtained from http://www.geekpedia.com/KB65_How-to-validate-an-URL-using-RegEx-in-Csharp.html
+	/*
+	 * magic obtained from
+	 * http://www.geekpedia.com/KB65_How-to-validate-an-URL-using-RegEx-in-Csharp.html
+	 */
 	static const char *re_magic =
 		"(([a-zA-Z][0-9a-zA-Z+\\-\\.]*:)/{1,3}"
 		"[0-9a-zA-Z;/~?:@&=+$\\.\\-_'()%]+)"
@@ -655,23 +670,24 @@ static int find_urls(const char *tweet, int **pranges)
 			&errptr, &erroffset, NULL);
 	if (!re) {
 		fprintf(stderr, "pcre_compile @%u: %s\n", erroffset, errptr);
-		exit (1);
+		exit(1);
 	}
 
 	tweetlen = strlen(tweet);
-	for (startoffset=0; startoffset<tweetlen; ) {
+	for (startoffset = 0; startoffset < tweetlen; ) {
 
 		rc = pcre_exec(re, NULL, tweet, strlen(tweet), startoffset, 0,
 				ovector, ovsize);
 		if (rc == PCRE_ERROR_NOMATCH)
 			break;
 
-		if (rc<0) {
-			fprintf(stderr, "pcre_exec @%u: %s\n", erroffset, errptr);
-			exit (1);
+		if (rc < 0) {
+			fprintf(stderr, "pcre_exec @%u: %s\n",
+				erroffset, errptr);
+			exit(1);
 		}
 
-		for (i=0; i<rc; i+=2) {
+		for (i = 0; i < rc; i += 2) {
 			if ((rcount+2) == rbound) {
 				rbound *= 2;
 				ranges = realloc(ranges, sizeof(int) * rbound);
@@ -711,19 +727,20 @@ static int popenRWE(int *rwepipe, const char *exe, const char *const argv[])
 	int rc;
 
 	rc = pipe(in);
-	if (rc<0)
+	if (rc < 0)
 		goto error_in;
 
 	rc = pipe(out);
-	if (rc<0)
+	if (rc < 0)
 		goto error_out;
 
 	rc = pipe(err);
-	if (rc<0)
+	if (rc < 0)
 		goto error_err;
 
 	pid = fork();
-	if (pid > 0) { // parent
+	if (pid > 0) {
+		/* parent */
 		close(in[0]);
 		close(out[1]);
 		close(err[1]);
@@ -731,7 +748,8 @@ static int popenRWE(int *rwepipe, const char *exe, const char *const argv[])
 		rwepipe[1] = out[0];
 		rwepipe[2] = err[0];
 		return pid;
-	} else if (pid == 0) { // child
+	} else if (pid == 0) {
+		/* child */
 		close(in[1]);
 		close(out[0]);
 		close(err[0]);
@@ -742,7 +760,7 @@ static int popenRWE(int *rwepipe, const char *exe, const char *const argv[])
 		close(2);
 		rc = dup(err[1]);
 
-		execvp(exe, (char**)argv);
+		execvp(exe, (char **)argv);
 		exit(1);
 	} else
 		goto error_fork;
@@ -799,7 +817,7 @@ static char *shrink_one_url(int *rwepipe, char *big)
 	while (smalllen && isspace(small[smalllen-1]))
 			small[--smalllen] = 0;
 
-	free (big);
+	free(big);
 	return small;
 
 error_free_small:
@@ -832,7 +850,7 @@ static char *shrink_urls(char *text)
 	if (!rcount)
 		return text;
 
-	for (i=0; i<rcount; i+=2) {
+	for (i = 0; i < rcount; i += 2) {
 		int url_start = ranges[i];
 		int url_end = ranges[i+1];
 		int long_url_len = url_end - url_start;
@@ -846,7 +864,8 @@ static char *shrink_urls(char *text)
 		dbg("short url[%u]: %s\n", short_url_len, url);
 
 		if (!url || short_url_len >= long_url_len) {
-			// the short url ended up being too long or unavailable
+			/* The short url ended up being too long
+			 * or unavailable */
 			if (inofs) {
 				strncpy(text + outofs, text + inofs,
 						not_url_len + long_url_len);
@@ -855,21 +874,21 @@ static char *shrink_urls(char *text)
 			outofs += not_url_len + long_url_len;
 
 		} else {
-			// copy the unmodified block
+			/* copy the unmodified block */
 			strncpy(text + outofs, text + inofs, not_url_len);
 			inofs += not_url_len;
 			outofs += not_url_len;
 
-			// copy the new url
+			/* copy the new url */
 			strncpy(text + outofs, url, short_url_len);
 			inofs += long_url_len;
 			outofs += short_url_len;
 		}
 
-		free (url);
+		free(url);
 	}
 
-	// copy the last block after the last match
+	/* copy the last block after the last match */
 	if (inofs) {
 		int tail = inlen - inofs;
 		if (tail) {
@@ -1027,7 +1046,8 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->action == ACTION_UNKNOWN) {
 		fprintf(stderr, "Unknown action, valid actions are:\n");
-		fprintf(stderr, "'update', 'friends', 'public', 'replies' or 'user'.\n");
+		fprintf(stderr, "'update', 'friends', 'public', "
+			"'replies' or 'user'.\n");
 		goto exit;
 	}
 
