@@ -829,6 +829,8 @@ static char *shrink_urls(char *text)
 		return text;
 
 	rcount = find_urls(text, &ranges);
+	if (!rcount)
+		return text;
 
 	for (i=0; i<rcount; i+=2) {
 		int url_start = ranges[i];
