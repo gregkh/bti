@@ -33,6 +33,7 @@
           <arg><option>--host HOST_NAME</option></arg>
           <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--logfile LOGFILE</option></arg>
+          <arg><option>--page PAGENUMBER</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--shrink-urls</option></arg>
           <arg><option>--debug</option></arg>
@@ -140,6 +141,16 @@
             <term><option>--debug</option></term>
             <listitem>
               <para>Print a whole bunch of debugging messages to stdout.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--page PAGENUMBER</option></term>
+            <listitem>
+              <para>
+		When the action is to retrieve updates, it usually retrieves
+		only one page.  If this option is used, the page number can be
+		specified.
+              </para>
             </listitem>
           </varlistentry>
           <varlistentry>

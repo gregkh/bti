@@ -103,6 +103,7 @@ static void display_help(void)
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --shrink-urls\n");
+	fprintf(stdout, "  --page PAGENUMBER\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
 	fprintf(stdout, "  --version\n");

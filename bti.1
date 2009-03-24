@@ -171,7 +171,7 @@ bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
 .SH "Synopsis"
 .fam C
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-page\ PAGENUM\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .fam
 .SH "DESCRIPTION"
 .PP
@@ -227,6 +227,11 @@ Currently, only http://2tu\&.us/ is used as a URL shrinking service\&.
 \fB\-\-debug\fR
 .RS 4
 Print a whole bunch of debugging messages to stdout\&.
+.RE
+.PP
+\fB\-\-page PAGENUMBER\fR
+.RS 4
+When the action is to retrieve updates, it usually retrieves only one page\&. If this option is used, the page number can be specified\&.
 .RE
 .PP
 \fB\-\-dry\-run\fR
