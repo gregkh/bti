@@ -1091,7 +1091,7 @@ int main(int argc, char *argv[], char *envp[])
 
 		session->tweet = zalloc(strlen(tweet) + 10);
 		if (session->bash)
-			sprintf(session->tweet, "$ %s", tweet);
+			sprintf(session->tweet, "%c %s", getuid() ? '$' : '#', tweet);
 		else
 			sprintf(session->tweet, "%s", tweet);
 
