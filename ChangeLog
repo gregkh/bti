@@ -1,3 +1,23 @@
+Summary of changes from v017 to v018
+============================================
+
+Alexander Færøy (1):
+      Use '#' as prefix for our tweets if we're uid 0; otherwise '$'.
+
+Greg Kroah-Hartman (8):
+      add "bti:" to the beginning of all debug messages
+      show version when starting up with debug enabled
+      added bti-shrink-urls man page
+      added bti-shrink-urls.1 to Makefile
+      added AUTHOR section to bti-shrink-urls.xml
+      add bti-shrink-urls.1 to tree
+      convert to use autotools
+      more autoconf fun
+
+Gregor Herrmann (1):
+      add missing arguments to getopt_long_only call and add --dry-run to --help
+
+
 Summary of changes from v016 to v017
 ============================================
 

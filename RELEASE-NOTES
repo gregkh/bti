@@ -1,3 +1,9 @@
+bti 018
+=============
+man page added for helper script
+now using autoconf
+now showing all options with --help
+
 bti 017
 =============
 url shortner bugfix from Bart Trojanowski
