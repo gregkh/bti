@@ -41,7 +41,7 @@ changelog:
 
 git-release:
 	head -1 ChangeLog | grep -q "to v$(VERSION)"
-	head -1 RELEASE-NOTES | grep -q "udev $(VERSION)"
+	head -1 RELEASE-NOTES | grep -q "bti $(VERSION)"
 	git commit -a -m "release $(VERSION)"
 	cat .git/refs/heads/master > .git/refs/tags/$(VERSION)
 	git gc
