@@ -1,7 +1,7 @@
-AC_INIT([bti], [019], [greg@kroah.com])
+AC_INIT([bti], [020], [greg@kroah.com])
 AC_PREREQ(2.60)
 
-AM_INIT_AUTOMAKE(bti, 019)
+AM_INIT_AUTOMAKE(bti, 020)
 dnl AM_CONFIG_HEADER([check-news foreign 1.9 dist-bzip2])
 
 AC_PROG_CC
