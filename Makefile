@@ -28,7 +28,8 @@ GEN_HEADERS = \
 	bti_version.h
 
 MAN_PAGES = \
-	bti.1
+	bti.1 \
+	bti-shrink-urls.1
 
 CROSS_COMPILE ?=
 CC = $(CROSS_COMPILE)gcc
