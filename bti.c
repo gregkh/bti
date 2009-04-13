@@ -16,6 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -35,7 +37,6 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <pcre.h>
-#include "bti_version.h"
 
 
 #define zalloc(size)	calloc(size, 1)
@@ -90,7 +91,7 @@ struct bti_curl_buffer {
 static void display_help(void)
 {
 	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n");
-	fprintf(stdout, "Version: " BTI_VERSION "\n");
+	fprintf(stdout, "Version: " VERSION "\n");
 	fprintf(stdout, "Usage:\n");
 	fprintf(stdout, "  bti [options]\n");
 	fprintf(stdout, "options are:\n");
@@ -114,7 +115,7 @@ static void display_help(void)
 
 static void display_version(void)
 {
-	fprintf(stdout, "bti - version %s\n", BTI_VERSION);
+	fprintf(stdout, "bti - version %s\n", VERSION);
 }
 
 static struct session *session_alloc(void)
