@@ -1,13 +1,15 @@
-AC_INIT([bti], [017], [greg@kroah.com])
+AC_INIT([bti], [018], [greg@kroah.com])
 AC_PREREQ(2.60)
 
-AM_INIT_AUTOMAKE(bti, 017)
+AM_INIT_AUTOMAKE(bti, 018)
 dnl AM_CONFIG_HEADER([check-news foreign 1.9 dist-bzip2])
 
 AC_PROG_CC
 AC_PROG_INSTALL
 
 AC_CONFIG_MACRO_DIR([m4])
+
+AC_PATH_PROG([XSLTPROC], [xsltproc])
 
 dnl FIXME: Replace `main' with a function in `-lnsl':
 AC_CHECK_LIB([nsl], [main])

@@ -86,7 +86,7 @@ CCDEPMODE = depmode=gcc3
 CFLAGS = -g -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wpointer-arith -Wsign-compare -Wchar-subscripts -Wstrict-prototypes -Wshadow -Wformat=2 -Wtype-limits -O2
 CPPFLAGS =   -I/usr/include/libxml2
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"bti\" -DPACKAGE_TARNAME=\"bti\" -DPACKAGE_VERSION=\"017\" -DPACKAGE_STRING=\"bti\ 017\" -DPACKAGE_BUGREPORT=\"greg@kroah.com\" -DPACKAGE=\"bti\" -DVERSION=\"017\" -DHAVE_LIBNSL=1 -DHAVE_LIBREADLINE=1 -DHAVE_LIBPCRE=1 -DHAVE_LIBCURL=1 -DLIBCURL_FEATURE_SSL=1 -DLIBCURL_FEATURE_IPV6=1 -DLIBCURL_FEATURE_LIBZ=1 -DLIBCURL_FEATURE_NTLM=1 -DLIBCURL_PROTOCOL_HTTP=1 -DLIBCURL_PROTOCOL_HTTPS=1 -DLIBCURL_PROTOCOL_FTP=1 -DLIBCURL_PROTOCOL_FTPS=1 -DLIBCURL_PROTOCOL_FILE=1 -DLIBCURL_PROTOCOL_TELNET=1 -DLIBCURL_PROTOCOL_DICT=1 -DLIBCURL_PROTOCOL_TFTP=1
+DEFS = -DPACKAGE_NAME=\"bti\" -DPACKAGE_TARNAME=\"bti\" -DPACKAGE_VERSION=\"018\" -DPACKAGE_STRING=\"bti\ 018\" -DPACKAGE_BUGREPORT=\"greg@kroah.com\" -DPACKAGE=\"bti\" -DVERSION=\"018\" -DHAVE_LIBNSL=1 -DHAVE_LIBREADLINE=1 -DHAVE_LIBPCRE=1 -DHAVE_LIBCURL=1 -DLIBCURL_FEATURE_SSL=1 -DLIBCURL_FEATURE_IPV6=1 -DLIBCURL_FEATURE_LIBZ=1 -DLIBCURL_FEATURE_NTLM=1 -DLIBCURL_PROTOCOL_HTTP=1 -DLIBCURL_PROTOCOL_HTTPS=1 -DLIBCURL_PROTOCOL_FTP=1 -DLIBCURL_PROTOCOL_FTPS=1 -DLIBCURL_PROTOCOL_FILE=1 -DLIBCURL_PROTOCOL_TELNET=1 -DLIBCURL_PROTOCOL_DICT=1 -DLIBCURL_PROTOCOL_TFTP=1
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -109,17 +109,18 @@ OBJEXT = o
 PACKAGE = bti
 PACKAGE_BUGREPORT = greg@kroah.com
 PACKAGE_NAME = bti
-PACKAGE_STRING = bti 017
+PACKAGE_STRING = bti 018
 PACKAGE_TARNAME = bti
-PACKAGE_VERSION = 017
+PACKAGE_VERSION = 018
 PATH_SEPARATOR = :
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = 
-VERSION = 017
+VERSION = 018
 XML2_CONFIG = /usr/bin/xml2-config
 XML_CPPFLAGS = -I/usr/include/libxml2
 XML_LIBS = -lxml2 -lz -lm
+XSLTPROC = /usr/bin/xsltproc
 _libcurl_config = 
 abs_builddir = /home/gregkh/src/bti
 abs_srcdir = /home/gregkh/src/bti
@@ -174,6 +175,10 @@ EXTRA_DIST = \
 	bti.xml \
 	bti-shrink-urls.xml
 
+MAINTAINERCLEANFILES = \
+	$(dist_man_MANS)
+
+PREVIOUS_VERSION = 0`expr $(VERSION) - 1`
 AUTOMAKE_OPTIONS = foreign
 all: all-am
 
@@ -515,6 +520,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
@@ -524,7 +530,7 @@ distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-tags
+	distclean-local distclean-tags
 
 dvi: dvi-am
 
@@ -582,23 +588,49 @@ uninstall-man: uninstall-man1
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
 	clean-binPROGRAMS clean-generic ctags dist dist-all dist-bzip2 \
 	dist-gzip dist-lzma dist-shar dist-tarZ dist-zip distcheck \
-	distclean distclean-compile distclean-generic distclean-tags \
-	distcleancheck distdir distuninstallcheck dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	distclean distclean-compile distclean-generic distclean-local \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-man1 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-man uninstall-man1
 
 	bti-shrink-urls
 
-%.1 : %.xml
+%.1: %.xml
         $(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
+
+git-clean:
+	rm -f Makefile.in
+
+distclean-local:
+	rm -rf autom4te.cache
+
+changelog:
+	@ head -1 ChangeLog | grep -q "to v$(PREVIOUS_VERSION)"
+	@ mv ChangeLog ChangeLog.tmp
+	@ echo "Summary of changes from v$(PREVIOUS_VERSION) to v$(VERSION)" >> ChangeLog
+	@ echo "============================================" >> ChangeLog
+	@ echo >> ChangeLog
+	@ git log --pretty=short $(PREVIOUS_VERSION)..HEAD | git shortlog  >> ChangeLog
+	@ echo >> ChangeLog
+	@ cat ChangeLog
+	@ cat ChangeLog.tmp >> ChangeLog
+	@ rm ChangeLog.tmp
+
+git-release:
+	head -1 ChangeLog | grep -q "to v$(VERSION)"
+	head -1 NEWS | grep -q "udev $(VERSION)"
+	git commit -a -m "release $(VERSION)"
+	cat .git/refs/heads/master > .git/refs/tags/$(VERSION)
+	git gc
+	git prune
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
