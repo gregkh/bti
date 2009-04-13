@@ -1,6 +1,5 @@
 bin_PROGRAMS = \
 	bti
-	bti-shrink-urls
 
 bti_SOURCES = \
 	bti.c
@@ -11,7 +10,8 @@ dist_man_MANS = \
 
 EXTRA_DIST = \
 	bti.xml \
-	bti-shrink-urls.xml
+	bti-shrink-urls.xml \
+	bti-shrink-urls
 
 %.1: %.xml
         $(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
