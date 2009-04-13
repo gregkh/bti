@@ -1,0 +1,88 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<article>
+  <section>
+    <title>bti-shrink-urls</title>
+    <refentry>
+      <refentryinfo>
+        <title>bti-shrink-urls</title>
+        <date>March 2009</date>
+        <productname>bti-shrink-urls</productname>
+      </refentryinfo>
+
+      <refmeta>
+        <refentrytitle>bti-shrink-urls</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo class="version"></refmiscinfo>
+      </refmeta>
+
+      <refnamediv>
+        <refname>bti-shrink-urls</refname>
+        <refpurpose>convert URLs to a shorter form using a web service</refpurpose>
+      </refnamediv>
+
+      <refsynopsisdiv>
+        <cmdsynopsis>
+          <command>bti</command>
+          <arg><option>--escaped</option></arg>
+          <arg><option>--help</option></arg>
+          <arg><option>URL</option></arg>
+        </cmdsynopsis>
+      </refsynopsisdiv>
+
+      <refsect1><title>DESCRIPTION</title>
+        <para>
+         bti-shrink-urls converts URLs to a shorter form using a web service.
+        </para>
+        <para>
+          Currently only http://2tu.us/ is supported.
+        </para>
+      </refsect1>
+
+      <refsect1><title>OPTIONS</title>
+        <variablelist>
+          <varlistentry>
+            <term><option>--escaped</option></term>
+            <listitem>
+              <para>
+	        Don't escape special characters in the URL any more, they are
+	        already percent encoded.
+	      </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--help</option></term>
+            <listitem>
+              <para>
+              Print help text.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>URL</option></term>
+            <listitem>
+              <para>
+		Specify the URL to be converted. If no URL is given
+                bti-shrink-urls waits for input on stdin.
+              </para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </refsect1>
+
+       <refsect1><title>COPYRIGHT AND LICENSE</title>
+         <para>
+          Copyright (C) 2009 Bart Trojanowski <email>bart@jukie.net</email>.
+         </para>
+         <para>
+          This program is free software; you can redistribute it and/or modify it
+          under the terms of the GNU General Public License as published by the
+          Free Software Foundation version 2 of the License.
+         </para>
+       </refsect1>
+
+    </refentry>
+  </section>
+</article>
