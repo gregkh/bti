@@ -1052,6 +1052,13 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	}
 
+	/*
+	 * Show the version to make it easier to determine what
+	 * is going on here
+	 */
+	if (debug)
+		display_version();
+
 	if (session->action == ACTION_UNKNOWN) {
 		fprintf(stderr, "Unknown action, valid actions are:\n");
 		fprintf(stderr, "'update', 'friends', 'public', "
