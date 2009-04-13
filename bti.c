@@ -197,7 +197,7 @@ static CURL *curl_init(void)
 	return curl;
 }
 
-void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
+static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 {
 	xmlChar *text = NULL;
 	xmlChar *user = NULL;
@@ -267,7 +267,8 @@ static void parse_timeline(char *document)
 	return;
 }
 
-size_t curl_callback(void *buffer, size_t size, size_t nmemb, void *userp)
+static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
+			    void *userp)
 {
 	struct bti_curl_buffer *curl_buf = userp;
 	size_t buffer_size = size * nmemb;
