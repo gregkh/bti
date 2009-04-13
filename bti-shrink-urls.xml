@@ -72,6 +72,10 @@
         </variablelist>
       </refsect1>
 
+       <refsect1><title>AUTHOR</title>
+         <para>Written by Bart Trojanowski <email>bart@jukie.net</email>.</para>
+       </refsect1>
+
        <refsect1><title>COPYRIGHT AND LICENSE</title>
          <para>
           Copyright (C) 2009 Bart Trojanowski <email>bart@jukie.net</email>.
