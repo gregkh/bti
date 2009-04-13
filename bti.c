@@ -107,6 +107,7 @@ static void display_help(void)
 	fprintf(stdout, "  --page PAGENUMBER\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
+	fprintf(stdout, "  --dry-run\n");
 	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");
 }
@@ -966,7 +967,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:u:hg:",
+		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:u:hg:sn",
 					  options, NULL);
 		if (option == -1)
 			break;
