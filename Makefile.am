@@ -1,6 +1,9 @@
 bin_PROGRAMS = \
 	bti
 
+bin_SCRIPTS = \
+	bti-shrink-urls
+
 bti_SOURCES = \
 	bti.c
 
@@ -13,8 +16,7 @@ EXTRA_DIST = \
 	bti-shrink-urls.xml \
 	bti.example \
 	bti-bashcompletion \
-	RELEASE-NOTES \
-	bti-shrink-urls
+	RELEASE-NOTES
 
 %.1: %.xml
 	$(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
