@@ -11,6 +11,9 @@ dist_man_MANS = \
 EXTRA_DIST = \
 	bti.xml \
 	bti-shrink-urls.xml \
+	bti.example \
+	bti-bashcompletion \
+	RELEASE-NOTES \
 	bti-shrink-urls
 
 %.1: %.xml
