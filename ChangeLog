@@ -1,3 +1,12 @@
+Summary of changes from v019 to v020
+============================================
+
+Greg Kroah-Hartman (3):
+      fix two compiler warnings.
+      bump version number
+      add more forgotten files to Makefile.am
+
+
 Summary of changes from v018 to v019
 ============================================
 
