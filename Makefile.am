@@ -17,7 +17,7 @@ EXTRA_DIST = \
 	bti-shrink-urls
 
 %.1: %.xml
-        $(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
+	$(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
 
 MAINTAINERCLEANFILES = \
 	$(dist_man_MANS)
