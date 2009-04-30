@@ -201,11 +201,14 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 {
 	xmlChar *text = NULL;
 	xmlChar *user = NULL;
+	xmlChar *time = NULL;
 	xmlNodePtr userinfo;
 
 	current = current->xmlChildrenNode;
 	while (current != NULL) {
 		if (current->type == XML_ELEMENT_NODE) {
+			if (!xmlStrcmp(current->name, (const xmlChar *)"created_at"))
+				time = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"text"))
 				text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"user")) {
@@ -219,12 +222,15 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 					userinfo = userinfo->next;
 				}
 			}
-			if (user && text) {
-				printf("[%s] %s\n", user, text);
+
+			if (user && text && time) {
+				printf("[%s] (%.16s) %s\n", user, time, text);
 				xmlFree(user);
 				xmlFree(text);
+				xmlFree(time);
 				user = NULL;
 				text = NULL;
+				time = NULL;
 			}
 		}
 		current = current->next;
