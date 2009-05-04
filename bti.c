@@ -176,11 +176,11 @@ static const char *twitter_public_url  = "http://twitter.com/statuses/public_tim
 static const char *twitter_friends_url = "https://twitter.com/statuses/friends_timeline.xml";
 static const char *twitter_replies_url = "http://twitter.com/statuses/replies.xml";
 
-static const char *identica_user_url    = "http://identi.ca/api/statuses/user_timeline/";
-static const char *identica_update_url  = "http://identi.ca/api/statuses/update.xml";
-static const char *identica_public_url  = "http://identi.ca/api/statuses/public_timeline.xml";
-static const char *identica_friends_url = "http://identi.ca/api/statuses/friends_timeline.xml";
-static const char *identica_replies_url = "http://identi.ca/api/statuses/replies.xml";
+static const char *identica_user_url    = "https://identi.ca/api/statuses/user_timeline/";
+static const char *identica_update_url  = "https://identi.ca/api/statuses/update.xml";
+static const char *identica_public_url  = "https://identi.ca/api/statuses/public_timeline.xml";
+static const char *identica_friends_url = "https://identi.ca/api/statuses/friends_timeline.xml";
+static const char *identica_replies_url = "https://identi.ca/api/statuses/replies.xml";
 
 static CURL *curl_init(void)
 {
