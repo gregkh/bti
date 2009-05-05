@@ -1,3 +1,23 @@
+Summary of changes from v021 to v022
+============================================
+
+Amir Mohammad Saied (2):
+      Support for custom bti installations
+      Updating config example file
+
+Greg Kroah-Hartman (4):
+      add the script to the tarball.
+      fix build warning from time patch.
+      Merge branch 'master' of gregkh@master.kernel.org:/pub/scm/linux/kernel/git/gregkh/bti
+      Merge branch 'master' of git://github.com/amir/bti
+
+J.R. Mauro (1):
+      bti: show timestamp in statuses
+
+gregor herrmann (1):
+      bti: use ssl for identi.ca
+
+
 Summary of changes from v020 to v021
 ============================================
 
