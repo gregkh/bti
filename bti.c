@@ -52,16 +52,17 @@
 static int debug;
 
 enum host {
-	HOST_TWITTER = 0,
+	HOST_TWITTER  = 0,
 	HOST_IDENTICA = 1,
+	HOST_CUSTOM   = 2
 };
 
 enum action {
-	ACTION_UPDATE = 0,
+	ACTION_UPDATE  = 0,
 	ACTION_FRIENDS = 1,
-	ACTION_USER = 2,
+	ACTION_USER    = 2,
 	ACTION_REPLIES = 4,
-	ACTION_PUBLIC = 8,
+	ACTION_PUBLIC  = 8,
 	ACTION_UNKNOWN = 16
 };
 
@@ -74,6 +75,7 @@ struct session {
 	char *homedir;
 	char *logfile;
 	char *user;
+	char *hosturl;
 	int bash;
 	int shrink_urls;
 	int dry_run;
@@ -139,6 +141,7 @@ static void session_free(struct session *session)
 	free(session->time);
 	free(session->homedir);
 	free(session->user);
+	free(session->hosturl);
 	free(session);
 }
 
@@ -170,17 +173,14 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-static const char *twitter_user_url    = "http://twitter.com/statuses/user_timeline/";
-static const char *twitter_update_url  = "https://twitter.com/statuses/update.xml";
-static const char *twitter_public_url  = "http://twitter.com/statuses/public_timeline.xml";
-static const char *twitter_friends_url = "https://twitter.com/statuses/friends_timeline.xml";
-static const char *twitter_replies_url = "http://twitter.com/statuses/replies.xml";
+static const char *twitter_host  = "http://twitter.com/statuses";
+static const char *identica_host = "https://identi.ca/api/statuses";
 
-static const char *identica_user_url    = "https://identi.ca/api/statuses/user_timeline/";
-static const char *identica_update_url  = "https://identi.ca/api/statuses/update.xml";
-static const char *identica_public_url  = "https://identi.ca/api/statuses/public_timeline.xml";
-static const char *identica_friends_url = "https://identi.ca/api/statuses/friends_timeline.xml";
-static const char *identica_replies_url = "https://identi.ca/api/statuses/replies.xml";
+static const char *user_uri    = "/user_timeline/";
+static const char *update_uri  = "/update.xml";
+static const char *public_uri  = "/public_timeline.xml";
+static const char *friends_uri = "/friends_timeline.xml";
+static const char *replies_uri = "/replies.xml";
 
 static CURL *curl_init(void)
 {
@@ -304,10 +304,9 @@ static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
 
 static int send_request(struct session *session)
 {
+	char endpoint[100];
 	char user_password[500];
 	char data[500];
-	/* is there usernames longer than 22 chars? */
-	char user_url[70];
 	struct bti_curl_buffer *curl_buf;
 	CURL *curl = NULL;
 	CURLcode res;
@@ -344,75 +343,38 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 		slist = curl_slist_append(slist, "Expect:");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
-		switch (session->host) {
-		case HOST_TWITTER:
-			curl_easy_setopt(curl, CURLOPT_URL,
-					 twitter_update_url);
-			break;
-		case HOST_IDENTICA:
-			curl_easy_setopt(curl, CURLOPT_URL,
-					 identica_update_url);
-			break;
-		}
+		
+		sprintf(endpoint, "%s%s", session->hosturl, update_uri);
+		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 		break;
 	case ACTION_FRIENDS:
 		snprintf(user_password, sizeof(user_password), "%s:%s",
 			 session->account, session->password);
-		switch (session->host) {
-		case HOST_TWITTER:
-			sprintf(user_url, "%s?page=%d", twitter_friends_url, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		case HOST_IDENTICA:
-			sprintf(user_url, "%s?page=%d", identica_friends_url, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		}
+		sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			friends_uri, session->page);
+		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 		break;
 	case ACTION_USER:
-		switch (session->host) {
-		case HOST_TWITTER:
-			sprintf(user_url, "%s%s.xml?page=%d", twitter_user_url, session->user, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		case HOST_IDENTICA:
-			sprintf(user_url, "%s%s.xml?page=%d", identica_user_url, session->user, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		}
+		sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl, user_uri,
+				session->user, session->page);
+		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
 		break;
 	case ACTION_REPLIES:
 		snprintf(user_password, sizeof(user_password), "%s:%s",
 			 session->account, session->password);
-		switch (session->host) {
-		case HOST_TWITTER:
-			sprintf(user_url, "%s?page=%d", twitter_replies_url, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		case HOST_IDENTICA:
-			sprintf(user_url, "%s?page=%d", identica_replies_url, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		}
+		sprintf(endpoint, "%s%s?page=%d", session->hosturl, replies_uri, session->page);
+		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 		break;
 	case ACTION_PUBLIC:
-		switch (session->host) {
-		case HOST_TWITTER:
-			sprintf(user_url, "%s?page=%d", twitter_public_url, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		case HOST_IDENTICA:
-			sprintf(user_url, "%s?page=%d", identica_public_url, session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, user_url);
-			break;
-		}
+		sprintf(endpoint, "%s%s?page=%d", session->hosturl, public_uri, session->page);
+		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
 		break;
 	default:
@@ -540,10 +502,16 @@ static void parse_configfile(struct session *session)
 	if (account)
 		session->account = account;
 	if (host) {
-		if (strcasecmp(host, "twitter") == 0)
+		if (strcasecmp(host, "twitter") == 0) {
 			session->host = HOST_TWITTER;
-		if (strcasecmp(host, "identica") == 0)
+			session->hosturl = strdup(twitter_host);
+		} else if (strcasecmp(host, "identica") == 0) {
 			session->host = HOST_IDENTICA;
+			session->hosturl = strdup(identica_host);
+		} else {
+			session->host = HOST_CUSTOM;
+			session->hosturl = strdup(host);
+		}
 		free(host);
 	}
 	if (proxy) {
@@ -603,7 +571,7 @@ static void log_session(struct session *session, int retval)
 		host = "identi.ca";
 		break;
 	default:
-		host = "unknown";
+		host = session->hosturl;
 		break;
 	}
 
@@ -1038,10 +1006,18 @@ int main(int argc, char *argv[], char *envp[])
 			session->shrink_urls = 1;
 			break;
 		case 'H':
-			if (strcasecmp(optarg, "twitter") == 0)
+			if (session->hosturl)
+				free(session->hosturl);
+			if (strcasecmp(optarg, "twitter") == 0) {
 				session->host = HOST_TWITTER;
-			if (strcasecmp(optarg, "identica") == 0)
+				session->hosturl = strdup(twitter_host);
+			} else if (strcasecmp(optarg, "identica") == 0) {
 				session->host = HOST_IDENTICA;
+				session->hosturl = strdup(identica_host);
+			} else {
+				session->host = HOST_CUSTOM;
+				session->hosturl = strdup(optarg);
+			}
 			dbg("host = %d\n", session->host);
 			break;
 		case 'b':
