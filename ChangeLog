@@ -1,3 +1,12 @@
+Summary of changes from v020 to v021
+============================================
+
+Greg Kroah-Hartman (3):
+      fix build of man pages
+      Install bti-shrink-urls properly
+      bump version to 021
+
+
 Summary of changes from v019 to v020
 ============================================
 
