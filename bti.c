@@ -173,7 +173,7 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-static const char *twitter_host  = "http://twitter.com/statuses";
+static const char *twitter_host  = "https://twitter.com/statuses";
 static const char *identica_host = "https://identi.ca/api/statuses";
 
 static const char *user_uri    = "/user_timeline/";
