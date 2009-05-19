@@ -50,6 +50,7 @@
 
 
 static int debug;
+static int verbose;
 
 enum host {
 	HOST_TWITTER  = 0,
@@ -110,6 +111,7 @@ static void display_help(void)
 	fprintf(stdout, "  --page PAGENUMBER\n");
 	fprintf(stdout, "  --bash\n");
 	fprintf(stdout, "  --debug\n");
+	fprintf(stdout, "  --verbose\n");
 	fprintf(stdout, "  --dry-run\n");
 	fprintf(stdout, "  --version\n");
 	fprintf(stdout, "  --help\n");
@@ -224,8 +226,12 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 			}
 
 			if (user && text && created) {
-				printf("[%s] (%.16s) %s\n",
-					user, created, text);
+				if (verbose)
+					printf("[%s] (%.16s) %s\n",
+						user, created, text);
+				else
+					printf("[%s] %s\n",
+						user, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
@@ -495,6 +501,13 @@ static void parse_configfile(struct session *session)
 					!strncasecmp(c, "yes", 3))
 				shrink_urls = 1;
 		}
+		else if (!strncasecmp(c, "verbose", 7) &&
+				(c[7] == '=')) {
+			c += 8;
+			if (!strncasecmp(c, "true", 4) ||
+					!strncasecmp(c, "yes", 3))
+				verbose = 1;
+		}	
 	} while (!feof(config_file));
 
 	if (password)
@@ -889,6 +902,7 @@ int main(int argc, char *argv[], char *envp[])
 {
 	static const struct option options[] = {
 		{ "debug", 0, NULL, 'd' },
+		{ "verbose", 0, NULL, 'V' },
 		{ "account", 1, NULL, 'a' },
 		{ "password", 1, NULL, 'p' },
 		{ "host", 1, NULL, 'H' },
@@ -914,6 +928,7 @@ int main(int argc, char *argv[], char *envp[])
 	int page_nr;
 
 	debug = 0;
+	verbose = 0;
 	rl_bind_key('\t', rl_insert);
 
 	session = session_alloc();
@@ -944,13 +959,16 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dqe:p:P:H:a:A:u:hg:sn",
+		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:hg:snVv",
 					  options, NULL);
 		if (option == -1)
 			break;
 		switch (option) {
 		case 'd':
 			debug = 1;
+			break;
+		case 'V':
+			verbose = 1;
 			break;
 		case 'a':
 			if (session->account)
