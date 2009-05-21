@@ -167,11 +167,11 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "Name"
-bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
+bti \- send a tweet to twitter\&.com or identi\&.ca (or any custom laconi\&.ca installation) from the command line
 .SH "Synopsis"
 .fam C
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR]  [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .fam
 .SH "DESCRIPTION"
 .PP
@@ -196,11 +196,15 @@ Specify the action which you want to perform\&. Valid options are "update" to se
 \fB\-\-user screenname\fR
 .RS 4
 Specify the user you want to see his/her messages while the action is "user"\&.
+.sp
+If no screenname is specified, the default is account name\&.
 .RE
 .PP
 \fB\-\-host HOST_NAME\fR
 .RS 4
 Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&.
+.sp
+If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses\&.
 .sp
 If no host is specified, the default is to send to twitter\&.com\&.
 .RE
@@ -237,6 +241,11 @@ When the action is to retrieve updates, it usually retrieves only one page\&. If
 \fB\-\-dry\-run\fR
 .RS 4
 Performs all steps that would normally be done for a given action, but will not connect to the service to post or retrieve data\&.
+.RE
+.PP
+\fB\-\-verbose\fR
+.RS 4
+Verbose mode
 .RE
 .PP
 \fB\-\-bash\fR
@@ -285,12 +294,12 @@ The twitter\&.com or identi\&.ca account name you wish to use to send this messa
 The twitter\&.com or identi\&.ca password for the account you wish to use to send this message with\&.
 .RE
 .PP
-\fB\-\-action action\fR
+\fBaction action\fR
 .RS 4
 Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\'s timeline\&.
 .RE
 .PP
-\fB\-\-user screenname\fR
+\fBuser screenname\fR
 .RS 4
 Specify the user you want to see his/her messages while the action is "user"\&.
 .RE
@@ -298,6 +307,8 @@ Specify the user you want to see his/her messages while the action is "user"\&.
 \fBhost\fR
 .RS 4
 The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&.
+.sp
+If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses\&.
 .RE
 .PP
 \fBproxy\fR
@@ -313,6 +324,11 @@ The logfile name for bti to write what happened to\&. This file is relative to t
 \fBshrink\-urls\fR
 .RS 4
 Setting this variable to \'true\' or \'yes\' will enable the URL shrinking feature\&. This is equivalent to using the \-\-shrink\-urls option\&.
+.RE
+.PP
+\fBverbose\fR
+.RS 4
+Setting this variable to \'true\' or \'yes\' will enable the Verbose mode\&.
 .RE
 .PP
 There is an example config file called

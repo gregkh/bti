@@ -38,6 +38,7 @@
           <arg><option>--shrink-urls</option></arg>
           <arg><option>--debug</option></arg>
           <arg><option>--dry-run</option></arg>
+          <arg><option>--verbose</option></arg>
           <arg><option>--version</option></arg>
           <arg><option>--help</option></arg>
         </cmdsynopsis>
@@ -93,7 +94,11 @@
               <para>
 		Specify the host which you want to send your message to.  Valid
 		options are "twitter" to send to twitter.com and "identica" to
-		send to identi.ca.
+        send to identi.ca.
+
+        If you want to send the message to a custom laconi.ca installation,
+        you should specify the API URI. For example identi.ca's URI is:
+        https://identi.ca/api/statuses
               </para>
               <para>
 		If no host is specified, the default is to send to twitter.com.
@@ -159,6 +164,14 @@
               <para>
                 Performs all steps that would normally be done for a given
                 action, but will not connect to the service to post or retrieve data.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--verbose</option></term>
+            <listitem>
+              <para>
+                Verbose mode
               </para>
             </listitem>
           </varlistentry>
@@ -278,6 +291,10 @@
 		 The host you want to use to send the message to.  Valid
 		 options are either "twitter" or "identica" to send to
 		 twitter.com or identi.ca respectively.
+
+         If you want to send the message to a custom laconi.ca installation,
+         you should specify the API URI. For example identi.ca's URI is:
+         https://identi.ca/api/statuses.
                </para>
              </listitem>
            </varlistentry>
@@ -310,7 +327,16 @@
                </para>
              </listitem>
            </varlistentry>
-         </variablelist>
+           <varlistentry>
+             <term><option>verbose</option></term>
+             <listitem>
+               <para>
+                   Setting this variable to 'true' or 'yes' will enable the
+                   verbose mode.
+               </para>
+             </listitem>
+           </varlistentry>
+        </variablelist>
          <para>
            There is an example config file called
            <filename>bti.example</filename> in the source tree that shows
