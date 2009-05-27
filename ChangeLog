@@ -1,3 +1,13 @@
+Summary of changes from v022 to v023
+============================================
+
+Amir Mohammad Saied (5):
+      https for twitter
+      Verbose mode for bti
+      verbose option for bash completion script
+      Updating documents, both for the new verbose mode, and custom laconi.ca installations.
+      Updating AUTHORs and copyright section
+
 Summary of changes from v021 to v022
 ============================================
 
