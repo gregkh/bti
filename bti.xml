@@ -366,7 +366,7 @@
        </refsect1>
 
        <refsect1><title>AUTHOR</title>
-         <para>Written by Greg Kroah-Hartman <email>greg@kroah.com</email>.</para>
+         <para>Written by Greg Kroah-Hartman &lt;<email>greg@kroah.com</email>&gt; and Amir Mohammad Saied &lt;<email>amirsaied@gmail.com</email>&gt;.</para>
        </refsect1>
 
     </refentry>
