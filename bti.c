@@ -565,6 +565,7 @@ static void parse_configfile(struct session *session)
 	char *logfile = NULL;
 	char *action = NULL;
 	char *user = NULL;
+	char *replyto = NULL;
 	char *file;
 	int shrink_urls = 0;
 
@@ -617,6 +618,11 @@ static void parse_configfile(struct session *session)
 			c += 8;
 			if (c[0] != '\0')
 				logfile = strdup(c);
+		} else if (!strncasecmp(c, "replyto", 7) &&
+			   (c[7] == '=')) {
+			c += 8;
+			if (c[0] != '\0')
+				replyto = strdup(c);
 		} else if (!strncasecmp(c, "action", 6) &&
 			   (c[6] == '=')) {
 			c += 7;
@@ -669,6 +675,8 @@ static void parse_configfile(struct session *session)
 	}
 	if (logfile)
 		session->logfile = logfile;
+	if (replyto)
+		session->replyto = replyto;
 	if (action) {
 		if (strcasecmp(action, "update") == 0)
 			session->action = ACTION_UPDATE;

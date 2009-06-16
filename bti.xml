@@ -349,6 +349,19 @@
              </listitem>
            </varlistentry>
            <varlistentry>
+             <term><option>replyto</option></term>
+             <listitem>
+               <para>
+		 The status ID to which all notices will be linked to.
+               </para>
+	       <para>
+	         There is no sane reason for a need to have this set in a
+		 config file. One such reason is to have all your messages
+		 as children to a particular status.
+	       </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
              <term><option>shrink-urls</option></term>
              <listitem>
                <para>

@@ -178,6 +178,13 @@ The http proxy needed to send data out to the Internet\&.
 The logfile name for bti to write what happened to\&. This file is relative to the user\'s home directory\&. If this file is not specified here or on the command line, no logging will be written to the disk\&.
 .RE
 .PP
+\fBreplyto\fR
+.RS 4
+The status ID to which all notices will be linked to\&.
+.sp
+There is no sane reason for a need to have this set in a config file\&. One such reason is to have all your messages as children to a particular status\&.
+.RE
+.PP
 \fBshrink\-urls\fR
 .RS 4
 Setting this variable to \'true\' or \'yes\' will enable the URL shrinking feature\&. This is equivalent to using the \-\-shrink\-urls option\&.
