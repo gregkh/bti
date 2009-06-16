@@ -317,6 +317,7 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 	xmlChar *text = NULL;
 	xmlChar *user = NULL;
 	xmlChar *created = NULL;
+	xmlChar *id = NULL;
 	xmlNodePtr userinfo;
 
 	current = current->xmlChildrenNode;
@@ -326,6 +327,8 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 				created = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"text"))
 				text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
+			if (!xmlStrcmp(current->name, (const xmlChar *)"id"))
+				id = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"user")) {
 				userinfo = current->xmlChildrenNode;
 				while (userinfo != NULL) {
@@ -338,19 +341,21 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 				}
 			}
 
-			if (user && text && created) {
+			if (user && text && created && id) {
 				if (verbose)
-					printf("[%s] (%.16s) %s\n",
-						user, created, text);
+					printf("[%s] {%s} (%.16s) %s\n",
+						user, id, created, text);
 				else
 					printf("[%s] %s\n",
 						user, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
+				xmlFree(id);
 				user = NULL;
 				text = NULL;
 				created = NULL;
+				id = NULL;
 			}
 		}
 		current = current->next;

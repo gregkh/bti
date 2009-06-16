@@ -183,7 +183,7 @@
             <term><option>--verbose</option></term>
             <listitem>
               <para>
-                Verbose mode
+                Verbose mode. Print status IDs and timestamps.
               </para>
             </listitem>
           </varlistentry>
