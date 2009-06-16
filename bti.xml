@@ -34,6 +34,7 @@
           <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--logfile LOGFILE</option></arg>
           <arg><option>--config CONFIGFILE</option></arg>
+          <arg><option>--replyto ID</option></arg>
           <arg><option>--page PAGENUMBER</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--shrink-urls</option></arg>
@@ -137,6 +138,24 @@
 		looks in the ~/.bti file for config values.  This default
 		location can be overridden by setting a specific file with this
 		option.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--replyto ID</option></term>
+            <listitem>
+              <para>
+		Status ID of a single post to which you want to create a threaded
+		reply to.
+	      </para>
+	      <para>
+	        For twitter, this is ignored unless the message starts with the
+		@name of the owner of the post with the status ID.
+	      </para>
+	      <para>
+	        For status.net, this can link any two messages into context with
+		each other. Status.net will also link a message that contains an
+		@name without this without regard to context.
               </para>
             </listitem>
           </varlistentry>
