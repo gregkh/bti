@@ -38,6 +38,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <pcre.h>
+#include <termios.h>
 
 
 #define zalloc(size)	calloc(size, 1)
@@ -654,6 +655,29 @@ static char *get_string_from_stdin(void)
 	return string;
 }
 
+void read_password(char *buf, size_t len)
+{
+	char pwd[80];
+	struct termios old;
+	struct termios tp;
+
+	tcgetattr(0, &tp);
+	old = tp;
+	
+	tp.c_lflag &= (~ECHO);
+	tcsetattr(0, TCSANOW, &tp);
+
+	fprintf(stdout, "Enter twitter password: ");
+	fflush(stdout);
+	scanf("%79s", pwd);
+	fprintf(stdout, "\n");
+
+	tcsetattr(0, TCSANOW, &old);	
+
+	strncpy(buf, pwd, len);
+	buf[len-1] = '\0';
+}
+
 static int find_urls(const char *tweet, int **pranges)
 {
 	/*
@@ -940,6 +964,7 @@ int main(int argc, char *argv[], char *envp[])
 	struct session *session;
 	pid_t child;
 	char *tweet;
+	static char password[80];
 	int retval = 0;
 	int option;
 	char *http_proxy;
@@ -1116,8 +1141,9 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (!session->password) {
-		fprintf(stdout, "Enter twitter password: ");
-		session->password = readline(NULL);
+		read_password(password, sizeof(password));
+		session->password = strdup(password);
+		free(password);
 	}
 
 	if (session->action == ACTION_UPDATE) {
