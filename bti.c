@@ -65,7 +65,8 @@ enum action {
 	ACTION_USER    = 2,
 	ACTION_REPLIES = 4,
 	ACTION_PUBLIC  = 8,
-	ACTION_UNKNOWN = 16
+	ACTION_GROUP   = 16,
+	ACTION_UNKNOWN = 32
 };
 
 struct session {
@@ -77,6 +78,7 @@ struct session {
 	char *homedir;
 	char *logfile;
 	char *user;
+	char *group;
 	char *hosturl;
 	int bash;
 	int shrink_urls;
@@ -102,9 +104,10 @@ static void display_help(void)
 	fprintf(stdout, "  --account accountname\n");
 	fprintf(stdout, "  --password password\n");
 	fprintf(stdout, "  --action action\n");
-	fprintf(stdout, "    ('update', 'friends', 'public', 'replies' "
-		"or 'user')\n");
+	fprintf(stdout, "    ('update', 'friends', 'public', 'replies', "
+		"'group' or 'user')\n");
 	fprintf(stdout, "  --user screenname\n");
+	fprintf(stdout, "  --group groupname\n");
 	fprintf(stdout, "  --proxy PROXY:PORT\n");
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --logfile logfile\n");
@@ -144,6 +147,7 @@ static void session_free(struct session *session)
 	free(session->time);
 	free(session->homedir);
 	free(session->user);
+	free(session->group);
 	free(session->hosturl);
 	free(session);
 }
@@ -184,6 +188,7 @@ static const char *update_uri  = "/update.xml";
 static const char *public_uri  = "/public_timeline.xml";
 static const char *friends_uri = "/friends_timeline.xml";
 static const char *replies_uri = "/replies.xml";
+static const char *group_uri = "/../laconica/groups/timeline/";
 
 static CURL *curl_init(void)
 {
@@ -384,6 +389,12 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
 		break;
+	case ACTION_GROUP:
+		sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+				group_uri, session->group, session->page);
+		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+
+		break;
 	default:
 		break;
 	}
@@ -546,6 +557,8 @@ static void parse_configfile(struct session *session)
 			session->action = ACTION_REPLIES;
 		else if (strcasecmp(action, "public") == 0)
 			session->action = ACTION_PUBLIC;
+		else if (strcasecmp(action, "group") == 0)
+			session->action = ACTION_GROUP;
 		else
 			session->action = ACTION_UNKNOWN;
 		free(action);
@@ -612,6 +625,10 @@ static void log_session(struct session *session, int retval)
 		break;
 	case ACTION_PUBLIC:
 		fprintf(log_file, "%s: host=%s retrieving public timeline\n",
+			session->time, host);
+		break;
+	case ACTION_GROUP:
+		fprintf(log_file, "%s: host=%s retrieving group timeline\n",
 			session->time, host);
 		break;
 	default:
@@ -910,6 +927,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "proxy", 1, NULL, 'P' },
 		{ "action", 1, NULL, 'A' },
 		{ "user", 1, NULL, 'u' },
+		{ "group", 1, NULL, 'G' },
 		{ "logfile", 1, NULL, 'L' },
 		{ "shrink-urls", 0, NULL, 's' },
 		{ "help", 0, NULL, 'h' },
@@ -960,7 +978,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:hg:snVv",
+		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:hg:G:snVv",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1005,6 +1023,8 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_REPLIES;
 			else if (strcasecmp(optarg, "public") == 0)
 				session->action = ACTION_PUBLIC;
+			else if (strcasecmp(optarg, "group") == 0)
+				session->action = ACTION_GROUP;
 			else
 				session->action = ACTION_UNKNOWN;
 			dbg("action = %d\n", session->action);
@@ -1014,6 +1034,13 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->user);
 			session->user = strdup(optarg);
 			dbg("user = %s\n", session->user);
+			break;
+
+		case 'G':
+			if (session->group)
+				free(session->group);
+			session->group = strdup(optarg);
+			dbg("group = %s\n", session->group);
 			break;
 		case 'L':
 			if (session->logfile)
@@ -1061,14 +1088,26 @@ int main(int argc, char *argv[], char *envp[])
 	 * Show the version to make it easier to determine what
 	 * is going on here
 	 */
-	if (debug)
+	if (debug) {
 		display_version();
+		fprintf(stderr, session->group);
+	}
 
 	if (session->action == ACTION_UNKNOWN) {
 		fprintf(stderr, "Unknown action, valid actions are:\n");
 		fprintf(stderr, "'update', 'friends', 'public', "
-			"'replies' or 'user'.\n");
+			"'replies', 'group' or 'user'.\n");
 		goto exit;
+	}
+
+	if (session->host == HOST_TWITTER && session->action == ACTION_GROUP) {
+		fprintf(stderr, "Groups only work in Identi.ca.\n");
+		goto exit;
+	}
+
+	if (session->action == ACTION_GROUP && !session->group) {
+		fprintf(stdout, "Enter group name: ");
+		session->group = readline(NULL);
 	}
 
 	if (!session->account) {
