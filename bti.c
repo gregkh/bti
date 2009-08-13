@@ -1144,7 +1144,6 @@ int main(int argc, char *argv[], char *envp[])
 	if (!session->password) {
 		read_password(password, sizeof(password));
 		session->password = strdup(password);
-		free(password);
 	}
 
 	if (session->action == ACTION_UPDATE) {
