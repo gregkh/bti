@@ -372,21 +372,23 @@ static int send_request(struct session *session)
 
 		break;
 	case ACTION_USER:
-		sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl, user_uri,
-				session->user, session->page);
+		sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+			user_uri, session->user, session->page);
 		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
 		break;
 	case ACTION_REPLIES:
 		snprintf(user_password, sizeof(user_password), "%s:%s",
 			 session->account, session->password);
-		sprintf(endpoint, "%s%s?page=%d", session->hosturl, replies_uri, session->page);
+		sprintf(endpoint, "%s%s?page=%d", session->hosturl, replies_uri,
+			session->page);
 		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 
 		break;
 	case ACTION_PUBLIC:
-		sprintf(endpoint, "%s%s?page=%d", session->hosturl, public_uri, session->page);
+		sprintf(endpoint, "%s%s?page=%d", session->hosturl, public_uri,
+			session->page);
 		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
 		break;
@@ -1160,7 +1162,8 @@ int main(int argc, char *argv[], char *envp[])
 
 		session->tweet = zalloc(strlen(tweet) + 10);
 		if (session->bash)
-			sprintf(session->tweet, "%c %s", getuid() ? '$' : '#', tweet);
+			sprintf(session->tweet, "%c %s",
+				getuid() ? '$' : '#', tweet);
 		else
 			sprintf(session->tweet, "%s", tweet);
 
