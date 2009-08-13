@@ -1090,7 +1090,7 @@ int main(int argc, char *argv[], char *envp[])
 	 */
 	if (debug) {
 		display_version();
-		fprintf(stderr, session->group);
+		fprintf(stderr, "%s", session->group);
 	}
 
 	if (session->action == ACTION_UNKNOWN) {
