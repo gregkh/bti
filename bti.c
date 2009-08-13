@@ -356,7 +356,7 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 		slist = curl_slist_append(slist, "Expect:");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
-		
+
 		sprintf(endpoint, "%s%s", session->hosturl, update_uri);
 		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -513,14 +513,13 @@ static void parse_configfile(struct session *session)
 			if (!strncasecmp(c, "true", 4) ||
 					!strncasecmp(c, "yes", 3))
 				shrink_urls = 1;
-		}
-		else if (!strncasecmp(c, "verbose", 7) &&
+		} else if (!strncasecmp(c, "verbose", 7) &&
 				(c[7] == '=')) {
 			c += 8;
 			if (!strncasecmp(c, "true", 4) ||
 					!strncasecmp(c, "yes", 3))
 				verbose = 1;
-		}	
+		}
 	} while (!feof(config_file));
 
 	if (password)
@@ -663,7 +662,7 @@ void read_password(char *buf, size_t len)
 
 	tcgetattr(0, &tp);
 	old = tp;
-	
+
 	tp.c_lflag &= (~ECHO);
 	tcsetattr(0, TCSANOW, &tp);
 
@@ -672,7 +671,7 @@ void read_password(char *buf, size_t len)
 	scanf("%79s", pwd);
 	fprintf(stdout, "\n");
 
-	tcsetattr(0, TCSANOW, &old);	
+	tcsetattr(0, TCSANOW, &old);
 
 	strncpy(buf, pwd, len);
 	buf[len-1] = '\0';
