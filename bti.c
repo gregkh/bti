@@ -670,7 +670,9 @@ void read_password(char *buf, size_t len)
 
 	fprintf(stdout, "Enter twitter password: ");
 	fflush(stdout);
+	tcflow(0, TCOOFF);
 	scanf("%79s", pwd);
+	tcflow(0, TCOON);
 	fprintf(stdout, "\n");
 
 	tcsetattr(0, TCSANOW, &old);
