@@ -656,9 +656,10 @@ static char *get_string_from_stdin(void)
 	return string;
 }
 
-void read_password(char *buf, size_t len)
+static void read_password(char *buf, size_t len)
 {
 	char pwd[80];
+	int retval;
 	struct termios old;
 	struct termios tp;
 
@@ -671,7 +672,7 @@ void read_password(char *buf, size_t len)
 	fprintf(stdout, "Enter twitter password: ");
 	fflush(stdout);
 	tcflow(0, TCOOFF);
-	scanf("%79s", pwd);
+	retval = scanf("%79s", pwd);
 	tcflow(0, TCOON);
 	fprintf(stdout, "\n");
 
