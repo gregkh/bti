@@ -1,3 +1,24 @@
+Summary of changes from v023 to v024
+============================================
+
+Ben Boeckel (1):
+      Disable echo when reading the password
+
+Greg Kroah-Hartman (7):
+      fix compiler warning about fprintf
+      clean up some trailing whitespace
+      more coding style cleanups
+      don't free an array on the stack
+      fix crash when --debug is set
+      fix up some compiler warnings in read_password
+      use "quiet" mode of building if present.
+
+Marvin Vek (1):
+      Add laconica group support
+
+gregor herrmann (1):
+      BTI should not display password while user types it
+
 Summary of changes from v022 to v023
 ============================================
 
