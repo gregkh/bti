@@ -338,6 +338,9 @@ static int send_request(struct session *session)
 	if (!curl)
 		return -EINVAL;
 
+	if (!session->hosturl)
+		session->hosturl = strdup(twitter_host);
+
 	switch (session->action) {
 	case ACTION_UPDATE:
 		snprintf(user_password, sizeof(user_password), "%s:%s",
