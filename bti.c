@@ -1127,6 +1127,11 @@ int main(int argc, char *argv[], char *envp[])
 		goto exit;
 	}
 
+	if (!session->host) {
+		fprintf(stderr, "You need to provide a host either in ~/.bti or with --host.\n");
+		goto exit;
+	}
+
 	if (session->host == HOST_TWITTER && session->action == ACTION_GROUP) {
 		fprintf(stderr, "Groups only work in Identi.ca.\n");
 		goto exit;
