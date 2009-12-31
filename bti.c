@@ -671,7 +671,7 @@ void read_password(char *buf, size_t len)
 	tp.c_lflag &= (~ECHO);
 	tcsetattr(0, TCSANOW, &tp);
 
-	fprintf(stdout, "Enter twitter password: ");
+	fprintf(stdout, "Enter password: ");
 	fflush(stdout);
 	scanf("%79s", pwd);
 	fprintf(stdout, "\n");
@@ -1138,7 +1138,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (!session->account) {
-		fprintf(stdout, "Enter twitter account: ");
+		fprintf(stdout, "Enter account: ");
 		session->account = readline(NULL);
 	}
 
