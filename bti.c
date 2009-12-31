@@ -81,6 +81,7 @@ struct session {
 	char *user;
 	char *group;
 	char *hosturl;
+	char *hostname;
 	int bash;
 	int shrink_urls;
 	int dry_run;
@@ -150,6 +151,7 @@ static void session_free(struct session *session)
 	free(session->user);
 	free(session->group);
 	free(session->hosturl);
+	free(session->hostname);
 	free(session);
 }
 
@@ -183,6 +185,8 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 
 static const char *twitter_host  = "https://twitter.com/statuses";
 static const char *identica_host = "https://identi.ca/api/statuses";
+static const char *twitter_name  = "twitter";
+static const char *identica_name = "identi.ca";
 
 static const char *user_uri    = "/user_timeline/";
 static const char *update_uri  = "/update.xml";
@@ -532,12 +536,15 @@ static void parse_configfile(struct session *session)
 		if (strcasecmp(host, "twitter") == 0) {
 			session->host = HOST_TWITTER;
 			session->hosturl = strdup(twitter_host);
+			session->hostname = strdup(twitter_name);
 		} else if (strcasecmp(host, "identica") == 0) {
 			session->host = HOST_IDENTICA;
 			session->hosturl = strdup(identica_host);
+			session->hostname = strdup(identica_name);
 		} else {
 			session->host = HOST_CUSTOM;
 			session->hosturl = strdup(host);
+			session->hostname = strdup(host);
 		}
 		free(host);
 	}
@@ -578,7 +585,6 @@ static void log_session(struct session *session, int retval)
 {
 	FILE *log_file;
 	char *filename;
-	char *host;
 
 	/* Only log something if we have a log file set */
 	if (!session->logfile)
@@ -592,46 +598,35 @@ static void log_session(struct session *session, int retval)
 	log_file = fopen(filename, "a+");
 	if (log_file == NULL)
 		return;
-	switch (session->host) {
-	case HOST_TWITTER:
-		host = "twitter";
-		break;
-	case HOST_IDENTICA:
-		host = "identi.ca";
-		break;
-	default:
-		host = session->hosturl;
-		break;
-	}
 
 	switch (session->action) {
 	case ACTION_UPDATE:
 		if (retval)
 			fprintf(log_file, "%s: host=%s tweet failed\n",
-				session->time, host);
+				session->time, session->hostname);
 		else
 			fprintf(log_file, "%s: host=%s tweet=%s\n",
-				session->time, host, session->tweet);
+				session->time, session->hostname, session->tweet);
 		break;
 	case ACTION_FRIENDS:
 		fprintf(log_file, "%s: host=%s retrieving friends timeline\n",
-			session->time, host);
+			session->time, session->hostname);
 		break;
 	case ACTION_USER:
 		fprintf(log_file, "%s: host=%s retrieving %s's timeline\n",
-			session->time, host, session->user);
+			session->time, session->hostname, session->user);
 		break;
 	case ACTION_REPLIES:
 		fprintf(log_file, "%s: host=%s retrieving replies\n",
-			session->time, host);
+			session->time, session->hostname);
 		break;
 	case ACTION_PUBLIC:
 		fprintf(log_file, "%s: host=%s retrieving public timeline\n",
-			session->time, host);
+			session->time, session->hostname);
 		break;
 	case ACTION_GROUP:
 		fprintf(log_file, "%s: host=%s retrieving group timeline\n",
-			session->time, host);
+			session->time, session->hostname);
 		break;
 	default:
 		break;
@@ -656,7 +651,7 @@ static char *get_string_from_stdin(void)
 	return string;
 }
 
-static void read_password(char *buf, size_t len)
+static void read_password(char *buf, size_t len, char *host)
 {
 	char pwd[80];
 	int retval;
@@ -669,7 +664,7 @@ static void read_password(char *buf, size_t len)
 	tp.c_lflag &= (~ECHO);
 	tcsetattr(0, TCSANOW, &tp);
 
-	fprintf(stdout, "Enter twitter password: ");
+	fprintf(stdout, "Enter password for %s: ", host);
 	fflush(stdout);
 	tcflow(0, TCOOFF);
 	retval = scanf("%79s", pwd);
@@ -1083,15 +1078,20 @@ int main(int argc, char *argv[], char *envp[])
 		case 'H':
 			if (session->hosturl)
 				free(session->hosturl);
+			if (session->hostname)
+				free(session->hostname);
 			if (strcasecmp(optarg, "twitter") == 0) {
 				session->host = HOST_TWITTER;
 				session->hosturl = strdup(twitter_host);
+				session->hostname = strdup(twitter_name);
 			} else if (strcasecmp(optarg, "identica") == 0) {
 				session->host = HOST_IDENTICA;
 				session->hosturl = strdup(identica_host);
+				session->hostname = strdup(identica_name);
 			} else {
 				session->host = HOST_CUSTOM;
 				session->hosturl = strdup(optarg);
+				session->hostname = strdup(optarg);
 			}
 			dbg("host = %d\n", session->host);
 			break;
@@ -1143,12 +1143,12 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (!session->account) {
-		fprintf(stdout, "Enter twitter account: ");
+		fprintf(stdout, "Enter account for %s: ", session->hostname);
 		session->account = readline(NULL);
 	}
 
 	if (!session->password) {
-		read_password(password, sizeof(password));
+		read_password(password, sizeof(password), session->hostname);
 		session->password = strdup(password);
 	}
 
