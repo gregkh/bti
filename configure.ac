@@ -15,8 +15,6 @@ AC_PATH_PROG([XSLTPROC], [xsltproc])
 
 dnl FIXME: Replace `main' with a function in `-lnsl':
 AC_CHECK_LIB([nsl], [main])
-dnl FIXME: Replace `main' with a function in `-lreadline':
-AC_CHECK_LIB([readline], [main])
 
 AC_CHECK_LIB([pcre], [main])
 
