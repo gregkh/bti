@@ -1,3 +1,17 @@
+Summary of changes from v024 to v025
+============================================
+
+Amir Mohammad Saied (3):
+      If there's no host specified, the session host is already pointing to twitter, but hosturl is empty
+      Removing explicit mentions of twitter
+      Merge remote branch 'gregkh/master'
+
+Greg Kroah-Hartman (1):
+      Remove link-time dependancy on readline
+
+gregor herrmann (1):
+      Name correct hosts in prompts.
+
 Summary of changes from v023 to v024
 ============================================
 
