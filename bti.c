@@ -33,12 +33,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <curl/curl.h>
-#include <readline/readline.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <pcre.h>
 #include <termios.h>
+#include <dlfcn.h>
 
 
 #define zalloc(size)	calloc(size, 1)
@@ -88,6 +88,8 @@ struct session {
 	int page;
 	enum host host;
 	enum action action;
+	void *readline_handle;
+	char *(*readline)(const char *);
 };
 
 struct bti_curl_buffer {
@@ -128,6 +130,97 @@ static void display_version(void)
 	fprintf(stdout, "bti - version %s\n", VERSION);
 }
 
+static char *get_string(const char *name)
+{
+	char *temp;
+	char *string;
+
+	string = zalloc(1000);
+	if (!string)
+		exit(1);
+	if (name != NULL)
+		fprintf(stdout, "%s", name);
+	if (!fgets(string, 999, stdin))
+		return NULL;
+	temp = strchr(string, '\n');
+	*temp = '\0';
+	return string;
+}
+
+/*
+ * Try to get a handle to a readline function from a variety of different
+ * libraries.  If nothing is present on the system, then fall back to an
+ * internal one.
+ *
+ * Logic originally based off of code in the e2fsutils package in the
+ * lib/ss/get_readline.c file, which is licensed under the MIT license.
+ *
+ * This keeps us from having to relicense the bti codebase if readline
+ * ever changes its license, as there is no link-time dependancy.
+ * It is a run-time thing only, and we handle any readline-like library
+ * in the same manner, making bti not be a derivative work of any
+ * other program.
+ */
+static void session_readline_init(struct session *session)
+{
+	/* Libraries we will try to use for readline/editline functionality */
+	const char *libpath = "libreadline.so.6:libreadline.so.5:"
+				"libreadline.so.4:libreadline.so:libedit.so.2:"
+				"libedit.so:libeditline.so.0:libeditline.so";
+	void *handle = NULL;
+	char *tmp, *cp, *next;
+	int (*bind_key)(int, void *);
+	void (*insert)(void);
+
+	/* default to internal function if we can't find anything */
+	session->readline = get_string;
+
+	tmp = malloc(strlen(libpath)+1);
+	if (!tmp)
+		return;
+	strcpy(tmp, libpath);
+	for (cp = tmp; cp; cp = next) {
+		next = strchr(cp, ':');
+		if (next)
+			*next++ = 0;
+		if (*cp == 0)
+			continue;
+		if ((handle = dlopen(cp, RTLD_NOW))) {
+			dbg("Using %s for readline library\n", cp);
+			break;
+		}
+	}
+	free(tmp);
+	if (!handle) {
+		dbg("No readline library found.\n");
+		return;
+	}
+
+	session->readline_handle = handle;
+	session->readline = (char *(*)(const char *))dlsym(handle, "readline");
+	if (session->readline == NULL) {
+		/* something odd happened, default back to internal stuff */
+		session->readline_handle = NULL;
+		session->readline = get_string;
+		return;
+	}
+
+	/*
+	 * If we found a library, turn off filename expansion
+	 * as that makes no sense from within bti.
+	 */
+	bind_key = (int (*)(int, void *))dlsym(handle, "rl_bind_key");
+	insert = (void (*)(void))dlsym(handle, "rl_insert");
+	if (bind_key && insert)
+		bind_key('\t', insert);
+}
+
+static void session_readline_cleanup(struct session *session)
+{
+	if (session->readline_handle)
+		dlclose(session->readline_handle);
+}
+
 static struct session *session_alloc(void)
 {
 	struct session *session;
@@ -135,6 +228,7 @@ static struct session *session_alloc(void)
 	session = zalloc(sizeof(*session));
 	if (!session)
 		return NULL;
+	session_readline_init(session);
 	return session;
 }
 
@@ -142,6 +236,7 @@ static void session_free(struct session *session)
 {
 	if (!session)
 		return;
+	session_readline_cleanup(session);
 	free(session->password);
 	free(session->account);
 	free(session->tweet);
@@ -341,6 +436,9 @@ static int send_request(struct session *session)
 	curl = curl_init();
 	if (!curl)
 		return -EINVAL;
+
+	if (!session->hosturl)
+		session->hosturl = strdup(twitter_host);
 
 	switch (session->action) {
 	case ACTION_UPDATE:
@@ -972,7 +1070,6 @@ int main(int argc, char *argv[], char *envp[])
 
 	debug = 0;
 	verbose = 0;
-	rl_bind_key('\t', rl_insert);
 
 	session = session_alloc();
 	if (!session) {
@@ -1127,11 +1224,6 @@ int main(int argc, char *argv[], char *envp[])
 		goto exit;
 	}
 
-	if (!session->host) {
-		fprintf(stderr, "You need to provide a host either in ~/.bti or with --host.\n");
-		goto exit;
-	}
-
 	if (session->host == HOST_TWITTER && session->action == ACTION_GROUP) {
 		fprintf(stderr, "Groups only work in Identi.ca.\n");
 		goto exit;
@@ -1139,12 +1231,12 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->action == ACTION_GROUP && !session->group) {
 		fprintf(stdout, "Enter group name: ");
-		session->group = readline(NULL);
+		session->group = session->readline(NULL);
 	}
 
 	if (!session->account) {
 		fprintf(stdout, "Enter account for %s: ", session->hostname);
-		session->account = readline(NULL);
+		session->account = session->readline(NULL);
 	}
 
 	if (!session->password) {
@@ -1156,7 +1248,7 @@ int main(int argc, char *argv[], char *envp[])
 		if (session->bash)
 			tweet = get_string_from_stdin();
 		else
-			tweet = readline("tweet: ");
+			tweet = session->readline("tweet: ");
 		if (!tweet || strlen(tweet) == 0) {
 			dbg("no tweet?\n");
 			return -1;
