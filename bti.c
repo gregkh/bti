@@ -83,6 +83,7 @@ struct session {
 	char *hosturl;
 	char *hostname;
 	int bash;
+	int interactive;
 	int shrink_urls;
 	int dry_run;
 	int page;
@@ -172,8 +173,11 @@ static void session_readline_init(struct session *session)
 	int (*bind_key)(int, void *);
 	void (*insert)(void);
 
-	/* default to internal function if we can't find anything */
+	/* default to internal function if we can't or won't find anything */
 	session->readline = get_string;
+	if (!isatty(0))
+		return;
+	session->interactive = 1;
 
 	tmp = malloc(strlen(libpath)+1);
 	if (!tmp)
@@ -1245,7 +1249,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (session->action == ACTION_UPDATE) {
-		if (session->bash)
+		if (session->bash || !session->interactive)
 			tweet = get_string_from_stdin();
 		else
 			tweet = session->readline("tweet: ");
