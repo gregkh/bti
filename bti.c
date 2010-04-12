@@ -144,7 +144,8 @@ static char *get_string(const char *name)
 	if (!fgets(string, 999, stdin))
 		return NULL;
 	temp = strchr(string, '\n');
-	*temp = '\0';
+	if (temp)
+		*temp = '\0';
 	return string;
 }
 
@@ -749,7 +750,8 @@ static char *get_string_from_stdin(void)
 	if (!fgets(string, 999, stdin))
 		return NULL;
 	temp = strchr(string, '\n');
-	*temp = '\0';
+	if (temp)
+		*temp = '\0';
 	return string;
 }
 
