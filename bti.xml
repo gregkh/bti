@@ -75,7 +75,7 @@
 		are "update" to send a message, "friends" to see your friends
 		timeline, "public" to track public timeline, "replies" to see
 		replies to your messages and "user" to see a specific user's
-		timeline.
+		timeline.  Default is "update".
               </para>
             </listitem>
           </varlistentry>
@@ -83,7 +83,7 @@
             <term><option>--user screenname</option></term>
             <listitem>
               <para>
-		Specify the user you want to see his/her messages while the
+		Specify the user whose messages you want to see when the
 		action is "user".
               </para>
             </listitem>
@@ -216,7 +216,7 @@
           out.
         </para>
         <para>
-          It's primary focus is to allow you to log everything that you
+          Its primary focus is to allow you to log everything that you
           type into a bash shell, in a crazy, "this is what I'm doing right
           now!" type of way, letting the world follow along with you
           constant moving between directories and refreshing your email
@@ -241,7 +241,7 @@
          <para>
            The account and password can be stored in a configuration file
            in the users home directory in a file named
-           <filename>.bti</filename>  The structure of this file is as
+           <filename>.bti</filename>.  The structure of this file is as
            follows:
          </para>
          <variablelist>
