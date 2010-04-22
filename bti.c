@@ -190,7 +190,8 @@ static void session_readline_init(struct session *session)
 			*next++ = 0;
 		if (*cp == 0)
 			continue;
-		if ((handle = dlopen(cp, RTLD_NOW))) {
+		handle = dlopen(cp, RTLD_NOW);
+		if (handle) {
 			dbg("Using %s for readline library\n", cp);
 			break;
 		}
