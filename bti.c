@@ -710,7 +710,8 @@ static void log_session(struct session *session, int retval)
 				session->time, session->hostname);
 		else
 			fprintf(log_file, "%s: host=%s tweet=%s\n",
-				session->time, session->hostname, session->tweet);
+				session->time, session->hostname,
+				session->tweet);
 		break;
 	case ACTION_FRIENDS:
 		fprintf(log_file, "%s: host=%s retrieving friends timeline\n",
