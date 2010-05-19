@@ -117,6 +117,7 @@ static void display_help(void)
 	fprintf(stdout, "  --proxy PROXY:PORT\n");
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --logfile logfile\n");
+	fprintf(stdout, "  --config configfile\n");
 	fprintf(stdout, "  --shrink-urls\n");
 	fprintf(stdout, "  --page PAGENUMBER\n");
 	fprintf(stdout, "  --bash\n");
@@ -1059,6 +1060,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "dry-run", 0, NULL, 'n' },
 		{ "page", 1, NULL, 'g' },
 		{ "version", 0, NULL, 'v' },
+		{ "config", 1, NULL, 'c' },
 		{ }
 	};
 	struct session *session;
@@ -1107,7 +1109,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:hg:G:snVv",
+		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:c:hg:G:snVv",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1202,6 +1204,18 @@ int main(int argc, char *argv[], char *envp[])
 			break;
 		case 'b':
 			session->bash = 1;
+			break;
+		case 'c':
+			if (session->configfile)
+				free(session->configfile);
+			session->configfile = strdup(optarg);
+			dbg("configfile = %s\n", session->configfile);
+
+			/*
+			 * read the config file now.  Yes, this could override previously
+			 * set options from the command line, but the user asked for it...
+			 */
+			parse_configfile(session);
 			break;
 		case 'h':
 			display_help();

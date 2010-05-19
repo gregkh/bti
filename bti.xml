@@ -33,6 +33,7 @@
           <arg><option>--host HOST_NAME</option></arg>
           <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--logfile LOGFILE</option></arg>
+          <arg><option>--config CONFIGFILE</option></arg>
           <arg><option>--page PAGENUMBER</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--shrink-urls</option></arg>
@@ -125,6 +126,17 @@
 		Specify a logfile for bti to write status messages to.  LOGFILE
 		is in relation to the user's home directory, not an absolute
 		path to a file.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--config CONFIGFILE</option></term>
+            <listitem>
+              <para>
+		Specify a config file for bti to read from.  By default, bti
+		looks in the ~/.bti file for config values.  This default
+		location can be overridden by setting a specific file with this
+		option.
               </para>
             </listitem>
           </varlistentry>
@@ -361,7 +373,10 @@
          </variablelist>
 	 <para>
 	   For example, command line options always override any config file
-	   option, or any environment variables.
+	   option, or any environment variables.  Unless a config file is
+	   specified by the command line.  At that point, the new config file is
+	   read, and any previous options set by a command line option, would be
+	   overridden.
          </para>
        </refsect1>
 

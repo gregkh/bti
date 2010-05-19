@@ -22,7 +22,7 @@
 bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
 .SH "SYNOPSIS"
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 bti sends a tweet message to twitter\&.com or identi\&.ca\&.
@@ -65,6 +65,11 @@ If \-\-proxy is not specified but the environment variable \'http_proxy\' is set
 \fB\-\-logfile LOGFILE\fR
 .RS 4
 Specify a logfile for bti to write status messages to\&. LOGFILE is in relation to the user\'s home directory, not an absolute path to a file\&.
+.RE
+.PP
+\fB\-\-config CONFIGFILE\fR
+.RS 4
+Specify a config file for bti to read from\&. By default, bti looks in the ~/\&.bti file for config values\&. This default location can be overridden by setting a specific file with this option\&.
 .RE
 .PP
 \fB\-\-shrink\-urls\fR
@@ -192,7 +197,7 @@ config file option
 environment variables
 .RE
 .PP
-For example, command line options always override any config file option, or any environment variables\&.
+For example, command line options always override any config file option, or any environment variables\&. Unless a config file is specified by the command line\&. At that point, the new config file is read, and any previous options set by a command line option, would be overridden\&.
 .SH "AUTHOR"
 .PP
 Written by Greg Kroah\-Hartman <greg@kroah\&.com> and Amir Mohammad Saied <amirsaied@gmail\&.com>\&.
