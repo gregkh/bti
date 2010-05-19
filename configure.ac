@@ -1,7 +1,7 @@
-AC_INIT([bti], [025], [greg@kroah.com])
+AC_INIT([bti], [026], [greg@kroah.com])
 AC_PREREQ(2.60)
 
-AM_INIT_AUTOMAKE(bti, 025)
+AM_INIT_AUTOMAKE(bti, 026)
 dnl AM_CONFIG_HEADER([check-news foreign 1.9 dist-bzip2])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])

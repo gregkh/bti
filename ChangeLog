@@ -1,3 +1,22 @@
+Summary of changes from v025 to v026
+============================================
+
+Greg Kroah-Hartman (7):
+      minor coding style cleanup.
+      updated version of checkpatch.pl
+      another minor codingstyle fix
+      update bti.1 from the xml changes
+      init the readline function after parsing the command line options
+      add a configfile option to the core data structure
+      Add ability to override default config file option
+
+Pete Zaitcev (2):
+      bti: suppress prompt if fed from a pipe
+      bti: fix a crash for echo -n|bti
+
+Reuben Thomas (1):
+      Typo fixes for bti(1)
+
 Summary of changes from v024 to v025
 ============================================
 
