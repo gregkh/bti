@@ -82,6 +82,7 @@ struct session {
 	char *group;
 	char *hosturl;
 	char *hostname;
+	char *configfile;
 	int bash;
 	int interactive;
 	int shrink_urls;
@@ -251,6 +252,7 @@ static void session_free(struct session *session)
 	free(session->group);
 	free(session->hosturl);
 	free(session->hostname);
+	free(session->configfile);
 	free(session);
 }
 
@@ -551,12 +553,7 @@ static void parse_configfile(struct session *session)
 	char *file;
 	int shrink_urls = 0;
 
-	/* config file is ~/.bti  */
-	file = alloca(strlen(session->homedir) + 7);
-
-	sprintf(file, "%s/.bti", session->homedir);
-
-	config_file = fopen(file, "r");
+	config_file = fopen(session->configfile, "r");
 
 	/* No error if file does not exist or is unreadable.  */
 	if (config_file == NULL)
@@ -1088,7 +1085,12 @@ int main(int argc, char *argv[], char *envp[])
 	session->time = strdup(ctime(&t));
 	session->time[strlen(session->time)-1] = 0x00;
 
+	/* Get the home directory so we can try to find a config file */
 	session->homedir = strdup(getenv("HOME"));
+
+	/* set up a default config file location (traditionally ~/.bti) */
+	session->configfile = zalloc(strlen(session->homedir) + 7);
+	sprintf(session->configfile, "%s/.bti", session->homedir);
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
@@ -1280,6 +1282,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->page == 0)
 		session->page = 1;
+	dbg("config file = %s\n", session->configfile);
 	dbg("account = %s\n", session->account);
 	dbg("password = %s\n", session->password);
 	dbg("host = %d\n", session->host);
