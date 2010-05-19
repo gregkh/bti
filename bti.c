@@ -234,7 +234,6 @@ static struct session *session_alloc(void)
 	session = zalloc(sizeof(*session));
 	if (!session)
 		return NULL;
-	session_readline_init(session);
 	return session;
 }
 
@@ -242,7 +241,6 @@ static void session_free(struct session *session)
 {
 	if (!session)
 		return;
-	session_readline_cleanup(session);
 	free(session->password);
 	free(session->account);
 	free(session->tweet);
@@ -1218,6 +1216,7 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	}
 
+	session_readline_init(session);
 	/*
 	 * Show the version to make it easier to determine what
 	 * is going on here
@@ -1303,6 +1302,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	log_session(session, retval);
 exit:
+	session_readline_cleanup(session);
 	session_free(session);
 	return retval;;
 }
