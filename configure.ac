@@ -36,6 +36,8 @@ else
 	LIBS="$LIBS $XML_LIBS"
 fi
 
+# explicitly link DSOs
+LIBS="$LIBS -ldl"
 
 
 dnl Checks for header files.
