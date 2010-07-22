@@ -566,7 +566,6 @@ static void parse_configfile(struct session *session)
 	char *action = NULL;
 	char *user = NULL;
 	char *replyto = NULL;
-	char *file;
 	int shrink_urls = 0;
 
 	config_file = fopen(session->configfile, "r");
