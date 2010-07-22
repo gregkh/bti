@@ -18,6 +18,8 @@ AC_CHECK_LIB([nsl], [main])
 
 AC_CHECK_LIB([pcre], [main])
 
+AC_CHECK_LIB([oauth], [main])
+
 # CURL
 LIBCURL_CHECK_CONFIG([yes], [], [have_libcurl="yes"], [have_libcurl="no"])
 if test "${have_libcurl}" != yes; then
@@ -37,7 +39,7 @@ else
 fi
 
 # explicitly link DSOs
-LIBS="$LIBS -ldl"
+LIBS="$LIBS -ldl -loauth"
 
 
 dnl Checks for header files.
