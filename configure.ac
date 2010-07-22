@@ -18,7 +18,10 @@ AC_CHECK_LIB([nsl], [main])
 
 AC_CHECK_LIB([pcre], [main])
 
-AC_CHECK_LIB([oauth], [main])
+AC_CHECK_LIB(oauth, main, [], [
+	echo "Error, you need liboauth to build properly."
+	exit -1
+	])
 
 # CURL
 LIBCURL_CHECK_CONFIG([yes], [], [have_libcurl="yes"], [have_libcurl="no"])
