@@ -1270,6 +1270,8 @@ int main(int argc, char *argv[], char *envp[])
 	static const struct option options[] = {
 		{ "debug", 0, NULL, 'd' },
 		{ "verbose", 0, NULL, 'V' },
+		{ "account", 1, NULL, 'a' },
+		{ "password", 1, NULL, 'p' },
 		{ "host", 1, NULL, 'H' },
 		{ "proxy", 1, NULL, 'P' },
 		{ "action", 1, NULL, 'A' },
@@ -1340,10 +1342,22 @@ int main(int argc, char *argv[], char *envp[])
 		case 'V':
 			verbose = 1;
 			break;
+		case 'a':
+			if (session->account)
+				free(session->account);
+			session->account = strdup(optarg);
+			dbg("account = %s\n", session->account);
+			break;
 		case 'g':
 			page_nr = atoi(optarg);
 			dbg("page = %d\n", page_nr);
 			session->page = page_nr;
+			break;
+		case 'p':
+			if (session->password)
+				free(session->password);
+			session->password = strdup(optarg);
+			dbg("password = %s\n", session->password);
 			break;
 		case 'P':
 			if (session->proxy)
