@@ -22,7 +22,7 @@
 bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
 .SH "SYNOPSIS"
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 bti sends a tweet message to twitter\&.com or identi\&.ca\&.
@@ -72,6 +72,15 @@ Specify a logfile for bti to write status messages to\&. LOGFILE is in relation 
 Specify a config file for bti to read from\&. By default, bti looks in the ~/\&.bti file for config values\&. This default location can be overridden by setting a specific file with this option\&.
 .RE
 .PP
+\fB\-\-replyto ID\fR
+.RS 4
+Status ID of a single post to which you want to create a threaded reply to\&.
+.sp
+For twitter, this is ignored unless the message starts with the @name of the owner of the post with the status ID\&.
+.sp
+For status\&.net, this can link any two messages into context with each other\&. Status\&.net will also link a message that contains an @name without this without regard to context\&.
+.RE
+.PP
 \fB\-\-shrink\-urls\fR
 .RS 4
 Scans the tweet text for valid URL patterns and passes each through the supplied bti\-shrink\-urls script\&. The script will pass the URL to a web service that shrinks the URLs, making it more suitable for micro\-blogging\&.
@@ -96,7 +105,7 @@ Performs all steps that would normally be done for a given action, but will not 
 .PP
 \fB\-\-verbose\fR
 .RS 4
-Verbose mode
+Verbose mode\&. Print status IDs and timestamps\&.
 .RE
 .PP
 \fB\-\-bash\fR
@@ -167,6 +176,13 @@ The http proxy needed to send data out to the Internet\&.
 \fBlogfile\fR
 .RS 4
 The logfile name for bti to write what happened to\&. This file is relative to the user\'s home directory\&. If this file is not specified here or on the command line, no logging will be written to the disk\&.
+.RE
+.PP
+\fBreplyto\fR
+.RS 4
+The status ID to which all notices will be linked to\&.
+.sp
+There is no sane reason for a need to have this set in a config file\&. One such reason is to have all your messages as children to a particular status\&.
 .RE
 .PP
 \fBshrink\-urls\fR

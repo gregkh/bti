@@ -88,6 +88,7 @@ struct session {
 	char *hosturl;
 	char *hostname;
 	char *configfile;
+	char *replyto;
 	int bash;
 	int interactive;
 	int shrink_urls;
@@ -124,6 +125,7 @@ static void display_help(void)
 	fprintf(stdout, "  --host HOST\n");
 	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --config configfile\n");
+	fprintf(stdout, "  --replyto ID\n");
 	fprintf(stdout, "  --shrink-urls\n");
 	fprintf(stdout, "  --page PAGENUMBER\n");
 	fprintf(stdout, "  --bash\n");
@@ -249,6 +251,7 @@ static void session_free(struct session *session)
 {
 	if (!session)
 		return;
+	free(session->replyto);
 	free(session->password);
 	free(session->account);
 	free(session->consumer_key);
@@ -335,6 +338,7 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 	xmlChar *text = NULL;
 	xmlChar *user = NULL;
 	xmlChar *created = NULL;
+	xmlChar *id = NULL;
 	xmlNodePtr userinfo;
 
 	current = current->xmlChildrenNode;
@@ -344,6 +348,8 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 				created = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"text"))
 				text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
+			if (!xmlStrcmp(current->name, (const xmlChar *)"id"))
+				id = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"user")) {
 				userinfo = current->xmlChildrenNode;
 				while (userinfo != NULL) {
@@ -356,19 +362,21 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 				}
 			}
 
-			if (user && text && created) {
+			if (user && text && created && id) {
 				if (verbose)
-					printf("[%s] (%.16s) %s\n",
-						user, created, text);
+					printf("[%s] {%s} (%.16s) %s\n",
+						user, id, created, text);
 				else
 					printf("[%s] %s\n",
 						user, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
+				xmlFree(id);
 				user = NULL;
 				text = NULL;
 				created = NULL;
+				id = NULL;
 			}
 		}
 		current = current->next;
@@ -597,6 +605,12 @@ static int send_request(struct session *session)
 						CURLFORM_COPYCONTENTS, "bti",
 						CURLFORM_END);
 
+				if (session->replyto)
+					curl_formadd(&formpost, &lastptr,
+						     CURLFORM_COPYNAME, "in_reply_to_status_id",
+						     CURLFORM_COPYCONTENTS, session->replyto,
+						     CURLFORM_END);
+
 				curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 				slist = curl_slist_append(slist, "Expect:");
 				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
@@ -604,7 +618,6 @@ static int send_request(struct session *session)
 				sprintf(endpoint, "%s%s", session->hosturl, update_uri);
 				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 				curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
-
 				break;
 			case ACTION_FRIENDS:
 				snprintf(user_password, sizeof(user_password), "%s:%s",
@@ -748,6 +761,7 @@ static void parse_configfile(struct session *session)
 	char *logfile = NULL;
 	char *action = NULL;
 	char *user = NULL;
+	char *replyto = NULL;
 	int shrink_urls = 0;
 
 	config_file = fopen(session->configfile, "r");
@@ -819,6 +833,11 @@ static void parse_configfile(struct session *session)
 			c += 8;
 			if (c[0] != '\0')
 				logfile = strdup(c);
+		} else if (!strncasecmp(c, "replyto", 7) &&
+			   (c[7] == '=')) {
+			c += 8;
+			if (c[0] != '\0')
+				replyto = strdup(c);
 		} else if (!strncasecmp(c, "action", 6) &&
 			   (c[6] == '=')) {
 			c += 7;
@@ -879,6 +898,8 @@ static void parse_configfile(struct session *session)
 	}
 	if (logfile)
 		session->logfile = logfile;
+	if (replyto)
+		session->replyto = replyto;
 	if (action) {
 		if (strcasecmp(action, "update") == 0)
 			session->action = ACTION_UPDATE;
@@ -1285,6 +1306,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "page", 1, NULL, 'g' },
 		{ "version", 0, NULL, 'v' },
 		{ "config", 1, NULL, 'c' },
+		{ "replyto", 1, NULL, 'r' },
 		{ }
 	};
 	struct session *session;
@@ -1331,7 +1353,7 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:c:hg:G:snVv",
+		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:c:hg:G:sr:nVv",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1352,6 +1374,10 @@ int main(int argc, char *argv[], char *envp[])
 			page_nr = atoi(optarg);
 			dbg("page = %d\n", page_nr);
 			session->page = page_nr;
+			break;
+		case 'r':
+			session->replyto = strdup(optarg);
+			dbg("in_reply_to_status_id = %s\n", session->replyto);
 			break;
 		case 'p':
 			if (session->password)
