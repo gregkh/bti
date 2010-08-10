@@ -310,13 +310,13 @@ static const char *identica_request_token_uri = "http://identi.ca/api/oauth/requ
 static const char *identica_access_token_uri  = "http://identi.ca/api/oauth/access_token";
 static const char *identica_authorize_uri     = "http://identi.ca/api/oauth/authorize?oauth_token=";
 
-static const char *user_uri    = "/user_timeline/";
-static const char *update_uri  = "/update.xml";
-static const char *public_uri  = "/public_timeline.xml";
-static const char *friends_uri = "/friends_timeline.xml";
+static const char *user_uri     = "/user_timeline/";
+static const char *update_uri   = "/update.xml";
+static const char *public_uri   = "/public_timeline.xml";
+static const char *friends_uri  = "/friends_timeline.xml";
 static const char *mentions_uri = "/mentions.xml";
-static const char *replies_uri = "/replies.xml";
-static const char *group_uri = "/../statusnet/groups/timeline/";
+static const char *replies_uri  = "/replies.xml";
+static const char *group_uri    = "/../statusnet/groups/timeline/";
 
 static CURL *curl_init(void)
 {
@@ -570,6 +570,7 @@ static int send_request(struct session *session)
 	char *req_url = NULL;
 	char *reply = NULL;
 	char *postarg = NULL;
+	char *escaped_tweet = NULL;
 	int is_post = 0;
 
 	if (!session)
@@ -687,9 +688,10 @@ static int send_request(struct session *session)
 	} else {
 		switch (session->action) {
 			case ACTION_UPDATE:
+				escaped_tweet = oauth_url_escape(session->tweet);
 				sprintf(endpoint,
 						"%s%s?status=%s",
-						session->hosturl, update_uri, session->tweet);
+						session->hosturl, update_uri, escaped_tweet);
 				is_post = 1;
 				break;
 			case ACTION_USER:
