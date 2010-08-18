@@ -7,6 +7,18 @@ bin_SCRIPTS = \
 bti_SOURCES = \
 	bti.c
 
+bti_CPPFLAGS =
+	$(LIBCURL_CPPFLAGS) \
+	$(XML_CPPFLAGS) \
+	$(LIBPCRE_CPPFLAGS) \
+	$(LIBOAUTH_CPPFLAGS)
+
+bti_LDADD = \
+	$(LIBCURL_LIBS) \
+	$(XML_LIBS) \
+	$(LIBPCRE_LIBS) \
+	$(LIBOAUTH_LIBS)
+
 dist_man_MANS = \
 	bti.1 \
 	bti-shrink-urls.1

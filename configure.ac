@@ -16,33 +16,31 @@ AC_PATH_PROG([XSLTPROC], [xsltproc])
 dnl FIXME: Replace `main' with a function in `-lnsl':
 AC_CHECK_LIB([nsl], [main])
 
-AC_CHECK_LIB([pcre], [main])
+PKG_PROG_PKG_CONFIG()
 
-AC_CHECK_LIB(oauth, main, [], [
-	echo "Error, you need liboauth to build properly."
-	exit -1
-	])
+PKG_CHECK_MODULES(LIBOAUTH, oauth)
+AC_SUBST(LIBOAUTH_CFLAGS)
+AC_SUBST(LIBOAUTH_LIBS)
+
+PKG_CHECK_MODULES(LIBPCRE, libpcre)
+AC_SUBST(LIBPCRE_CFLAGS)
+AC_SUBST(LIBPCRE_LIBS)
+
 
 # CURL
 LIBCURL_CHECK_CONFIG([yes], [], [have_libcurl="yes"], [have_libcurl="no"])
 if test "${have_libcurl}" != yes; then
 	AC_MSG_ERROR([libcurl library not found, please install it])
-else
-	CPPFLAGS="$CPPFLAGS $LIBCURL_CPPFLAGS"
-	LIBS="${LIBS} ${LIBCURL}"
 fi
 
 # libxml2
 AM_PATH_XML2([], [have_libxml="yes"], [have_libxml="no"])
 if test "${have_libxml}" != yes; then
 	AC_MSG_ERROR([libxml not found, please install it])
-else
-	CPPFLAGS="$CPPFLAGS $XML_CPPFLAGS"
-	LIBS="$LIBS $XML_LIBS"
 fi
 
 # explicitly link DSOs
-LIBS="$LIBS -ldl -loauth"
+LIBS="$LIBS -ldl"
 
 
 dnl Checks for header files.
