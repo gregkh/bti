@@ -591,72 +591,73 @@ static int send_request(struct session *session)
 			session->hosturl = strdup(twitter_host);
 
 		switch (session->action) {
-			case ACTION_UPDATE:
-				snprintf(user_password, sizeof(user_password), "%s:%s",
-						session->account, session->password);
-				snprintf(data, sizeof(data), "status=\"%s\"", session->tweet);
+		case ACTION_UPDATE:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			snprintf(data, sizeof(data), "status=\"%s\"", session->tweet);
+			curl_formadd(&formpost, &lastptr,
+				     CURLFORM_COPYNAME, "status",
+				     CURLFORM_COPYCONTENTS, session->tweet,
+				     CURLFORM_END);
+
+			curl_formadd(&formpost, &lastptr,
+				     CURLFORM_COPYNAME, "source",
+				     CURLFORM_COPYCONTENTS, "bti",
+				     CURLFORM_END);
+
+			if (session->replyto)
 				curl_formadd(&formpost, &lastptr,
-						CURLFORM_COPYNAME, "status",
-						CURLFORM_COPYCONTENTS, session->tweet,
-						CURLFORM_END);
+					     CURLFORM_COPYNAME, "in_reply_to_status_id",
+					     CURLFORM_COPYCONTENTS, session->replyto,
+					     CURLFORM_END);
 
-				curl_formadd(&formpost, &lastptr,
-						CURLFORM_COPYNAME, "source",
-						CURLFORM_COPYCONTENTS, "bti",
-						CURLFORM_END);
+			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+			slist = curl_slist_append(slist, "Expect:");
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 
-				if (session->replyto)
-					curl_formadd(&formpost, &lastptr,
-						     CURLFORM_COPYNAME, "in_reply_to_status_id",
-						     CURLFORM_COPYCONTENTS, session->replyto,
-						     CURLFORM_END);
+			sprintf(endpoint, "%s%s", session->hosturl, update_uri);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+			break;
 
-				curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-				slist = curl_slist_append(slist, "Expect:");
-				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+		case ACTION_FRIENDS:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+					friends_uri, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+			break;
 
-				sprintf(endpoint, "%s%s", session->hosturl, update_uri);
-				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-				curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
-				break;
-			case ACTION_FRIENDS:
-				snprintf(user_password, sizeof(user_password), "%s:%s",
-						session->account, session->password);
-				sprintf(endpoint, "%s%s?page=%d", session->hosturl,
-						friends_uri, session->page);
-				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-				curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+		case ACTION_USER:
+			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+				user_uri, session->user, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			break;
 
-				break;
-			case ACTION_USER:
-				sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-						user_uri, session->user, session->page);
-				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+		case ACTION_REPLIES:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				replies_uri, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+			break;
 
-				break;
-			case ACTION_REPLIES:
-				snprintf(user_password, sizeof(user_password), "%s:%s",
-						session->account, session->password);
-				sprintf(endpoint, "%s%s?page=%d", session->hosturl, replies_uri,
-						session->page);
-				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-				curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+		case ACTION_PUBLIC:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				public_uri, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			break;
 
-				break;
-			case ACTION_PUBLIC:
-				sprintf(endpoint, "%s%s?page=%d", session->hosturl, public_uri,
-						session->page);
-				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+		case ACTION_GROUP:
+			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+				group_uri, session->group, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			break;
 
-				break;
-			case ACTION_GROUP:
-				sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-						group_uri, session->group, session->page);
-				curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-
-				break;
-			default:
-				break;
+		default:
+			break;
 		}
 
 		if (session->proxy)
@@ -686,37 +687,34 @@ static int send_request(struct session *session)
 		bti_curl_buffer_free(curl_buf);
 	} else {
 		switch (session->action) {
-			case ACTION_UPDATE:
-				escaped_tweet = oauth_url_escape(session->tweet);
-				sprintf(endpoint,
-						"%s%s?status=%s",
-						session->hosturl, update_uri, escaped_tweet);
-				is_post = 1;
-				break;
-			case ACTION_USER:
-				sprintf(endpoint, "%s%s%s.xml?page=%d",
-						session->hosturl, user_uri,
-						session->user, session->page);
-				break;
-			case ACTION_REPLIES:
-				sprintf(endpoint, "%s%s?page=%d",
-						session->hosturl, mentions_uri, session->page);
-				break;
-			case ACTION_PUBLIC:
-				sprintf(endpoint, "%s%s?page=%d",
-						session->hosturl, public_uri, session->page);
-				break;
-			case ACTION_GROUP:
-				sprintf(endpoint, "%s%s%s.xml?page=%d",
-						session->hosturl, group_uri,
-						session->group, session->page);
-				break;
-			case ACTION_FRIENDS:
-				sprintf(endpoint, "%s%s?page=%d",
-						session->hosturl, friends_uri, session->page);
-				break;
-			default:
-				break;
+		case ACTION_UPDATE:
+			escaped_tweet = oauth_url_escape(session->tweet);
+			sprintf(endpoint, "%s%s?status=%s", session->hosturl,
+				update_uri, escaped_tweet);
+			is_post = 1;
+			break;
+		case ACTION_USER:
+			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+				user_uri, session->user, session->page);
+			break;
+		case ACTION_REPLIES:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				mentions_uri, session->page);
+			break;
+		case ACTION_PUBLIC:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				public_uri, session->page);
+			break;
+		case ACTION_GROUP:
+			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+				group_uri, session->group, session->page);
+			break;
+		case ACTION_FRIENDS:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				friends_uri, session->page);
+			break;
+		default:
+			break;
 		}
 
 		if (is_post) {
@@ -1507,15 +1505,18 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->no_oauth) {
 		if (!session->account) {
-			fprintf(stdout, "Enter account for %s: ", session->hostname);
+			fprintf(stdout, "Enter account for %s: ",
+				session->hostname);
 			session->account = session->readline(NULL);
 		}
 		if (!session->password) {
-			read_password(password, sizeof(password), session->hostname);
+			read_password(password, sizeof(password),
+				      session->hostname);
 			session->password = strdup(password);
 		}
 	} else {
-		if (!session->access_token_key || !session->access_token_secret) {
+		if (!session->access_token_key ||
+		    !session->access_token_secret) {
 			request_access_token(session);
 			goto exit;
 		}
