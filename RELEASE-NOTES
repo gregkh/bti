@@ -1,3 +1,7 @@
+bti 027
+=============
+OAUTH support
+
 bti 026
 =============
 added ability to specify config file from command line

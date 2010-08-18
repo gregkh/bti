@@ -1,3 +1,29 @@
+Summary of changes from v026 to v027
+============================================
+
+Amir Mohammad Saied (4):
+      OAuth for both twitter, and identi.ca
+      HTTP basic auth for StatusNet instances
+      Leftovers from last commit, accepting account and, password from options
+      - Cosmetics     - Escaping tweet before POSTing it
+
+Daniel Cordero (4):
+      Verbose mode shows status IDs
+      Support for replying to notices
+      Add a replyto configuration option
+      Fix a warning: unused variable message
+
+Greg Kroah-Hartman (5):
+      add oath.keys from twitter.com
+      Merge branch 'master' into oath
+      error out if liboauth is not present
+      Merge branch 'master' into oath-test
+      fix up the autoconf checking for liboauth and other libraries
+
+Michel Alexandre Salim (1):
+      Fix Implicit linking against -ldl
+
+
 Summary of changes from v025 to v026
 ============================================
 
