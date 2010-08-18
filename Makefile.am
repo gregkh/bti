@@ -7,7 +7,7 @@ bin_SCRIPTS = \
 bti_SOURCES = \
 	bti.c
 
-bti_CPPFLAGS =
+bti_CPPFLAGS = \
 	$(LIBCURL_CPPFLAGS) \
 	$(XML_CPPFLAGS) \
 	$(LIBPCRE_CPPFLAGS) \
