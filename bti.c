@@ -455,7 +455,8 @@ static int parse_osp_reply(const char *reply, char **token, char **secret)
 	rc = oauth_split_url_parameters(reply, &rv);
 	qsort(rv, rc, sizeof(char *), oauth_cmpstringp);
 	if (rc == 2 || rc == 4) {
-		if (!strncmp(rv[0], "oauth_token=", 11) && !strncmp(rv[1], "oauth_token_secret=", 18)) {
+		if (!strncmp(rv[0], "oauth_token=", 11) &&
+		    !strncmp(rv[1], "oauth_token_secret=", 18)) {
 			if (token)
 				*token = strdup(&(rv[0][12]));
 			if (secret)
@@ -464,7 +465,8 @@ static int parse_osp_reply(const char *reply, char **token, char **secret)
 			retval = 0;
 		}
 	} else if (rc == 3) {
-		if (!strncmp(rv[1], "oauth_token=", 11) && !strncmp(rv[2], "oauth_token_secret=", 18)) {
+		if (!strncmp(rv[1], "oauth_token=", 11) &&
+		    !strncmp(rv[2], "oauth_token_secret=", 18)) {
 			if (token)
 				*token = strdup(&(rv[1][12]));
 			if (secret)
@@ -528,15 +530,18 @@ static int request_access_token(struct session *session)
 	if (session->host == HOST_TWITTER) {
 		fprintf(stdout, "%s%s\nPIN: ", twitter_authorize_uri, at_key);
 		verifier = session->readline(NULL);
-		sprintf(at_uri, "%s?oauth_verifier=%s", twitter_access_token_uri, verifier);
+		sprintf(at_uri, "%s?oauth_verifier=%s",
+			twitter_access_token_uri, verifier);
 	} else if (session->host == HOST_IDENTICA) {
 		fprintf(stdout, "%s%s\nPIN: ", identica_authorize_uri, at_key);
 		verifier = session->readline(NULL);
-		sprintf(at_uri, "%s?oauth_verifier=%s", identica_access_token_uri, verifier);
+		sprintf(at_uri, "%s?oauth_verifier=%s",
+			identica_access_token_uri, verifier);
 	}
 	request_url = oauth_sign_url2(at_uri, NULL, OA_HMAC, NULL,
-			session->consumer_key, session->consumer_secret, at_key,
-			at_secret);
+				      session->consumer_key,
+				      session->consumer_secret,
+				      at_key, at_secret);
 	reply = oauth_http_get(request_url, post_params);
 
 	if (!reply)
@@ -547,8 +552,8 @@ static int request_access_token(struct session *session)
 
 	free(reply);
 
-	fprintf(stdout, "Please put these two lines in your bti configuration ");
-	fprintf(stdout, "file (~/.bti):\n");
+	fprintf(stdout, "Please put these two lines in your bti ");
+	fprintf(stdout, "configuration file (~/.bti):\n");
 	fprintf(stdout, "access_token_key=%s\n", at_key);
 	fprintf(stdout, "access_token_secret=%s\n", at_secret);
 
@@ -594,7 +599,8 @@ static int send_request(struct session *session)
 		case ACTION_UPDATE:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			snprintf(data, sizeof(data), "status=\"%s\"", session->tweet);
+			snprintf(data, sizeof(data), "status=\"%s\"",
+				 session->tweet);
 			curl_formadd(&formpost, &lastptr,
 				     CURLFORM_COPYNAME, "status",
 				     CURLFORM_COPYCONTENTS, session->tweet,
@@ -651,8 +657,9 @@ static int send_request(struct session *session)
 			break;
 
 		case ACTION_GROUP:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-				group_uri, session->group, session->page);
+			sprintf(endpoint, "%s%s%s.xml?page=%d",
+				session->hosturl, group_uri, session->group,
+				session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
@@ -694,8 +701,9 @@ static int send_request(struct session *session)
 			is_post = 1;
 			break;
 		case ACTION_USER:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-				user_uri, session->user, session->page);
+			sprintf(endpoint, "%s%s%s.xml?page=%d",
+				session->hosturl, user_uri, session->user,
+				session->page);
 			break;
 		case ACTION_REPLIES:
 			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
@@ -706,8 +714,9 @@ static int send_request(struct session *session)
 				public_uri, session->page);
 			break;
 		case ACTION_GROUP:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-				group_uri, session->group, session->page);
+			sprintf(endpoint, "%s%s%s.xml?page=%d",
+				session->hosturl, group_uri, session->group,
+				session->page);
 			break;
 		case ACTION_FRIENDS:
 			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
@@ -718,18 +727,18 @@ static int send_request(struct session *session)
 		}
 
 		if (is_post) {
-			req_url = oauth_sign_url2(
-					endpoint, &postarg, OA_HMAC, NULL,
-					session->consumer_key, session->consumer_secret,
-					session->access_token_key, session->access_token_secret
-					);
+			req_url = oauth_sign_url2(endpoint, &postarg, OA_HMAC,
+						  NULL, session->consumer_key,
+						  session->consumer_secret,
+						  session->access_token_key,
+						  session->access_token_secret);
 			reply = oauth_http_post(req_url, postarg);
 		} else {
-			req_url = oauth_sign_url2(
-					endpoint, NULL, OA_HMAC, NULL,
-					session->consumer_key, session->consumer_secret,
-					session->access_token_key, session->access_token_secret
-					);
+			req_url = oauth_sign_url2(endpoint, NULL, OA_HMAC, NULL,
+						  session->consumer_key,
+						  session->consumer_secret,
+						  session->access_token_key,
+						  session->access_token_secret);
 			reply = oauth_http_get(req_url, postarg);
 		}
 
@@ -1352,7 +1361,8 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:c:hg:G:sr:nVv",
+		option = getopt_long_only(argc, argv,
+					  "dp:P:H:a:A:u:c:hg:G:sr:nVv",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1459,8 +1469,9 @@ int main(int argc, char *argv[], char *envp[])
 			dbg("configfile = %s\n", session->configfile);
 
 			/*
-			 * read the config file now.  Yes, this could override previously
-			 * set options from the command line, but the user asked for it...
+			 * read the config file now.  Yes, this could override
+			 * previously set options from the command line, but
+			 * the user asked for it...
 			 */
 			parse_configfile(session);
 			break;
