@@ -455,20 +455,20 @@ static int parse_osp_reply(const char *reply, char **token, char **secret)
 	rc = oauth_split_url_parameters(reply, &rv);
 	qsort(rv, rc, sizeof(char *), oauth_cmpstringp);
 	if (rc == 2 || rc == 4) {
-		if (!strncmp(rv[0],"oauth_token=",11) && !strncmp(rv[1],"oauth_token_secret=",18)) {
+		if (!strncmp(rv[0], "oauth_token=", 11) && !strncmp(rv[1], "oauth_token_secret=", 18)) {
 			if (token)
-				*token =strdup(&(rv[0][12]));
+				*token = strdup(&(rv[0][12]));
 			if (secret)
-				*secret=strdup(&(rv[1][19]));
+				*secret = strdup(&(rv[1][19]));
 
 			retval = 0;
 		}
 	} else if (rc == 3) {
-		if (!strncmp(rv[1],"oauth_token=",11) && !strncmp(rv[2],"oauth_token_secret=",18)) {
+		if (!strncmp(rv[1], "oauth_token=", 11) && !strncmp(rv[2], "oauth_token_secret=", 18)) {
 			if (token)
-				*token =strdup(&(rv[1][12]));
+				*token = strdup(&(rv[1][12]));
 			if (secret)
-				*secret=strdup(&(rv[2][19]));
+				*secret = strdup(&(rv[2][19]));
 
 			retval = 0;
 		}
@@ -482,7 +482,6 @@ static int parse_osp_reply(const char *reply, char **token, char **secret)
 
 	return retval;
 }
-	
 
 static int request_access_token(struct session *session)
 {
@@ -1502,11 +1501,10 @@ int main(int argc, char *argv[], char *envp[])
 			goto exit;
 		}
 	} else {
-		if (!session->consumer_key || !session->consumer_secret) {
+		if (!session->consumer_key || !session->consumer_secret)
 			session->no_oauth = 1;
-		}
 	}
-	
+
 	if (session->no_oauth) {
 		if (!session->account) {
 			fprintf(stdout, "Enter account for %s: ", session->hostname);
@@ -1520,7 +1518,7 @@ int main(int argc, char *argv[], char *envp[])
 		if (!session->access_token_key || !session->access_token_secret) {
 			request_access_token(session);
 			goto exit;
-		} 
+		}
 	}
 
 	if (session->action == ACTION_UNKNOWN) {
