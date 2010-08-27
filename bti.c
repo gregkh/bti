@@ -526,9 +526,10 @@ static int request_access_token(struct session *session)
 
 	free(reply);
 
-	fprintf(stdout, "Please open the following link in your browser, and ");
-	fprintf(stdout, "allow 'bti' to access your account. Then paste ");
-	fprintf(stdout, "back the provided PIN in here.\n");
+	fprintf(stdout,
+		"Please open the following link in your browser, and "
+		"allow 'bti' to access your account. Then paste "
+		"back the provided PIN in here.\n");
 	if (session->host == HOST_TWITTER) {
 		fprintf(stdout, "%s%s\nPIN: ", twitter_authorize_uri, at_key);
 		verifier = session->readline(NULL);
@@ -554,10 +555,12 @@ static int request_access_token(struct session *session)
 
 	free(reply);
 
-	fprintf(stdout, "Please put these two lines in your bti ");
-	fprintf(stdout, "configuration file (~/.bti):\n");
-	fprintf(stdout, "access_token_key=%s\n", at_key);
-	fprintf(stdout, "access_token_secret=%s\n", at_secret);
+	fprintf(stdout,
+		"Please put these two lines in your bti "
+		"configuration file (~/.bti):\n"
+		"access_token_key=%s\n"
+		"access_token_secret=%s\n",
+		at_key, at_secret);
 
 	return 0;
 }
@@ -1506,9 +1509,10 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->host == HOST_TWITTER) {
 		if (!session->consumer_key || !session->consumer_secret) {
-			fprintf(stderr, "Twitter no longer supports HTTP basic authentication.\n");
-			fprintf(stderr, "Both consumer key, and consumer secret are required");
-			fprintf(stderr, " for bti in order to behave as an OAuth consumer.\n");
+			fprintf(stderr,
+				"Twitter no longer supports HTTP basic authentication.\n"
+				"Both consumer key, and consumer secret are required"
+				" for bti in order to behave as an OAuth consumer.\n");
 			goto exit;
 		}
 		if (session->action == ACTION_GROUP) {
@@ -1540,9 +1544,8 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (session->action == ACTION_UNKNOWN) {
-		fprintf(stderr, "Unknown action, valid actions are:\n");
-		fprintf(stderr, "'update', 'friends', 'public', "
-			"'replies', 'group' or 'user'.\n");
+		fprintf(stderr, "Unknown action, valid actions are:\n"
+			"'update', 'friends', 'public', 'replies', 'group' or 'user'.\n");
 		goto exit;
 	}
 
