@@ -94,6 +94,7 @@ struct session {
 	char *configfile;
 	char *replyto;
 	int bash;
+	int background;
 	int interactive;
 	int shrink_urls;
 	int dry_run;
@@ -133,6 +134,7 @@ static void display_help(void)
 		"  --shrink-urls\n"
 		"  --page PAGENUMBER\n"
 		"  --bash\n"
+		"  --background\n"
 		"  --debug\n"
 		"  --verbose\n"
 		"  --dry-run\n"
@@ -689,7 +691,7 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
 		if (!session->dry_run) {
 			res = curl_easy_perform(curl);
-			if (res && !session->bash) {
+			if (res && !session->background) {
 				fprintf(stderr, "error(%d) trying to perform "
 						"operation\n", res);
 				return -EINVAL;
@@ -1318,6 +1320,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "shrink-urls", 0, NULL, 's' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
+		{ "background", 0, NULL, 'B' },
 		{ "dry-run", 0, NULL, 'n' },
 		{ "page", 1, NULL, 'g' },
 		{ "version", 0, NULL, 'v' },
@@ -1469,6 +1472,9 @@ int main(int argc, char *argv[], char *envp[])
 			break;
 		case 'b':
 			session->bash = 1;
+			/* fall-through intended */
+		case 'B':
+			session->background = 1;
 			break;
 		case 'c':
 			if (session->configfile)
@@ -1554,7 +1560,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (session->action == ACTION_UPDATE) {
-		if (session->bash || !session->interactive)
+		if (session->background || !session->interactive)
 			tweet = get_string_from_stdin();
 		else
 			tweet = session->readline("tweet: ");
@@ -1586,7 +1592,7 @@ int main(int argc, char *argv[], char *envp[])
 	/* fork ourself so that the main shell can get on
 	 * with it's life as we try to connect and handle everything
 	 */
-	if (session->bash) {
+	if (session->background) {
 		child = fork();
 		if (child) {
 			dbg("child is %d\n", child);
@@ -1595,7 +1601,7 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	retval = send_request(session);
-	if (retval && !session->bash)
+	if (retval && !session->background)
 		fprintf(stderr, "operation failed\n");
 
 	log_session(session, retval);
