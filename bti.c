@@ -44,12 +44,16 @@
 
 #define zalloc(size)	calloc(size, 1)
 
+#ifndef NDEBUG
 #define dbg(format, arg...)						\
 	do {								\
 		if (debug)						\
 			fprintf(stdout, "bti: %s: " format , __func__ , \
 				## arg);				\
 	} while (0)
+#else
+#define dbg(format, arg...)
+#endif
 
 
 static int debug;
