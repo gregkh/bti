@@ -23,9 +23,7 @@ PKG_CHECK_MODULES(LIBPCRE, libpcre)
 PKG_CHECK_MODULES([LIBCURL], [libcurl])
 PKG_CHECK_MODULES([XML], [libxml-2.0])
 
-# explicitly link DSOs
-LIBS="$LIBS -ldl"
-
+AC_SEARCH_LIBS([dlopen], [dl])
 
 dnl Checks for header files.
 #AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h unistd.h])
