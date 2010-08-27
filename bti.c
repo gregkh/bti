@@ -233,8 +233,10 @@ static void session_readline_init(struct session *session)
 
 static void session_readline_cleanup(struct session *session)
 {
+#ifndef NDEBUG
 	if (session->readline_handle)
 		dlclose(session->readline_handle);
+#endif
 }
 
 static struct session *session_alloc(void)
@@ -249,6 +251,7 @@ static struct session *session_alloc(void)
 
 static void session_free(struct session *session)
 {
+#ifndef NDEBUG
 	if (!session)
 		return;
 	free(session->replyto);
@@ -268,6 +271,7 @@ static void session_free(struct session *session)
 	free(session->hostname);
 	free(session->configfile);
 	free(session);
+#endif
 }
 
 static struct bti_curl_buffer *bti_curl_buffer_alloc(enum action action)
