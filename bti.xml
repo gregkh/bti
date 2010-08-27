@@ -214,11 +214,20 @@
 		 help specify it is coming from a command line.  Don't put the
 		 working directory and the '$' in the tweet message.
 	      </para>
+
+              <para>
+                 This option implies <option>--background</option>.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--background</option></term>
+            <listitem>
 	      <para>
-		 This mode also does not report back any errors that might have
-		 happened when sending the message, and it sends it in the
-		 background, returning immediately, allowing the process to
-		 continue on.
+		 Do not report back any errors that might have
+		 happened when sending the message, and send it in the
+		 background, returning immediately, allowing the user
+		 to continue on.
 	       </para>
             </listitem>
           </varlistentry>

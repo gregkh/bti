@@ -112,7 +112,13 @@ Verbose mode\&. Print status IDs and timestamps\&.
 .RS 4
 Add the working directory and a \'$\' in the tweet message to help specify it is coming from a command line\&. Don\'t put the working directory and the \'$\' in the tweet message\&.
 .sp
-This mode also does not report back any errors that might have happened when sending the message, and it sends it in the background, returning immediately, allowing the process to continue on\&.
+This option implies
+\fB\-\-background\fR\&.
+.RE
+.PP
+\fB\-\-background\fR
+.RS 4
+Do not report back any errors that might have happened when sending the message, and send it in the background, returning immediately, allowing the user to continue on\&.
 .RE
 .PP
 \fB\-\-version\fR
