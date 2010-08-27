@@ -19,25 +19,9 @@ AC_CHECK_LIB([nsl], [main])
 PKG_PROG_PKG_CONFIG()
 
 PKG_CHECK_MODULES(LIBOAUTH, oauth)
-AC_SUBST(LIBOAUTH_CFLAGS)
-AC_SUBST(LIBOAUTH_LIBS)
-
 PKG_CHECK_MODULES(LIBPCRE, libpcre)
-AC_SUBST(LIBPCRE_CFLAGS)
-AC_SUBST(LIBPCRE_LIBS)
-
-
-# CURL
-LIBCURL_CHECK_CONFIG([yes], [], [have_libcurl="yes"], [have_libcurl="no"])
-if test "${have_libcurl}" != yes; then
-	AC_MSG_ERROR([libcurl library not found, please install it])
-fi
-
-# libxml2
-AM_PATH_XML2([], [have_libxml="yes"], [have_libxml="no"])
-if test "${have_libxml}" != yes; then
-	AC_MSG_ERROR([libxml not found, please install it])
-fi
+PKG_CHECK_MODULES([LIBCURL], [libcurl])
+PKG_CHECK_MODULES([XML], [libxml-2.0])
 
 # explicitly link DSOs
 LIBS="$LIBS -ldl"
