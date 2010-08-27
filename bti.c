@@ -1514,7 +1514,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->host == HOST_TWITTER) {
 		if (!session->consumer_key || !session->consumer_secret) {
-			fprintf(stderr, "Twitter no longer supuports HTTP basic authentication.\n");
+			fprintf(stderr, "Twitter no longer supports HTTP basic authentication.\n");
 			fprintf(stderr, "Both consumer key, and consumer secret are required");
 			fprintf(stderr, " for bti in order to behave as an OAuth consumer.\n");
 			goto exit;
