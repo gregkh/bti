@@ -110,32 +110,31 @@ struct bti_curl_buffer {
 
 static void display_help(void)
 {
-	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n");
-	fprintf(stdout, "Version: " VERSION "\n");
-	fprintf(stdout, "Usage:\n");
-	fprintf(stdout, "  bti [options]\n");
-	fprintf(stdout, "options are:\n");
-	fprintf(stdout, "  --account accountname\n");
-	fprintf(stdout, "  --password password\n");
-	fprintf(stdout, "  --action action\n");
-	fprintf(stdout, "    ('update', 'friends', 'public', 'replies', "
-		"'group' or 'user')\n");
-	fprintf(stdout, "  --user screenname\n");
-	fprintf(stdout, "  --group groupname\n");
-	fprintf(stdout, "  --proxy PROXY:PORT\n");
-	fprintf(stdout, "  --host HOST\n");
-	fprintf(stdout, "  --logfile logfile\n");
-	fprintf(stdout, "  --config configfile\n");
-	fprintf(stdout, "  --replyto ID\n");
-	fprintf(stdout, "  --shrink-urls\n");
-	fprintf(stdout, "  --page PAGENUMBER\n");
-	fprintf(stdout, "  --bash\n");
-	fprintf(stdout,	"  --background\n");
-	fprintf(stdout, "  --debug\n");
-	fprintf(stdout, "  --verbose\n");
-	fprintf(stdout, "  --dry-run\n");
-	fprintf(stdout, "  --version\n");
-	fprintf(stdout, "  --help\n");
+	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n"
+		"Version: %s\n"
+		"Usage:\n"
+		"  bti [options]\n"
+		"options are:\n"
+		"  --account accountname\n"
+		"  --password password\n"
+		"  --action action\n"
+		"    ('update', 'friends', 'public', 'replies', or 'user')\n"
+		"  --user screenname\n"
+		"  --group groupname\n"
+		"  --proxy PROXY:PORT\n"
+		"  --host HOST\n"
+		"  --logfile logfile\n"
+		"  --config configfile\n"
+		"  --replyto ID\n"
+		"  --shrink-urls\n"
+		"  --page PAGENUMBER\n"
+		"  --bash\n"
+		"  --background\n"
+		"  --debug\n"
+		"  --verbose\n"
+		"  --dry-run\n"
+		"  --version\n"
+		"  --help\n", VERSION);
 }
 
 static void display_version(void)
