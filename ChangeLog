@@ -1,3 +1,25 @@
+Summary of changes from v027 to v028
+============================================
+
+Diego Elio 'Flameeyes' Pettenò (7):
+      build system: use consistently pkg-config to check for dependencies
+      build system: use AC_SEARCH_LIBS rather than assuming -ldl is needed.
+      Remove autoscan-generated bad tests.
+      Use arrays rather than pointers for static strings.
+      Typo fix.
+      Split --background from --bash, and make the latter imply the former.
+      Collapse more fprintf() calls.
+
+Greg Kroah-Hartman (7):
+      Fixup typo in Makefile.am found by @applehq
+      new version of checkpatch.pl from 2.6.35-rc1 kernel
+      whitespace cleanups for bti.c
+      more formatting cleanups
+      long line cleanups
+      Update my copyright date.
+      Reduce the number of calls to fprintf.
+
+
 Summary of changes from v026 to v027
 ============================================
 

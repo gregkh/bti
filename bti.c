@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Greg Kroah-Hartman <greg@kroah.com>
+ * Copyright (C) 2008-2010 Greg Kroah-Hartman <greg@kroah.com>
  * Copyright (C) 2009 Bart Trojanowski <bart@jukie.net>
  * Copyright (C) 2009 Amir Mohammad Saied <amirsaied@gmail.com>
  *
@@ -114,16 +114,15 @@ struct bti_curl_buffer {
 
 static void display_help(void)
 {
-	printf("bti - send tweet to twitter or identi.ca\n"
-		"Version: " VERSION "\n"
+	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n"
+		"Version: %s\n"
 		"Usage:\n"
 		"  bti [options]\n"
 		"options are:\n"
 		"  --account accountname\n"
 		"  --password password\n"
 		"  --action action\n"
-		"    ('update', 'friends', 'public', 'replies', "
-			"'group' or 'user')\n"
+		"    ('update', 'friends', 'public', 'replies', or 'user')\n"
 		"  --user screenname\n"
 		"  --group groupname\n"
 		"  --proxy PROXY:PORT\n"
@@ -139,7 +138,7 @@ static void display_help(void)
 		"  --verbose\n"
 		"  --dry-run\n"
 		"  --version\n"
-		"  --help\n");
+		"  --help\n", VERSION);
 }
 
 static void display_version(void)
@@ -308,25 +307,25 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-static const char twitter_host  []= "http://api.twitter.com/1/statuses";
-static const char identica_host []= "https://identi.ca/api/statuses";
-static const char twitter_name  []= "twitter";
-static const char identica_name []= "identi.ca";
+static const char twitter_host[]  = "http://api.twitter.com/1/statuses";
+static const char identica_host[] = "https://identi.ca/api/statuses";
+static const char twitter_name[]  = "twitter";
+static const char identica_name[] = "identi.ca";
 
-static const char twitter_request_token_uri  []= "http://twitter.com/oauth/request_token";
-static const char twitter_access_token_uri   []= "http://twitter.com/oauth/access_token";
-static const char twitter_authorize_uri      []= "http://twitter.com/oauth/authorize?oauth_token=";
-static const char identica_request_token_uri []= "http://identi.ca/api/oauth/request_token";
-static const char identica_access_token_uri  []= "http://identi.ca/api/oauth/access_token";
-static const char identica_authorize_uri     []= "http://identi.ca/api/oauth/authorize?oauth_token=";
+static const char twitter_request_token_uri[]  = "http://twitter.com/oauth/request_token";
+static const char twitter_access_token_uri[]   = "http://twitter.com/oauth/access_token";
+static const char twitter_authorize_uri[]      = "http://twitter.com/oauth/authorize?oauth_token=";
+static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/request_token";
+static const char identica_access_token_uri[]  = "http://identi.ca/api/oauth/access_token";
+static const char identica_authorize_uri[]     = "http://identi.ca/api/oauth/authorize?oauth_token=";
 
-static const char user_uri     []= "/user_timeline/";
-static const char update_uri   []= "/update.xml";
-static const char public_uri   []= "/public_timeline.xml";
-static const char friends_uri  []= "/friends_timeline.xml";
-static const char mentions_uri []= "/mentions.xml";
-static const char replies_uri  []= "/replies.xml";
-static const char group_uri    []= "/../statusnet/groups/timeline/";
+static const char user_uri[]     = "/user_timeline/";
+static const char update_uri[]   = "/update.xml";
+static const char public_uri[]   = "/public_timeline.xml";
+static const char friends_uri[]  = "/friends_timeline.xml";
+static const char mentions_uri[] = "/mentions.xml";
+static const char replies_uri[]  = "/replies.xml";
+static const char group_uri[]    = "/../statusnet/groups/timeline/";
 
 static CURL *curl_init(void)
 {
