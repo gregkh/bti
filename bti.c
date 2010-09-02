@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2008-2010 Greg Kroah-Hartman <greg@kroah.com>
  * Copyright (C) 2009 Bart Trojanowski <bart@jukie.net>
- * Copyright (C) 2009 Amir Mohammad Saied <amirsaied@gmail.com>
+ * Copyright (C) 2009-2010 Amir Mohammad Saied <amirsaied@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
