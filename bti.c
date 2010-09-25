@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Greg Kroah-Hartman <greg@kroah.com>
+ * Copyright (C) 2008-2010 Greg Kroah-Hartman <greg@kroah.com>
  * Copyright (C) 2009 Bart Trojanowski <bart@jukie.net>
  * Copyright (C) 2009 Amir Mohammad Saied <amirsaied@gmail.com>
  *
@@ -39,6 +39,7 @@
 #include <pcre.h>
 #include <termios.h>
 #include <dlfcn.h>
+#include <oauth.h>
 
 
 #define zalloc(size)	calloc(size, 1)
@@ -73,6 +74,10 @@ enum action {
 struct session {
 	char *password;
 	char *account;
+	char *consumer_key;
+	char *consumer_secret;
+	char *access_token_key;
+	char *access_token_secret;
 	char *tweet;
 	char *proxy;
 	char *time;
@@ -82,10 +87,15 @@ struct session {
 	char *group;
 	char *hosturl;
 	char *hostname;
+	char *configfile;
+	char *replyto;
 	int bash;
+	int background;
+	int interactive;
 	int shrink_urls;
 	int dry_run;
 	int page;
+	int no_oauth;
 	enum host host;
 	enum action action;
 	void *readline_handle;
@@ -100,29 +110,31 @@ struct bti_curl_buffer {
 
 static void display_help(void)
 {
-	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n");
-	fprintf(stdout, "Version: " VERSION "\n");
-	fprintf(stdout, "Usage:\n");
-	fprintf(stdout, "  bti [options]\n");
-	fprintf(stdout, "options are:\n");
-	fprintf(stdout, "  --account accountname\n");
-	fprintf(stdout, "  --password password\n");
-	fprintf(stdout, "  --action action\n");
-	fprintf(stdout, "    ('update', 'friends', 'public', 'replies', "
-		"'group' or 'user')\n");
-	fprintf(stdout, "  --user screenname\n");
-	fprintf(stdout, "  --group groupname\n");
-	fprintf(stdout, "  --proxy PROXY:PORT\n");
-	fprintf(stdout, "  --host HOST\n");
-	fprintf(stdout, "  --logfile logfile\n");
-	fprintf(stdout, "  --shrink-urls\n");
-	fprintf(stdout, "  --page PAGENUMBER\n");
-	fprintf(stdout, "  --bash\n");
-	fprintf(stdout, "  --debug\n");
-	fprintf(stdout, "  --verbose\n");
-	fprintf(stdout, "  --dry-run\n");
-	fprintf(stdout, "  --version\n");
-	fprintf(stdout, "  --help\n");
+	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n"
+		"Version: %s\n"
+		"Usage:\n"
+		"  bti [options]\n"
+		"options are:\n"
+		"  --account accountname\n"
+		"  --password password\n"
+		"  --action action\n"
+		"    ('update', 'friends', 'public', 'replies', or 'user')\n"
+		"  --user screenname\n"
+		"  --group groupname\n"
+		"  --proxy PROXY:PORT\n"
+		"  --host HOST\n"
+		"  --logfile logfile\n"
+		"  --config configfile\n"
+		"  --replyto ID\n"
+		"  --shrink-urls\n"
+		"  --page PAGENUMBER\n"
+		"  --bash\n"
+		"  --background\n"
+		"  --debug\n"
+		"  --verbose\n"
+		"  --dry-run\n"
+		"  --version\n"
+		"  --help\n", VERSION);
 }
 
 static void display_version(void)
@@ -143,7 +155,8 @@ static char *get_string(const char *name)
 	if (!fgets(string, 999, stdin))
 		return NULL;
 	temp = strchr(string, '\n');
-	*temp = '\0';
+	if (temp)
+		*temp = '\0';
 	return string;
 }
 
@@ -172,8 +185,11 @@ static void session_readline_init(struct session *session)
 	int (*bind_key)(int, void *);
 	void (*insert)(void);
 
-	/* default to internal function if we can't find anything */
+	/* default to internal function if we can't or won't find anything */
 	session->readline = get_string;
+	if (!isatty(0))
+		return;
+	session->interactive = 1;
 
 	tmp = malloc(strlen(libpath)+1);
 	if (!tmp)
@@ -185,7 +201,8 @@ static void session_readline_init(struct session *session)
 			*next++ = 0;
 		if (*cp == 0)
 			continue;
-		if ((handle = dlopen(cp, RTLD_NOW))) {
+		handle = dlopen(cp, RTLD_NOW);
+		if (handle) {
 			dbg("Using %s for readline library\n", cp);
 			break;
 		}
@@ -228,7 +245,6 @@ static struct session *session_alloc(void)
 	session = zalloc(sizeof(*session));
 	if (!session)
 		return NULL;
-	session_readline_init(session);
 	return session;
 }
 
@@ -236,9 +252,13 @@ static void session_free(struct session *session)
 {
 	if (!session)
 		return;
-	session_readline_cleanup(session);
+	free(session->replyto);
 	free(session->password);
 	free(session->account);
+	free(session->consumer_key);
+	free(session->consumer_secret);
+	free(session->access_token_key);
+	free(session->access_token_secret);
 	free(session->tweet);
 	free(session->proxy);
 	free(session->time);
@@ -247,6 +267,7 @@ static void session_free(struct session *session)
 	free(session->group);
 	free(session->hosturl);
 	free(session->hostname);
+	free(session->configfile);
 	free(session);
 }
 
@@ -278,17 +299,25 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-static const char *twitter_host  = "https://twitter.com/statuses";
-static const char *identica_host = "https://identi.ca/api/statuses";
-static const char *twitter_name  = "twitter";
-static const char *identica_name = "identi.ca";
+static const char twitter_host[]  = "http://api.twitter.com/1/statuses";
+static const char identica_host[] = "https://identi.ca/api/statuses";
+static const char twitter_name[]  = "twitter";
+static const char identica_name[] = "identi.ca";
 
-static const char *user_uri    = "/user_timeline/";
-static const char *update_uri  = "/update.xml";
-static const char *public_uri  = "/public_timeline.xml";
-static const char *friends_uri = "/friends_timeline.xml";
-static const char *replies_uri = "/replies.xml";
-static const char *group_uri = "/../laconica/groups/timeline/";
+static const char twitter_request_token_uri[]  = "http://twitter.com/oauth/request_token";
+static const char twitter_access_token_uri[]   = "http://twitter.com/oauth/access_token";
+static const char twitter_authorize_uri[]      = "http://twitter.com/oauth/authorize?oauth_token=";
+static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/request_token";
+static const char identica_access_token_uri[]  = "http://identi.ca/api/oauth/access_token";
+static const char identica_authorize_uri[]     = "http://identi.ca/api/oauth/authorize?oauth_token=";
+
+static const char user_uri[]     = "/user_timeline/";
+static const char update_uri[]   = "/update.xml";
+static const char public_uri[]   = "/public_timeline.xml";
+static const char friends_uri[]  = "/friends_timeline.xml";
+static const char mentions_uri[] = "/mentions.xml";
+static const char replies_uri[]  = "/replies.xml";
+static const char group_uri[]    = "/../statusnet/groups/timeline/";
 
 static CURL *curl_init(void)
 {
@@ -310,6 +339,7 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 	xmlChar *text = NULL;
 	xmlChar *user = NULL;
 	xmlChar *created = NULL;
+	xmlChar *id = NULL;
 	xmlNodePtr userinfo;
 
 	current = current->xmlChildrenNode;
@@ -319,6 +349,8 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 				created = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"text"))
 				text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
+			if (!xmlStrcmp(current->name, (const xmlChar *)"id"))
+				id = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
 			if (!xmlStrcmp(current->name, (const xmlChar *)"user")) {
 				userinfo = current->xmlChildrenNode;
 				while (userinfo != NULL) {
@@ -331,19 +363,21 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 				}
 			}
 
-			if (user && text && created) {
+			if (user && text && created && id) {
 				if (verbose)
-					printf("[%s] (%.16s) %s\n",
-						user, created, text);
+					printf("[%s] {%s} (%.16s) %s\n",
+						user, id, created, text);
 				else
 					printf("[%s] %s\n",
 						user, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
+				xmlFree(id);
 				user = NULL;
 				text = NULL;
 				created = NULL;
+				id = NULL;
 			}
 		}
 		current = current->next;
@@ -414,9 +448,125 @@ static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
 	return buffer_size;
 }
 
+static int parse_osp_reply(const char *reply, char **token, char **secret)
+{
+	int rc;
+	int retval = 1;
+	char **rv = NULL;
+	rc = oauth_split_url_parameters(reply, &rv);
+	qsort(rv, rc, sizeof(char *), oauth_cmpstringp);
+	if (rc == 2 || rc == 4) {
+		if (!strncmp(rv[0], "oauth_token=", 11) &&
+		    !strncmp(rv[1], "oauth_token_secret=", 18)) {
+			if (token)
+				*token = strdup(&(rv[0][12]));
+			if (secret)
+				*secret = strdup(&(rv[1][19]));
+
+			retval = 0;
+		}
+	} else if (rc == 3) {
+		if (!strncmp(rv[1], "oauth_token=", 11) &&
+		    !strncmp(rv[2], "oauth_token_secret=", 18)) {
+			if (token)
+				*token = strdup(&(rv[1][12]));
+			if (secret)
+				*secret = strdup(&(rv[2][19]));
+
+			retval = 0;
+		}
+	}
+
+	dbg("token: %s\n", *token);
+	dbg("secret: %s\n", *secret);
+
+	if (rv)
+		free(rv);
+
+	return retval;
+}
+
+static int request_access_token(struct session *session)
+{
+	char *post_params = NULL;
+	char *request_url = NULL;
+	char *reply    = NULL;
+	char *at_key      = NULL;
+	char *at_secret   = NULL;
+	char *verifier    = NULL;
+	char at_uri[90];
+
+	if (!session)
+		return -EINVAL;
+
+	if (session->host == HOST_TWITTER)
+		request_url = oauth_sign_url2(
+				twitter_request_token_uri, NULL,
+				OA_HMAC, NULL, session->consumer_key,
+				session->consumer_secret, NULL, NULL);
+	else if (session->host == HOST_IDENTICA)
+		request_url = oauth_sign_url2(
+				identica_request_token_uri, NULL,
+				OA_HMAC, NULL, session->consumer_key,
+				session->consumer_secret, NULL, NULL);
+	reply = oauth_http_get(request_url, post_params);
+
+	if (request_url)
+		free(request_url);
+
+	if (post_params)
+		free(post_params);
+
+	if (!reply)
+		return 1;
+
+	if (parse_osp_reply(reply, &at_key, &at_secret))
+		return 1;
+
+	free(reply);
+
+	fprintf(stdout,
+		"Please open the following link in your browser, and "
+		"allow 'bti' to access your account. Then paste "
+		"back the provided PIN in here.\n");
+	if (session->host == HOST_TWITTER) {
+		fprintf(stdout, "%s%s\nPIN: ", twitter_authorize_uri, at_key);
+		verifier = session->readline(NULL);
+		sprintf(at_uri, "%s?oauth_verifier=%s",
+			twitter_access_token_uri, verifier);
+	} else if (session->host == HOST_IDENTICA) {
+		fprintf(stdout, "%s%s\nPIN: ", identica_authorize_uri, at_key);
+		verifier = session->readline(NULL);
+		sprintf(at_uri, "%s?oauth_verifier=%s",
+			identica_access_token_uri, verifier);
+	}
+	request_url = oauth_sign_url2(at_uri, NULL, OA_HMAC, NULL,
+				      session->consumer_key,
+				      session->consumer_secret,
+				      at_key, at_secret);
+	reply = oauth_http_get(request_url, post_params);
+
+	if (!reply)
+		return 1;
+
+	if (parse_osp_reply(reply, &at_key, &at_secret))
+		return 1;
+
+	free(reply);
+
+	fprintf(stdout,
+		"Please put these two lines in your bti "
+		"configuration file (~/.bti):\n"
+		"access_token_key=%s\n"
+		"access_token_secret=%s\n",
+		at_key, at_secret);
+
+	return 0;
+}
+
 static int send_request(struct session *session)
 {
-	char endpoint[100];
+	char endpoint[500];
 	char user_password[500];
 	char data[500];
 	struct bti_curl_buffer *curl_buf;
@@ -425,110 +575,185 @@ static int send_request(struct session *session)
 	struct curl_httppost *formpost = NULL;
 	struct curl_httppost *lastptr = NULL;
 	struct curl_slist *slist = NULL;
+	char *req_url = NULL;
+	char *reply = NULL;
+	char *postarg = NULL;
+	char *escaped_tweet = NULL;
+	int is_post = 0;
 
 	if (!session)
-		return -EINVAL;
-
-	curl_buf = bti_curl_buffer_alloc(session->action);
-	if (!curl_buf)
-		return -ENOMEM;
-
-	curl = curl_init();
-	if (!curl)
 		return -EINVAL;
 
 	if (!session->hosturl)
 		session->hosturl = strdup(twitter_host);
 
-	switch (session->action) {
-	case ACTION_UPDATE:
-		snprintf(user_password, sizeof(user_password), "%s:%s",
-			 session->account, session->password);
-		snprintf(data, sizeof(data), "status=\"%s\"", session->tweet);
-		curl_formadd(&formpost, &lastptr,
-			     CURLFORM_COPYNAME, "status",
-			     CURLFORM_COPYCONTENTS, session->tweet,
-			     CURLFORM_END);
+	if (session->no_oauth) {
+		curl_buf = bti_curl_buffer_alloc(session->action);
+		if (!curl_buf)
+			return -ENOMEM;
 
-		curl_formadd(&formpost, &lastptr,
-			     CURLFORM_COPYNAME, "source",
-			     CURLFORM_COPYCONTENTS, "bti",
-			     CURLFORM_END);
-
-		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-		slist = curl_slist_append(slist, "Expect:");
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
-
-		sprintf(endpoint, "%s%s", session->hosturl, update_uri);
-		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
-
-		break;
-	case ACTION_FRIENDS:
-		snprintf(user_password, sizeof(user_password), "%s:%s",
-			 session->account, session->password);
-		sprintf(endpoint, "%s%s?page=%d", session->hosturl,
-			friends_uri, session->page);
-		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
-
-		break;
-	case ACTION_USER:
-		sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-			user_uri, session->user, session->page);
-		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-
-		break;
-	case ACTION_REPLIES:
-		snprintf(user_password, sizeof(user_password), "%s:%s",
-			 session->account, session->password);
-		sprintf(endpoint, "%s%s?page=%d", session->hosturl, replies_uri,
-			session->page);
-		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-		curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
-
-		break;
-	case ACTION_PUBLIC:
-		sprintf(endpoint, "%s%s?page=%d", session->hosturl, public_uri,
-			session->page);
-		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-
-		break;
-	case ACTION_GROUP:
-		sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
-				group_uri, session->group, session->page);
-		curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-
-		break;
-	default:
-		break;
-	}
-
-	if (session->proxy)
-		curl_easy_setopt(curl, CURLOPT_PROXY, session->proxy);
-
-	if (debug)
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-
-	dbg("user_password = %s\n", user_password);
-	dbg("data = %s\n", data);
-	dbg("proxy = %s\n", session->proxy);
-
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
-	if (!session->dry_run) {
-		res = curl_easy_perform(curl);
-		if (res && !session->bash) {
-			fprintf(stderr, "error(%d) trying to perform "
-				"operation\n", res);
+		curl = curl_init();
+		if (!curl)
 			return -EINVAL;
-		}
-	}
 
-	curl_easy_cleanup(curl);
-	if (session->action == ACTION_UPDATE)
-		curl_formfree(formpost);
-	bti_curl_buffer_free(curl_buf);
+		if (!session->hosturl)
+			session->hosturl = strdup(twitter_host);
+
+		switch (session->action) {
+		case ACTION_UPDATE:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			snprintf(data, sizeof(data), "status=\"%s\"",
+				 session->tweet);
+			curl_formadd(&formpost, &lastptr,
+				     CURLFORM_COPYNAME, "status",
+				     CURLFORM_COPYCONTENTS, session->tweet,
+				     CURLFORM_END);
+
+			curl_formadd(&formpost, &lastptr,
+				     CURLFORM_COPYNAME, "source",
+				     CURLFORM_COPYCONTENTS, "bti",
+				     CURLFORM_END);
+
+			if (session->replyto)
+				curl_formadd(&formpost, &lastptr,
+					     CURLFORM_COPYNAME, "in_reply_to_status_id",
+					     CURLFORM_COPYCONTENTS, session->replyto,
+					     CURLFORM_END);
+
+			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+			slist = curl_slist_append(slist, "Expect:");
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+
+			sprintf(endpoint, "%s%s", session->hosturl, update_uri);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+			break;
+
+		case ACTION_FRIENDS:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+					friends_uri, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+			break;
+
+		case ACTION_USER:
+			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+				user_uri, session->user, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			break;
+
+		case ACTION_REPLIES:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				replies_uri, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
+			break;
+
+		case ACTION_PUBLIC:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				public_uri, session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			break;
+
+		case ACTION_GROUP:
+			sprintf(endpoint, "%s%s%s.xml?page=%d",
+				session->hosturl, group_uri, session->group,
+				session->page);
+			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			break;
+
+		default:
+			break;
+		}
+
+		if (session->proxy)
+			curl_easy_setopt(curl, CURLOPT_PROXY, session->proxy);
+
+		if (debug)
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+
+		dbg("user_password = %s\n", user_password);
+		dbg("data = %s\n", data);
+		dbg("proxy = %s\n", session->proxy);
+
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
+		if (!session->dry_run) {
+			res = curl_easy_perform(curl);
+			if (res && !session->background) {
+				fprintf(stderr, "error(%d) trying to perform "
+						"operation\n", res);
+				return -EINVAL;
+			}
+		}
+
+		curl_easy_cleanup(curl);
+		if (session->action == ACTION_UPDATE)
+			curl_formfree(formpost);
+		bti_curl_buffer_free(curl_buf);
+	} else {
+		switch (session->action) {
+		case ACTION_UPDATE:
+			escaped_tweet = oauth_url_escape(session->tweet);
+			sprintf(endpoint, "%s%s?status=%s", session->hosturl,
+				update_uri, escaped_tweet);
+			is_post = 1;
+			break;
+		case ACTION_USER:
+			sprintf(endpoint, "%s%s%s.xml?page=%d",
+				session->hosturl, user_uri, session->user,
+				session->page);
+			break;
+		case ACTION_REPLIES:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				mentions_uri, session->page);
+			break;
+		case ACTION_PUBLIC:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				public_uri, session->page);
+			break;
+		case ACTION_GROUP:
+			sprintf(endpoint, "%s%s%s.xml?page=%d",
+				session->hosturl, group_uri, session->group,
+				session->page);
+			break;
+		case ACTION_FRIENDS:
+			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+				friends_uri, session->page);
+			break;
+		default:
+			break;
+		}
+
+		if (is_post) {
+			req_url = oauth_sign_url2(endpoint, &postarg, OA_HMAC,
+						  NULL, session->consumer_key,
+						  session->consumer_secret,
+						  session->access_token_key,
+						  session->access_token_secret);
+			reply = oauth_http_post(req_url, postarg);
+		} else {
+			req_url = oauth_sign_url2(endpoint, NULL, OA_HMAC, NULL,
+						  session->consumer_key,
+						  session->consumer_secret,
+						  session->access_token_key,
+						  session->access_token_secret);
+			reply = oauth_http_get(req_url, postarg);
+		}
+
+		dbg("%s\n", req_url);
+		dbg("%s\n", reply);
+		if (req_url)
+			free(req_url);
+
+		if (session->action != ACTION_UPDATE)
+			parse_timeline(reply);
+	}
 	return 0;
 }
 
@@ -539,20 +764,19 @@ static void parse_configfile(struct session *session)
 	size_t len = 0;
 	char *account = NULL;
 	char *password = NULL;
+	char *consumer_key = NULL;
+	char *consumer_secret = NULL;
+	char *access_token_key = NULL;
+	char *access_token_secret = NULL;
 	char *host = NULL;
 	char *proxy = NULL;
 	char *logfile = NULL;
 	char *action = NULL;
 	char *user = NULL;
-	char *file;
+	char *replyto = NULL;
 	int shrink_urls = 0;
 
-	/* config file is ~/.bti  */
-	file = alloca(strlen(session->homedir) + 7);
-
-	sprintf(file, "%s/.bti", session->homedir);
-
-	config_file = fopen(file, "r");
+	config_file = fopen(session->configfile, "r");
 
 	/* No error if file does not exist or is unreadable.  */
 	if (config_file == NULL)
@@ -586,6 +810,26 @@ static void parse_configfile(struct session *session)
 			c += 9;
 			if (c[0] != '\0')
 				password = strdup(c);
+		} else if (!strncasecmp(c, "consumer_key", 12) &&
+			   (c[12] == '=')) {
+			c += 13;
+			if (c[0] != '\0')
+				consumer_key = strdup(c);
+		} else if (!strncasecmp(c, "consumer_secret", 15) &&
+			   (c[15] == '=')) {
+			c += 16;
+			if (c[0] != '\0')
+				consumer_secret = strdup(c);
+		} else if (!strncasecmp(c, "access_token_key", 16) &&
+			   (c[16] == '=')) {
+			c += 17;
+			if (c[0] != '\0')
+				access_token_key = strdup(c);
+		} else if (!strncasecmp(c, "access_token_secret", 19) &&
+			   (c[19] == '=')) {
+			c += 20;
+			if (c[0] != '\0')
+				access_token_secret = strdup(c);
 		} else if (!strncasecmp(c, "host", 4) &&
 			   (c[4] == '=')) {
 			c += 5;
@@ -601,6 +845,11 @@ static void parse_configfile(struct session *session)
 			c += 8;
 			if (c[0] != '\0')
 				logfile = strdup(c);
+		} else if (!strncasecmp(c, "replyto", 7) &&
+			   (c[7] == '=')) {
+			c += 8;
+			if (c[0] != '\0')
+				replyto = strdup(c);
 		} else if (!strncasecmp(c, "action", 6) &&
 			   (c[6] == '=')) {
 			c += 7;
@@ -630,6 +879,14 @@ static void parse_configfile(struct session *session)
 		session->password = password;
 	if (account)
 		session->account = account;
+	if (consumer_key)
+		session->consumer_key = consumer_key;
+	if (consumer_secret)
+		session->consumer_secret = consumer_secret;
+	if (access_token_key)
+		session->access_token_key = access_token_key;
+	if (access_token_secret)
+		session->access_token_secret = access_token_secret;
 	if (host) {
 		if (strcasecmp(host, "twitter") == 0) {
 			session->host = HOST_TWITTER;
@@ -653,6 +910,8 @@ static void parse_configfile(struct session *session)
 	}
 	if (logfile)
 		session->logfile = logfile;
+	if (replyto)
+		session->replyto = replyto;
 	if (action) {
 		if (strcasecmp(action, "update") == 0)
 			session->action = ACTION_UPDATE;
@@ -704,7 +963,8 @@ static void log_session(struct session *session, int retval)
 				session->time, session->hostname);
 		else
 			fprintf(log_file, "%s: host=%s tweet=%s\n",
-				session->time, session->hostname, session->tweet);
+				session->time, session->hostname,
+				session->tweet);
 		break;
 	case ACTION_FRIENDS:
 		fprintf(log_file, "%s: host=%s retrieving friends timeline\n",
@@ -745,7 +1005,8 @@ static char *get_string_from_stdin(void)
 	if (!fgets(string, 999, stdin))
 		return NULL;
 	temp = strchr(string, '\n');
-	*temp = '\0';
+	if (temp)
+		*temp = '\0';
 	return string;
 }
 
@@ -1053,9 +1314,12 @@ int main(int argc, char *argv[], char *envp[])
 		{ "shrink-urls", 0, NULL, 's' },
 		{ "help", 0, NULL, 'h' },
 		{ "bash", 0, NULL, 'b' },
+		{ "background", 0, NULL, 'B' },
 		{ "dry-run", 0, NULL, 'n' },
 		{ "page", 1, NULL, 'g' },
 		{ "version", 0, NULL, 'v' },
+		{ "config", 1, NULL, 'c' },
+		{ "replyto", 1, NULL, 'r' },
 		{ }
 	};
 	struct session *session;
@@ -1082,9 +1346,12 @@ int main(int argc, char *argv[], char *envp[])
 	session->time = strdup(ctime(&t));
 	session->time[strlen(session->time)-1] = 0x00;
 
+	/* Get the home directory so we can try to find a config file */
 	session->homedir = strdup(getenv("HOME"));
 
-	curl_global_init(CURL_GLOBAL_ALL);
+	/* set up a default config file location (traditionally ~/.bti) */
+	session->configfile = zalloc(strlen(session->homedir) + 7);
+	sprintf(session->configfile, "%s/.bti", session->homedir);
 
 	/* Set environment variables first, before reading command line options
 	 * or config file values. */
@@ -1099,7 +1366,8 @@ int main(int argc, char *argv[], char *envp[])
 	parse_configfile(session);
 
 	while (1) {
-		option = getopt_long_only(argc, argv, "dp:P:H:a:A:u:hg:G:snVv",
+		option = getopt_long_only(argc, argv,
+					  "dp:P:H:a:A:u:c:hg:G:sr:nVv",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1120,6 +1388,10 @@ int main(int argc, char *argv[], char *envp[])
 			page_nr = atoi(optarg);
 			dbg("page = %d\n", page_nr);
 			session->page = page_nr;
+			break;
+		case 'r':
+			session->replyto = strdup(optarg);
+			dbg("in_reply_to_status_id = %s\n", session->replyto);
 			break;
 		case 'p':
 			if (session->password)
@@ -1194,6 +1466,22 @@ int main(int argc, char *argv[], char *envp[])
 			break;
 		case 'b':
 			session->bash = 1;
+			/* fall-through intended */
+		case 'B':
+			session->background = 1;
+			break;
+		case 'c':
+			if (session->configfile)
+				free(session->configfile);
+			session->configfile = strdup(optarg);
+			dbg("configfile = %s\n", session->configfile);
+
+			/*
+			 * read the config file now.  Yes, this could override
+			 * previously set options from the command line, but
+			 * the user asked for it...
+			 */
+			parse_configfile(session);
 			break;
 		case 'h':
 			display_help();
@@ -1210,6 +1498,7 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	}
 
+	session_readline_init(session);
 	/*
 	 * Show the version to make it easier to determine what
 	 * is going on here
@@ -1217,15 +1506,45 @@ int main(int argc, char *argv[], char *envp[])
 	if (debug)
 		display_version();
 
-	if (session->action == ACTION_UNKNOWN) {
-		fprintf(stderr, "Unknown action, valid actions are:\n");
-		fprintf(stderr, "'update', 'friends', 'public', "
-			"'replies', 'group' or 'user'.\n");
-		goto exit;
+	if (session->host == HOST_TWITTER) {
+		if (!session->consumer_key || !session->consumer_secret) {
+			fprintf(stderr,
+				"Twitter no longer supports HTTP basic authentication.\n"
+				"Both consumer key, and consumer secret are required"
+				" for bti in order to behave as an OAuth consumer.\n");
+			goto exit;
+		}
+		if (session->action == ACTION_GROUP) {
+			fprintf(stderr, "Groups only work in Identi.ca.\n");
+			goto exit;
+		}
+	} else {
+		if (!session->consumer_key || !session->consumer_secret)
+			session->no_oauth = 1;
 	}
 
-	if (session->host == HOST_TWITTER && session->action == ACTION_GROUP) {
-		fprintf(stderr, "Groups only work in Identi.ca.\n");
+	if (session->no_oauth) {
+		if (!session->account) {
+			fprintf(stdout, "Enter account for %s: ",
+				session->hostname);
+			session->account = session->readline(NULL);
+		}
+		if (!session->password) {
+			read_password(password, sizeof(password),
+				      session->hostname);
+			session->password = strdup(password);
+		}
+	} else {
+		if (!session->access_token_key ||
+		    !session->access_token_secret) {
+			request_access_token(session);
+			goto exit;
+		}
+	}
+
+	if (session->action == ACTION_UNKNOWN) {
+		fprintf(stderr, "Unknown action, valid actions are:\n"
+			"'update', 'friends', 'public', 'replies', 'group' or 'user'.\n");
 		goto exit;
 	}
 
@@ -1234,18 +1553,8 @@ int main(int argc, char *argv[], char *envp[])
 		session->group = session->readline(NULL);
 	}
 
-	if (!session->account) {
-		fprintf(stdout, "Enter account for %s: ", session->hostname);
-		session->account = session->readline(NULL);
-	}
-
-	if (!session->password) {
-		read_password(password, sizeof(password), session->hostname);
-		session->password = strdup(password);
-	}
-
 	if (session->action == ACTION_UPDATE) {
-		if (session->bash)
+		if (session->background || !session->interactive)
 			tweet = get_string_from_stdin();
 		else
 			tweet = session->readline("tweet: ");
@@ -1268,20 +1577,16 @@ int main(int argc, char *argv[], char *envp[])
 		dbg("tweet = %s\n", session->tweet);
 	}
 
-	if (!session->user)
-		session->user = strdup(session->account);
-
 	if (session->page == 0)
 		session->page = 1;
-	dbg("account = %s\n", session->account);
-	dbg("password = %s\n", session->password);
+	dbg("config file = %s\n", session->configfile);
 	dbg("host = %d\n", session->host);
 	dbg("action = %d\n", session->action);
 
 	/* fork ourself so that the main shell can get on
 	 * with it's life as we try to connect and handle everything
 	 */
-	if (session->bash) {
+	if (session->background) {
 		child = fork();
 		if (child) {
 			dbg("child is %d\n", child);
@@ -1290,11 +1595,12 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	retval = send_request(session);
-	if (retval && !session->bash)
+	if (retval && !session->background)
 		fprintf(stderr, "operation failed\n");
 
 	log_session(session, retval);
 exit:
+	session_readline_cleanup(session);
 	session_free(session);
 	return retval;;
 }

@@ -1,3 +1,70 @@
+Summary of changes from v027 to v028
+============================================
+
+Diego Elio 'Flameeyes' Pettenò (7):
+      build system: use consistently pkg-config to check for dependencies
+      build system: use AC_SEARCH_LIBS rather than assuming -ldl is needed.
+      Remove autoscan-generated bad tests.
+      Use arrays rather than pointers for static strings.
+      Typo fix.
+      Split --background from --bash, and make the latter imply the former.
+      Collapse more fprintf() calls.
+
+Greg Kroah-Hartman (7):
+      Fixup typo in Makefile.am found by @applehq
+      new version of checkpatch.pl from 2.6.35-rc1 kernel
+      whitespace cleanups for bti.c
+      more formatting cleanups
+      long line cleanups
+      Update my copyright date.
+      Reduce the number of calls to fprintf.
+
+
+Summary of changes from v026 to v027
+============================================
+
+Amir Mohammad Saied (4):
+      OAuth for both twitter, and identi.ca
+      HTTP basic auth for StatusNet instances
+      Leftovers from last commit, accepting account and, password from options
+      - Cosmetics     - Escaping tweet before POSTing it
+
+Daniel Cordero (4):
+      Verbose mode shows status IDs
+      Support for replying to notices
+      Add a replyto configuration option
+      Fix a warning: unused variable message
+
+Greg Kroah-Hartman (5):
+      add oath.keys from twitter.com
+      Merge branch 'master' into oath
+      error out if liboauth is not present
+      Merge branch 'master' into oath-test
+      fix up the autoconf checking for liboauth and other libraries
+
+Michel Alexandre Salim (1):
+      Fix Implicit linking against -ldl
+
+
+Summary of changes from v025 to v026
+============================================
+
+Greg Kroah-Hartman (7):
+      minor coding style cleanup.
+      updated version of checkpatch.pl
+      another minor codingstyle fix
+      update bti.1 from the xml changes
+      init the readline function after parsing the command line options
+      add a configfile option to the core data structure
+      Add ability to override default config file option
+
+Pete Zaitcev (2):
+      bti: suppress prompt if fed from a pipe
+      bti: fix a crash for echo -n|bti
+
+Reuben Thomas (1):
+      Typo fixes for bti(1)
+
 Summary of changes from v024 to v025
 ============================================
 
