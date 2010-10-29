@@ -5,7 +5,8 @@ bin_SCRIPTS = \
 	bti-shrink-urls
 
 bti_SOURCES = \
-	bti.c
+    colors.h \
+	bti.c 
 
 bti_CFLAGS = \
 	$(LIBCURL_CFLAGS) \
