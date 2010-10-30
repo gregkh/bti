@@ -6,6 +6,7 @@ bin_SCRIPTS = \
 
 bti_SOURCES = \
     colors.h \
+    colors.c \
 	bti.c 
 
 bti_CFLAGS = \

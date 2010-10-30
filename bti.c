@@ -366,11 +366,13 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 
 			if (user && text && created && id) {
 				if (verbose)
-					printf("[%s] {%s} (%.16s) %s\n",
-						user, id, created, text);
+                    colorfy_verbose_print(user, id, created, text);
+//					printf("[%s] {%s} (%.16s) %s\n",
+//						user, id, created, text);
 				else
-					printf("[%s%s%s] %s\n",
-						BASH_COLOR_BOLD_BLACK_YELLOW, user, BASH_COLOR_RESET, text);
+                    colorfy_print(user, text);
+//					printf("[%s] %s\n",
+//						user, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);

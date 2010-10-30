@@ -20,8 +20,9 @@
 
 #define _GNU_SOURCE
 
-/* Bash colors */
-const char BASH_COLOR_RESET[]="\033[0m";
-const char BASH_COLOR_BOLD_BLACK_YELLOW[]="\033[1;33;40m";
-const char BASH_COLOR_UNDERLINE_BLACK_CYAN[]="\033[4;36;40m";
+/* Colorfy print */
+void colorfy_text(const char *text, char *colorfied);
+void colorfy_print(xmlChar *name, xmlChar *text);
+void colorfy_verbose_print(xmlChar *name, xmlChar *id, 
+        xmlChar *created, xmlChar *text);
 
