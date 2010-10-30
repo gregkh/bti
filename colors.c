@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <libxml/tree.h>
 
 #include "colors.h"
@@ -54,8 +55,8 @@ void colorfy_text(const char *text, char *colorfied){
 
     while(*p != '\0'){
         // some characters start with a '#' or '!'. It must after a
-        // white space or just at the beginning of all.
-        if ((*p == '#' || *p == '!') && (*pp ==' ' || pp==p)){
+        // none alnum or just at the beginning.
+        if ((*p == '#' || *p == '!') && (!isalnum(*pp) || pp==p)){
             copied = str_append(copied, BASH_COLOR_NORMAL_MAGENTA);
             while(*p !='\0' && *p != ' ' && *p != ',' && *p != '.'){
                 *copied++ = *p++;
@@ -63,7 +64,7 @@ void colorfy_text(const char *text, char *colorfied){
             copied = str_append(copied, BASH_COLOR_RESET);
         }
 
-        if (*p == '@' && (*pp == ' ' || pp==p)) {
+        if (*p == '@' && (!(isalnum(*pp)) || pp==p)) {
             copied = str_append(copied, BASH_COLOR_NORMAL_GREEN);
             while(*p !='\0' && *p != ' ' && *p != ':'){
                 *copied++ = *p++;
