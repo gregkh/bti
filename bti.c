@@ -55,6 +55,7 @@
 
 static int debug;
 static int verbose;
+static int autocolor;
 
 enum host {
 	HOST_TWITTER  = 0,
@@ -133,6 +134,7 @@ static void display_help(void)
 		"  --background\n"
 		"  --debug\n"
 		"  --verbose\n"
+		"  --auto-color\n"
 		"  --dry-run\n"
 		"  --version\n"
 		"  --help\n", VERSION);
@@ -365,14 +367,20 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 			}
 
 			if (user && text && created && id) {
-				if (verbose)
-                    colorfy_verbose_print(user, id, created, text);
-//					printf("[%s] {%s} (%.16s) %s\n",
-//						user, id, created, text);
-				else
-                    colorfy_print(user, text);
-//					printf("[%s] %s\n",
-//						user, text);
+				if (verbose){
+                    if (autocolor)
+                        colorfy_verbose_print(user, id, created, text);
+                    else
+    					printf("[%s] {%s} (%.16s) %s\n",
+    						user, id, created, text);
+                }
+				else{
+                    if (autocolor) 
+                        colorfy_print(user, text);
+                    else
+    					printf("[%s] %s\n",
+		    				user, text);
+                }
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
@@ -875,6 +883,12 @@ static void parse_configfile(struct session *session)
 			if (!strncasecmp(c, "true", 4) ||
 					!strncasecmp(c, "yes", 3))
 				verbose = 1;
+		} else if (!strncasecmp(c, "auto-color", 10) &&
+				(c[10] == '=')) {
+			c += 11;
+			if (!strncasecmp(c, "true", 4) ||
+					!strncasecmp(c, "yes", 3))
+				autocolor = 1;
 		}
 	} while (!feof(config_file));
 
@@ -1323,6 +1337,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "version", 0, NULL, 'v' },
 		{ "config", 1, NULL, 'c' },
 		{ "replyto", 1, NULL, 'r' },
+		{ "auto-color", 0, NULL, 'C' },
 		{ }
 	};
 	struct session *session;
@@ -1337,6 +1352,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	debug = 0;
 	verbose = 0;
+    autocolor = 0;
 
 	session = session_alloc();
 	if (!session) {
@@ -1495,6 +1511,9 @@ int main(int argc, char *argv[], char *envp[])
 		case 'v':
 			display_version();
 			goto exit;
+        case 'C':
+            autocolor = 1;
+            break;
 		default:
 			display_help();
 			goto exit;
