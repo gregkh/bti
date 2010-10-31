@@ -314,7 +314,7 @@ static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/req
 static const char identica_access_token_uri[]  = "http://identi.ca/api/oauth/access_token";
 static const char identica_authorize_uri[]     = "http://identi.ca/api/oauth/authorize?oauth_token=";
 
-static const char user_uri[]     = "/user_timeline/";
+static const char user_uri[]     = "/user_timeline.xml";
 static const char update_uri[]   = "/update.xml";
 static const char public_uri[]   = "/public_timeline.xml";
 static const char friends_uri[]  = "/friends_timeline.xml";
@@ -651,9 +651,12 @@ static int send_request(struct session *session)
 			break;
 
 		case ACTION_USER:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
+			sprintf(endpoint, "%s%s?screen_name=%s&page=%d", session->hosturl,
 				user_uri, session->user, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_REPLIES:
@@ -666,16 +669,22 @@ static int send_request(struct session *session)
 			break;
 
 		case ACTION_PUBLIC:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
 			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
 				public_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_GROUP:
+			snprintf(user_password, sizeof(user_password), "%s:%s",
+				 session->account, session->password);
 			sprintf(endpoint, "%s%s%s.xml?page=%d",
 				session->hosturl, group_uri, session->group,
 				session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		default:
