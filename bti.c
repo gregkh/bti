@@ -315,7 +315,7 @@ static const char identica_name[] = "identi.ca";
 static const char twitter_request_token_uri[]  = "http://twitter.com/oauth/request_token";
 static const char twitter_access_token_uri[]   = "http://twitter.com/oauth/access_token";
 static const char twitter_authorize_uri[]      = "http://twitter.com/oauth/authorize?oauth_token=";
-static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/request_token";
+static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/request_token?oauth_callback=oob";
 static const char identica_access_token_uri[]  = "http://identi.ca/api/oauth/access_token";
 static const char identica_authorize_uri[]     = "http://identi.ca/api/oauth/authorize?oauth_token=";
 
@@ -498,7 +498,7 @@ static int request_access_token(struct session *session)
 {
 	char *post_params = NULL;
 	char *request_url = NULL;
-	char *reply    = NULL;
+	char *reply    	  = NULL;
 	char *at_key      = NULL;
 	char *at_secret   = NULL;
 	char *verifier    = NULL;
