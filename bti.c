@@ -68,7 +68,8 @@ enum action {
 	ACTION_REPLIES = 4,
 	ACTION_PUBLIC  = 8,
 	ACTION_GROUP   = 16,
-	ACTION_UNKNOWN = 32
+	ACTION_RETWEET = 32,
+	ACTION_UNKNOWN = 64
 };
 
 struct session {
@@ -89,6 +90,7 @@ struct session {
 	char *hostname;
 	char *configfile;
 	char *replyto;
+	char *retweet;
 	int bash;
 	int interactive;
 	int shrink_urls;
@@ -126,6 +128,7 @@ static void display_help(void)
 	fprintf(stdout, "  --logfile logfile\n");
 	fprintf(stdout, "  --config configfile\n");
 	fprintf(stdout, "  --replyto ID\n");
+	fprintf(stdout, "  --retweet ID\n");
 	fprintf(stdout, "  --shrink-urls\n");
 	fprintf(stdout, "  --page PAGENUMBER\n");
 	fprintf(stdout, "  --bash\n");
@@ -251,6 +254,7 @@ static void session_free(struct session *session)
 {
 	if (!session)
 		return;
+	free(session->retweet);
 	free(session->replyto);
 	free(session->password);
 	free(session->account);
@@ -316,6 +320,7 @@ static const char *public_uri   = "/public_timeline.xml";
 static const char *friends_uri  = "/friends_timeline.xml";
 static const char *mentions_uri = "/mentions.xml";
 static const char *replies_uri  = "/replies.xml";
+static const char *retweet_uri	= "/retweet/";
 static const char *group_uri    = "/../statusnet/groups/timeline/";
 
 static CURL *curl_init(void)
@@ -696,8 +701,17 @@ static int send_request(struct session *session)
 		switch (session->action) {
 		case ACTION_UPDATE:
 			escaped_tweet = oauth_url_escape(session->tweet);
-			sprintf(endpoint, "%s%s?status=%s", session->hosturl,
-				update_uri, escaped_tweet);
+			if (session->replyto) {
+				sprintf(endpoint,
+					"%s%s?status=%s&in_reply_to_status_id=%s",
+					session->hosturl, update_uri,
+					escaped_tweet, session->replyto);
+			} else {
+				sprintf(endpoint, "%s%s?status=%s",
+					session->hosturl, update_uri,
+					escaped_tweet);
+			}
+
 			is_post = 1;
 			break;
 		case ACTION_USER:
@@ -721,6 +735,11 @@ static int send_request(struct session *session)
 		case ACTION_FRIENDS:
 			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
 				friends_uri, session->page);
+			break;
+		case ACTION_RETWEET:
+			sprintf(endpoint, "%s%s%s.xml", session->hosturl,
+				retweet_uri, session->retweet);
+			is_post = 1;
 			break;
 		default:
 			break;
@@ -747,7 +766,8 @@ static int send_request(struct session *session)
 		if (req_url)
 			free(req_url);
 
-		if (session->action != ACTION_UPDATE)
+		if ((session->action != ACTION_UPDATE) && 
+				(session->action != ACTION_RETWEET))
 			parse_timeline(reply);
 	}
 	return 0;
@@ -770,6 +790,7 @@ static void parse_configfile(struct session *session)
 	char *action = NULL;
 	char *user = NULL;
 	char *replyto = NULL;
+	char *retweet = NULL;
 	int shrink_urls = 0;
 
 	config_file = fopen(session->configfile, "r");
@@ -868,6 +889,11 @@ static void parse_configfile(struct session *session)
 			if (!strncasecmp(c, "true", 4) ||
 					!strncasecmp(c, "yes", 3))
 				verbose = 1;
+		} else if (!strncasecmp(c,"retweet", 7) &&
+				(c[7] == '=')) {
+			c += 8;
+			if (c[0] != '\0')
+				retweet = strdup(c);
 		}
 	} while (!feof(config_file));
 
@@ -908,6 +934,8 @@ static void parse_configfile(struct session *session)
 		session->logfile = logfile;
 	if (replyto)
 		session->replyto = replyto;
+	if (retweet)
+		session->retweet = retweet;
 	if (action) {
 		if (strcasecmp(action, "update") == 0)
 			session->action = ACTION_UPDATE;
@@ -1315,11 +1343,13 @@ int main(int argc, char *argv[], char *envp[])
 		{ "version", 0, NULL, 'v' },
 		{ "config", 1, NULL, 'c' },
 		{ "replyto", 1, NULL, 'r' },
+		{ "retweet", 1, NULL, 'w' },
 		{ }
 	};
 	struct session *session;
 	pid_t child;
 	char *tweet;
+	char *retweet;
 	static char password[80];
 	int retval = 0;
 	int option;
@@ -1388,6 +1418,10 @@ int main(int argc, char *argv[], char *envp[])
 			session->replyto = strdup(optarg);
 			dbg("in_reply_to_status_id = %s\n", session->replyto);
 			break;
+		case 'w':
+			session->retweet = strdup(optarg);
+			dbg("Retweet ID = %s\n", session->retweet);
+			break;
 		case 'p':
 			if (session->password)
 				free(session->password);
@@ -1413,6 +1447,8 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_PUBLIC;
 			else if (strcasecmp(optarg, "group") == 0)
 				session->action = ACTION_GROUP;
+			else if (strcasecmp(optarg,"retweet") == 0)
+				session->action = ACTION_RETWEET;
 			else
 				session->action = ACTION_UNKNOWN;
 			dbg("action = %d\n", session->action);
@@ -1543,6 +1579,21 @@ int main(int argc, char *argv[], char *envp[])
 	if (session->action == ACTION_GROUP && !session->group) {
 		fprintf(stdout, "Enter group name: ");
 		session->group = session->readline(NULL);
+	}
+
+	if (session->action == ACTION_RETWEET) {
+		fprintf(stdout, "Status ID to retweet: ");
+		retweet = get_string_from_stdin();
+
+		if (!retweet || strlen(retweet) == 0) {
+			dbg("no retweet?\n");
+			return -1;
+		}
+
+		session->retweet = zalloc(strlen(retweet) + 10);
+		sprintf(session->retweet,"%s", retweet);
+		free(retweet);
+		dbg("retweet ID = %s\n", session->retweet);
 	}
 
 	if (session->action == ACTION_UPDATE) {
