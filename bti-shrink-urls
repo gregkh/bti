@@ -16,6 +16,9 @@
 
 needs_escape=true
 
+shrink_host=2tu.us
+test -f ~/.bti && . ~/.bti
+
 while test -n "$1" ; do
         word="$1"
         shift
@@ -29,7 +32,7 @@ bti-shrink-urls - convert URLs to a shorter form using a web service
 
     $0 [--escaped] [<url>]
 
-Currently only http://2tu.us/ is supported.
+Currently supported: 2tu.us (default), bit.ly, j.mp.
 END
                 exit 0
                 ;;
@@ -69,10 +72,25 @@ function convert_url() {
                                         -e 's/]/%5D/g')
         fi
 
-        # http://2tu.us/
-        local submit="http://2tu.us/?save=y&url=$url"
+        case $shrink_host in
+        2tu.us)
+            local submit="http://2tu.us/?save=y&url=$url"
+            local res=$(wget -q -O - "$submit" | awk -F"'" '/Your tight URL is:/ { print $2 }')
+            ;;
+        bit.ly|j.mp)
+            if [ -z "$shrink_bitly_login" -o -z "$shrink_bitly_key" ]; then
+                echo "To use $shrink_host you must set 'shrink_bitly_login' and 'shrink_bitly_key' in ~/.bti" >&2
+                exit 1
+            fi
+            local submit="http://api.bit.ly/v3/shorten?format=txt&login=$shrink_bitly_login&apiKey=$shrink_bitly_key&domain=$shrink_host&longUrl=$url"
+            local res=$(wget -q -O - "$submit")
+            ;;
+        *)
+            echo "Shrinking with $shrink_host is not supported." >&2
+            exit 1
+            ;;
+        esac
 
-        local res=$(wget -q -O - "$submit" | awk -F"'" '/Your tight URL is:/ { print $2 }')
         if test "${res%%:*}" = 'http' -a "${#res}" -lt "$urllen" ; then
                 echo $res
                 return 0
