@@ -35,6 +35,7 @@
           <arg><option>--logfile LOGFILE</option></arg>
           <arg><option>--config CONFIGFILE</option></arg>
           <arg><option>--replyto ID</option></arg>
+          <arg><option>--retweet ID</option></arg>
           <arg><option>--page PAGENUMBER</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--shrink-urls</option></arg>
@@ -157,6 +158,14 @@
 		each other. Status.net will also link a message that contains an
 		@name without this without regard to context.
               </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--retweet ID</option></term>
+            <listitem>
+              <para>
+		Status ID of a single post which you want to retweet.
+	      </para>
             </listitem>
           </varlistentry>
           <varlistentry>
