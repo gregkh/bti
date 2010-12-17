@@ -169,7 +169,11 @@
                 more suitable for micro-blogging.
               </para>
               <para>
-                Currently, only http://2tu.us/ is used as a URL shrinking service.
+                The following URL shrinking services are available:
+                http://2tu.us/ (default) and http://bit.ly / http://j.mp
+              </para>
+              <para>
+                See the documentation for bti-shrink-urls for the configuration options.
               </para>
             </listitem>
           </varlistentry>

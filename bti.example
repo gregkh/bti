@@ -13,3 +13,7 @@ logfile=.bti.log
 #user=gregkh
 #proxy=http://localhost:8080
 #shrink-urls=yes
+# Example of using bit.ly in bti-shrink-urls
+#shrink_host=bit.ly
+#shrink_bitly_login=bitlyuser
+#shrink_bitly_key=R_deadbeef
