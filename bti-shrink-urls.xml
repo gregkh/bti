@@ -37,7 +37,7 @@
          bti-shrink-urls converts URLs to a shorter form using a web service.
         </para>
         <para>
-          Currently only http://2tu.us/ is supported.
+          Currently http://2tu.us/ (default) and http://bit.ly / http://j.mp are supported.
         </para>
       </refsect1>
 
@@ -66,6 +66,40 @@
               <para>
 		Specify the URL to be converted. If no URL is given
                 bti-shrink-urls waits for input on stdin.
+              </para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </refsect1>
+
+      <refsect1><title>CONFIGURATION</title>
+        <para>
+         bti-shrink-urls is configured by setting some values in ~/.bti:
+        </para>
+        <variablelist>
+          <varlistentry>
+            <term><option>shrink_host</option></term>
+            <listitem>
+              <para>
+	        Possible values: 2tu.us (default), bit.ly, j.mp
+	      </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>shrink_bitly_login</option></term>
+            <listitem>
+              <para>
+               API login for bit.ly, j.mp, required if shrink_host is set to  bit.ly or j.mp.
+               See https://code.google.com/p/bitly-api/wiki/ApiDocumentation
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>shrink_bitly_key</option></term>
+            <listitem>
+              <para>
+               API key for bit.ly, j.mp, required if shrink_host is set to  bit.ly or j.mp.
+               See https://code.google.com/p/bitly-api/wiki/ApiDocumentation
               </para>
             </listitem>
           </varlistentry>

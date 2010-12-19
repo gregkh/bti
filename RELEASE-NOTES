@@ -1,3 +1,16 @@
+bti 028
+=============
+Build fixes thanks to Flameeyes and other minor tweaks.
+
+bti 027
+=============
+OAUTH support
+
+bti 026
+=============
+added ability to specify config file from command line
+some readline fixups from Pete
+
 bti 025
 =============
 remove readline link-time dependancy to make the distro's lives easier

@@ -1,161 +1,13 @@
+'\" t
 .\"     Title: bti
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.74.0 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
 .\"      Date: May 2008
 .\"    Manual: bti
 .\"    Source: bti
 .\"  Language: English
 .\"
 .TH "BTI" "1" "May 2008" "bti" "bti"
-.\" -----------------------------------------------------------------
-.\" * (re)Define some macros
-.\" -----------------------------------------------------------------
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" toupper - uppercase a string (locale-aware)
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.de toupper
-.tr aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ
-\\$*
-.tr aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz
-..
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" SH-xref - format a cross-reference to an SH section
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.de SH-xref
-.ie n \{\
-.\}
-.toupper \\$*
-.el \{\
-\\$*
-.\}
-..
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" SH - level-one heading that works better for non-TTY output
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.de1 SH
-.\" put an extra blank line of space above the head in non-TTY output
-.if t \{\
-.sp 1
-.\}
-.sp \\n[PD]u
-.nr an-level 1
-.set-an-margin
-.nr an-prevailing-indent \\n[IN]
-.fi
-.in \\n[an-margin]u
-.ti 0
-.HTML-TAG ".NH \\n[an-level]"
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-\." make the size of the head bigger
-.ps +3
-.ft B
-.ne (2v + 1u)
-.ie n \{\
-.\" if n (TTY output), use uppercase
-.toupper \\$*
-.\}
-.el \{\
-.nr an-break-flag 0
-.\" if not n (not TTY), use normal case (not uppercase)
-\\$1
-.in \\n[an-margin]u
-.ti 0
-.\" if not n (not TTY), put a border/line under subheading
-.sp -.6
-\l'\n(.lu'
-.\}
-..
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" SS - level-two heading that works better for non-TTY output
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.de1 SS
-.sp \\n[PD]u
-.nr an-level 1
-.set-an-margin
-.nr an-prevailing-indent \\n[IN]
-.fi
-.in \\n[IN]u
-.ti \\n[SN]u
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.ps \\n[PS-SS]u
-\." make the size of the head bigger
-.ps +2
-.ft B
-.ne (2v + 1u)
-.if \\n[.$] \&\\$*
-..
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" BB/BE - put background/screen (filled box) around block of text
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.de BB
-.if t \{\
-.sp -.5
-.br
-.in +2n
-.ll -2n
-.gcolor red
-.di BX
-.\}
-..
-.de EB
-.if t \{\
-.if "\\$2"adjust-for-leading-newline" \{\
-.sp -1
-.\}
-.br
-.di
-.in
-.ll
-.gcolor
-.nr BW \\n(.lu-\\n(.i
-.nr BH \\n(dn+.5v
-.ne \\n(BHu+.5v
-.ie "\\$2"adjust-for-leading-newline" \{\
-\M[\\$1]\h'1n'\v'+.5v'\D'P \\n(BWu 0 0 \\n(BHu -\\n(BWu 0 0 -\\n(BHu'\M[]
-.\}
-.el \{\
-\M[\\$1]\h'1n'\v'-.5v'\D'P \\n(BWu 0 0 \\n(BHu -\\n(BWu 0 0 -\\n(BHu'\M[]
-.\}
-.in 0
-.sp -.5v
-.nf
-.BX
-.in
-.sp .5v
-.fi
-.\}
-..
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" BM/EM - put colored marker in margin next to block of text
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.de BM
-.if t \{\
-.br
-.ll -2n
-.gcolor red
-.di BX
-.\}
-..
-.de EM
-.if t \{\
-.br
-.di
-.ll
-.gcolor
-.nr BH \\n(dn
-.ne \\n(BHu
-\M[\\$1]\D'P -.75n 0 0 \\n(BHu -(\\n[.i]u - \\n(INu - .75n) 0 0 -\\n(BHu'\M[]
-.in 0
-.nf
-.BX
-.in
-.fi
-.\}
-..
 .\" -----------------------------------------------------------------
 .\" * set default formatting
 .\" -----------------------------------------------------------------
@@ -166,13 +18,11 @@
 .\" -----------------------------------------------------------------
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
-.SH "Name"
-bti \- send a tweet to twitter\&.com or identi\&.ca (or any custom laconi\&.ca installation) from the command line
-.SH "Synopsis"
-.fam C
+.SH "NAME"
+bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
+.SH "SYNOPSIS"
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR]  [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
-.fam
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 bti sends a tweet message to twitter\&.com or identi\&.ca\&.
@@ -190,21 +40,17 @@ Specify the password of your twitter\&.com or identi\&.ca account\&.
 .PP
 \fB\-\-action action\fR
 .RS 4
-Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\'s timeline\&.
+Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\'s timeline\&. Default is "update"\&.
 .RE
 .PP
 \fB\-\-user screenname\fR
 .RS 4
-Specify the user you want to see his/her messages while the action is "user"\&.
-.sp
-If no screenname is specified, the default is account name\&.
+Specify the user whose messages you want to see when the action is "user"\&.
 .RE
 .PP
 \fB\-\-host HOST_NAME\fR
 .RS 4
-Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&.
-.sp
-If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses\&.
+Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&. If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses
 .sp
 If no host is specified, the default is to send to twitter\&.com\&.
 .RE
@@ -219,6 +65,20 @@ If \-\-proxy is not specified but the environment variable \'http_proxy\' is set
 \fB\-\-logfile LOGFILE\fR
 .RS 4
 Specify a logfile for bti to write status messages to\&. LOGFILE is in relation to the user\'s home directory, not an absolute path to a file\&.
+.RE
+.PP
+\fB\-\-config CONFIGFILE\fR
+.RS 4
+Specify a config file for bti to read from\&. By default, bti looks in the ~/\&.bti file for config values\&. This default location can be overridden by setting a specific file with this option\&.
+.RE
+.PP
+\fB\-\-replyto ID\fR
+.RS 4
+Status ID of a single post to which you want to create a threaded reply to\&.
+.sp
+For twitter, this is ignored unless the message starts with the @name of the owner of the post with the status ID\&.
+.sp
+For status\&.net, this can link any two messages into context with each other\&. Status\&.net will also link a message that contains an @name without this without regard to context\&.
 .RE
 .PP
 \fB\-\-shrink\-urls\fR
@@ -245,14 +105,20 @@ Performs all steps that would normally be done for a given action, but will not 
 .PP
 \fB\-\-verbose\fR
 .RS 4
-Verbose mode
+Verbose mode\&. Print status IDs and timestamps\&.
 .RE
 .PP
 \fB\-\-bash\fR
 .RS 4
 Add the working directory and a \'$\' in the tweet message to help specify it is coming from a command line\&. Don\'t put the working directory and the \'$\' in the tweet message\&.
 .sp
-This mode also does not report back any errors that might have happened when sending the message, and it sends it in the background, returning immediately, allowing the process to continue on\&.
+This option implies
+\fB\-\-background\fR\&.
+.RE
+.PP
+\fB\-\-background\fR
+.RS 4
+Do not report back any errors that might have happened when sending the message, and send it in the background, returning immediately, allowing the user to continue on\&.
 .RE
 .PP
 \fB\-\-version\fR
@@ -268,21 +134,20 @@ Print help text\&.
 .PP
 bti provides an easy way to send tweet messages direct from the command line or any script\&. It reads the message on standard input and uses the account and password settings either from the command line options, or from a config file, to send the message out\&.
 .PP
-It\'s primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\'m doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\'s anything interesting going on\&.
+Its primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\'m doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\'s anything interesting going on\&.
 .PP
 To hook bti up to your bash shell, export the following variable:
 .PP
 
-\FC PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\'\F[]
+PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\'
 .PP
 This example assumes that you have the
-\FC~/\&.bti\F[]
+~/\&.bti
 set up with your account and password information already in it, otherwise you can specify them as an option\&.
 .SH "CONFIGURATION"
 .PP
 The account and password can be stored in a configuration file in the users home directory in a file named
-\FC\&.bti\F[]
-The structure of this file is as follows:
+\&.bti\&. The structure of this file is as follows:
 .PP
 \fBaccount\fR
 .RS 4
@@ -294,21 +159,19 @@ The twitter\&.com or identi\&.ca account name you wish to use to send this messa
 The twitter\&.com or identi\&.ca password for the account you wish to use to send this message with\&.
 .RE
 .PP
-\fBaction action\fR
+\fB\-\-action action\fR
 .RS 4
 Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\'s timeline\&.
 .RE
 .PP
-\fBuser screenname\fR
+\fB\-\-user screenname\fR
 .RS 4
 Specify the user you want to see his/her messages while the action is "user"\&.
 .RE
 .PP
 \fBhost\fR
 .RS 4
-The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&.
-.sp
-If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses\&.
+The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&. If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses\&.
 .RE
 .PP
 \fBproxy\fR
@@ -321,6 +184,13 @@ The http proxy needed to send data out to the Internet\&.
 The logfile name for bti to write what happened to\&. This file is relative to the user\'s home directory\&. If this file is not specified here or on the command line, no logging will be written to the disk\&.
 .RE
 .PP
+\fBreplyto\fR
+.RS 4
+The status ID to which all notices will be linked to\&.
+.sp
+There is no sane reason for a need to have this set in a config file\&. One such reason is to have all your messages as children to a particular status\&.
+.RE
+.PP
 \fBshrink\-urls\fR
 .RS 4
 Setting this variable to \'true\' or \'yes\' will enable the URL shrinking feature\&. This is equivalent to using the \-\-shrink\-urls option\&.
@@ -328,11 +198,11 @@ Setting this variable to \'true\' or \'yes\' will enable the URL shrinking featu
 .PP
 \fBverbose\fR
 .RS 4
-Setting this variable to \'true\' or \'yes\' will enable the Verbose mode\&.
+Setting this variable to \'true\' or \'yes\' will enable the verbose mode\&.
 .RE
 .PP
 There is an example config file called
-\FCbti\&.example\F[]
+bti\&.example
 in the source tree that shows the structure of the file if you need an example to work off of\&.
 .PP
 Configuration options have the following priority:
@@ -349,9 +219,7 @@ config file option
 environment variables
 .RE
 .PP
-For example, command line options always override any config file option, or any environment variables\&.
+For example, command line options always override any config file option, or any environment variables\&. Unless a config file is specified by the command line\&. At that point, the new config file is read, and any previous options set by a command line option, would be overridden\&.
 .SH "AUTHOR"
 .PP
-Written by Greg Kroah\-Hartman
-<\FCgreg@kroah\&.com\F[]> and Amir Mohammad Saied
-<\FCamirsaied@gmail\&.com\F[]>\&.
+Written by Greg Kroah\-Hartman <greg@kroah\&.com> and Amir Mohammad Saied <amirsaied@gmail\&.com>\&.

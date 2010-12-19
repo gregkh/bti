@@ -33,6 +33,9 @@
           <arg><option>--host HOST_NAME</option></arg>
           <arg><option>--proxy PROXY:PORT</option></arg>
           <arg><option>--logfile LOGFILE</option></arg>
+          <arg><option>--config CONFIGFILE</option></arg>
+          <arg><option>--replyto ID</option></arg>
+          <arg><option>--retweet ID</option></arg>
           <arg><option>--page PAGENUMBER</option></arg>
           <arg><option>--bash</option></arg>
           <arg><option>--shrink-urls</option></arg>
@@ -75,7 +78,7 @@
 		are "update" to send a message, "friends" to see your friends
 		timeline, "public" to track public timeline, "replies" to see
 		replies to your messages and "user" to see a specific user's
-		timeline.
+		timeline.  Default is "update".
               </para>
             </listitem>
           </varlistentry>
@@ -83,7 +86,7 @@
             <term><option>--user screenname</option></term>
             <listitem>
               <para>
-		Specify the user you want to see his/her messages while the
+		Specify the user whose messages you want to see when the
 		action is "user".
               </para>
             </listitem>
@@ -129,6 +132,43 @@
             </listitem>
           </varlistentry>
           <varlistentry>
+            <term><option>--config CONFIGFILE</option></term>
+            <listitem>
+              <para>
+		Specify a config file for bti to read from.  By default, bti
+		looks in the ~/.bti file for config values.  This default
+		location can be overridden by setting a specific file with this
+		option.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--replyto ID</option></term>
+            <listitem>
+              <para>
+		Status ID of a single post to which you want to create a threaded
+		reply to.
+	      </para>
+	      <para>
+	        For twitter, this is ignored unless the message starts with the
+		@name of the owner of the post with the status ID.
+	      </para>
+	      <para>
+	        For status.net, this can link any two messages into context with
+		each other. Status.net will also link a message that contains an
+		@name without this without regard to context.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--retweet ID</option></term>
+            <listitem>
+              <para>
+		Status ID of a single post which you want to retweet.
+	      </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
             <term><option>--shrink-urls</option></term>
             <listitem>
               <para>
@@ -138,7 +178,11 @@
                 more suitable for micro-blogging.
               </para>
               <para>
-                Currently, only http://2tu.us/ is used as a URL shrinking service.
+                The following URL shrinking services are available:
+                http://2tu.us/ (default) and http://bit.ly / http://j.mp
+              </para>
+              <para>
+                See the documentation for bti-shrink-urls for the configuration options.
               </para>
             </listitem>
           </varlistentry>
@@ -171,7 +215,7 @@
             <term><option>--verbose</option></term>
             <listitem>
               <para>
-                Verbose mode
+                Verbose mode. Print status IDs and timestamps.
               </para>
             </listitem>
           </varlistentry>
@@ -183,11 +227,20 @@
 		 help specify it is coming from a command line.  Don't put the
 		 working directory and the '$' in the tweet message.
 	      </para>
+
+              <para>
+                 This option implies <option>--background</option>.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--background</option></term>
+            <listitem>
 	      <para>
-		 This mode also does not report back any errors that might have
-		 happened when sending the message, and it sends it in the
-		 background, returning immediately, allowing the process to
-		 continue on.
+		 Do not report back any errors that might have
+		 happened when sending the message, and send it in the
+		 background, returning immediately, allowing the user
+		 to continue on.
 	       </para>
             </listitem>
           </varlistentry>
@@ -216,7 +269,7 @@
           out.
         </para>
         <para>
-          It's primary focus is to allow you to log everything that you
+          Its primary focus is to allow you to log everything that you
           type into a bash shell, in a crazy, "this is what I'm doing right
           now!" type of way, letting the world follow along with you
           constant moving between directories and refreshing your email
@@ -241,7 +294,7 @@
          <para>
            The account and password can be stored in a configuration file
            in the users home directory in a file named
-           <filename>.bti</filename>  The structure of this file is as
+           <filename>.bti</filename>.  The structure of this file is as
            follows:
          </para>
          <variablelist>
@@ -318,6 +371,19 @@
              </listitem>
            </varlistentry>
            <varlistentry>
+             <term><option>replyto</option></term>
+             <listitem>
+               <para>
+		 The status ID to which all notices will be linked to.
+               </para>
+	       <para>
+	         There is no sane reason for a need to have this set in a
+		 config file. One such reason is to have all your messages
+		 as children to a particular status.
+	       </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
              <term><option>shrink-urls</option></term>
              <listitem>
                <para>
@@ -361,7 +427,10 @@
          </variablelist>
 	 <para>
 	   For example, command line options always override any config file
-	   option, or any environment variables.
+	   option, or any environment variables.  Unless a config file is
+	   specified by the command line.  At that point, the new config file is
+	   read, and any previous options set by a command line option, would be
+	   overridden.
          </para>
        </refsect1>
 

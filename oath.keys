@@ -1,0 +1,16 @@
+# Consumer key
+cZy8DdioswAfu3LJYg6E2w
+
+# Consumer secret
+fnIGGU0T12mMWKjmThUdSeKN32NLWfmnwapwubVQ
+
+# Request token URL
+http://twitter.com/oauth/request_token
+
+# Access token URL
+http://twitter.com/oauth/access_token
+
+# Authorize URL
+http://twitter.com/oauth/authorize
+
+
