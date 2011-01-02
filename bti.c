@@ -749,26 +749,29 @@ static int send_request(struct session *session)
 			break;
 		}
 
-		if (is_post) {
-			req_url = oauth_sign_url2(endpoint, &postarg, OA_HMAC,
-						  NULL, session->consumer_key,
-						  session->consumer_secret,
-						  session->access_token_key,
-						  session->access_token_secret);
-			reply = oauth_http_post(req_url, postarg);
-		} else {
-			req_url = oauth_sign_url2(endpoint, NULL, OA_HMAC, NULL,
-						  session->consumer_key,
-						  session->consumer_secret,
-						  session->access_token_key,
-						  session->access_token_secret);
-			reply = oauth_http_get(req_url, postarg);
-		}
+		dbg("%s\n", endpoint);
+		if (!session->dry_run) {
+			if (is_post) {
+				req_url = oauth_sign_url2(endpoint, &postarg, OA_HMAC,
+							  NULL, session->consumer_key,
+							  session->consumer_secret,
+							  session->access_token_key,
+							  session->access_token_secret);
+				reply = oauth_http_post(req_url, postarg);
+			} else {
+				req_url = oauth_sign_url2(endpoint, NULL, OA_HMAC, NULL,
+							  session->consumer_key,
+							  session->consumer_secret,
+							  session->access_token_key,
+							  session->access_token_secret);
+				reply = oauth_http_get(req_url, postarg);
+			}
 
-		dbg("%s\n", req_url);
-		dbg("%s\n", reply);
-		if (req_url)
-			free(req_url);
+			dbg("%s\n", req_url);
+			dbg("%s\n", reply);
+			if (req_url)
+				free(req_url);
+		}
 
 		if ((session->action != ACTION_UPDATE) &&
 				(session->action != ACTION_RETWEET))
