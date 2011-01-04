@@ -98,6 +98,7 @@ struct session {
 	int dry_run;
 	int page;
 	int no_oauth;
+	int guest;
 	enum host host;
 	enum action action;
 	void *readline_handle;
@@ -592,7 +593,7 @@ static int send_request(struct session *session)
 	if (!session->hosturl)
 		session->hosturl = strdup(twitter_host);
 
-	if (session->no_oauth) {
+	if (session->no_oauth || session->guest) {
 		curl_buf = bti_curl_buffer_alloc(session->action);
 		if (!curl_buf)
 			return -ENOMEM;
@@ -1544,11 +1545,17 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->host == HOST_TWITTER) {
 		if (!session->consumer_key || !session->consumer_secret) {
-			fprintf(stderr,
-				"Twitter no longer supports HTTP basic authentication.\n"
-				"Both consumer key, and consumer secret are required"
-				" for bti in order to behave as an OAuth consumer.\n");
-			goto exit;
+			if (session->action == ACTION_USER ||
+					session->action == ACTION_PUBLIC) {
+				/* Some actions may still work without authentication */
+				session->guest = 1;
+			} else {
+				fprintf(stderr,
+						"Twitter no longer supports HTTP basic authentication.\n"
+						"Both consumer key, and consumer secret are required"
+						" for bti in order to behave as an OAuth consumer.\n");
+				goto exit;
+			}
 		}
 		if (session->action == ACTION_GROUP) {
 			fprintf(stderr, "Groups only work in Identi.ca.\n");
@@ -1570,7 +1577,7 @@ int main(int argc, char *argv[], char *envp[])
 				      session->hostname);
 			session->password = strdup(password);
 		}
-	} else {
+	} else if (!session->guest) {
 		if (!session->access_token_key ||
 		    !session->access_token_secret) {
 			request_access_token(session);
