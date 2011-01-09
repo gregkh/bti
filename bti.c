@@ -396,6 +396,9 @@ static void parse_timeline(char *document)
 	xmlDocPtr doc;
 	xmlNodePtr current;
 
+	if (!document)
+		return;
+
 	doc = xmlReadMemory(document, strlen(document), "timeline.xml",
 			    NULL, XML_PARSE_NOERROR);
 	if (doc == NULL)
@@ -755,18 +758,23 @@ static int send_request(struct session *session)
 						  session->consumer_secret,
 						  session->access_token_key,
 						  session->access_token_secret);
-			reply = oauth_http_post(req_url, postarg);
+
+			if (!session->dry_run)
+				reply = oauth_http_post(req_url, postarg);
+
 		} else {
 			req_url = oauth_sign_url2(endpoint, NULL, OA_HMAC, NULL,
 						  session->consumer_key,
 						  session->consumer_secret,
 						  session->access_token_key,
 						  session->access_token_secret);
-			reply = oauth_http_get(req_url, postarg);
+
+			if (!session->dry_run)
+				reply = oauth_http_get(req_url, postarg);
 		}
 
 		dbg("%s\n", req_url);
-		dbg("%s\n", reply);
+		dbg("%s\n", reply ? reply : "(dry-run)");
 		if (req_url)
 			free(req_url);
 
