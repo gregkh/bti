@@ -22,7 +22,7 @@
 bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
 .SH "SYNOPSIS"
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-retweet\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 bti sends a tweet message to twitter\&.com or identi\&.ca\&.
@@ -81,11 +81,18 @@ For twitter, this is ignored unless the message starts with the @name of the own
 For status\&.net, this can link any two messages into context with each other\&. Status\&.net will also link a message that contains an @name without this without regard to context\&.
 .RE
 .PP
+\fB\-\-retweet ID\fR
+.RS 4
+Status ID of a single post which you want to retweet\&.
+.RE
+.PP
 \fB\-\-shrink\-urls\fR
 .RS 4
 Scans the tweet text for valid URL patterns and passes each through the supplied bti\-shrink\-urls script\&. The script will pass the URL to a web service that shrinks the URLs, making it more suitable for micro\-blogging\&.
 .sp
-Currently, only http://2tu\&.us/ is used as a URL shrinking service\&.
+The following URL shrinking services are available: http://2tu\&.us/ (default) and http://bit\&.ly / http://j\&.mp
+.sp
+See the documentation for bti\-shrink\-urls for the configuration options\&.
 .RE
 .PP
 \fB\-\-debug\fR

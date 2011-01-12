@@ -5,6 +5,8 @@ bin_SCRIPTS = \
 	bti-shrink-urls
 
 bti_SOURCES = \
+	bti.h \
+	config.c \
 	bti.c
 
 bti_CFLAGS = \

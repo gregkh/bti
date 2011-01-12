@@ -17,3 +17,27 @@ bti is developed using git and the tree can be found at:
 	git://github.com/gregkh/bti.git
 and browsed at:
 	http://github.com/gregkh/bti/
+
+
+About OAuth configuration
+
+If you want to use an OAuth-enabled service (like twitter), you should
+configure bti to use the consumer key and secret shipped with the source
+code (check the oath.keys file).
+
+For example, you should add the following two lines to your ~/.bti
+configuration file:
+
+---8<-------------------
+# Consumer key
+consumer_key=cZy8DdioswAfu3LJYg6E2w
+
+# Consumer secret
+consumer_secret=fnIGGU0T12mMWKjmThUdSeKN32NLWfmnwapwubVQ
+---8<-------------------
+
+The next time that you run bti, you will be told to visit an URL that
+will provide you a PIN number. You should then input that number in the
+bti prompt, and you will be given two new configuration values
+(access_token_secret and access_token_key) that you need to add to your
+bti configuration file to authenticate requests from bti.
