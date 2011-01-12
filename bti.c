@@ -283,6 +283,16 @@ static CURL *curl_init(void)
 	return curl;
 }
 
+/* The final place data is sent to the screen/pty/tty */
+bti_output_line(struct session *session, xmlChar *user, xmlChar *id,
+		xmlChar *created, xmlChar *text)
+{
+	if (session->verbose)
+		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);
+	else
+		printf("[%s] %s\n", user, text);
+}
+
 static void parse_statuses(struct session *session,
 			   xmlDocPtr doc, xmlNodePtr current)
 {
@@ -314,12 +324,7 @@ static void parse_statuses(struct session *session,
 			}
 
 			if (user && text && created && id) {
-				if (session->verbose)
-					printf("[%s] {%s} (%.16s) %s\n",
-						user, id, created, text);
-				else
-					printf("[%s] %s\n",
-						user, text);
+				bti_output_line(session, user, id, created, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
