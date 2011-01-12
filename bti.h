@@ -78,4 +78,11 @@ struct bti_curl_buffer {
 	int length;
 };
 
+extern const char twitter_host[];
+extern const char identica_host[];
+extern const char twitter_name[];
+extern const char identica_name[];
+
+extern void bti_parse_configfile(struct session *session);
+
 #endif

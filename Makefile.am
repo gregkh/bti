@@ -6,6 +6,7 @@ bin_SCRIPTS = \
 
 bti_SOURCES = \
 	bti.h \
+	config.c \
 	bti.c
 
 bti_CFLAGS = \
