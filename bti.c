@@ -53,7 +53,6 @@
 
 
 static int debug;
-static int verbose;
 
 enum host {
 	HOST_TWITTER  = 0,
@@ -99,6 +98,7 @@ struct session {
 	int page;
 	int no_oauth;
 	int guest;
+	int verbose;
 	enum host host;
 	enum action action;
 	void *readline_handle;
@@ -107,6 +107,7 @@ struct session {
 
 struct bti_curl_buffer {
 	char *data;
+	struct session *session;
 	enum action action;
 	int length;
 };
@@ -340,7 +341,8 @@ static CURL *curl_init(void)
 	return curl;
 }
 
-static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
+static void parse_statuses(struct session *session,
+			   xmlDocPtr doc, xmlNodePtr current)
 {
 	xmlChar *text = NULL;
 	xmlChar *user = NULL;
@@ -370,7 +372,7 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 			}
 
 			if (user && text && created && id) {
-				if (verbose)
+				if (session->verbose)
 					printf("[%s] {%s} (%.16s) %s\n",
 						user, id, created, text);
 				else
@@ -392,7 +394,7 @@ static void parse_statuses(xmlDocPtr doc, xmlNodePtr current)
 	return;
 }
 
-static void parse_timeline(char *document)
+static void parse_timeline(char *document, struct session *session)
 {
 	xmlDocPtr doc;
 	xmlNodePtr current;
@@ -418,7 +420,7 @@ static void parse_timeline(char *document)
 	current = current->xmlChildrenNode;
 	while (current != NULL) {
 		if ((!xmlStrcmp(current->name, (const xmlChar *)"status")))
-			parse_statuses(doc, current);
+			parse_statuses(session, doc, current);
 		current = current->next;
 	}
 	xmlFreeDoc(doc);
@@ -447,7 +449,7 @@ static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
 	memcpy(&curl_buf->data[curl_buf->length], (char *)buffer, buffer_size);
 	curl_buf->length += buffer_size;
 	if (curl_buf->action)
-		parse_timeline(curl_buf->data);
+		parse_timeline(curl_buf->data, curl_buf->session);
 
 	dbg("%s\n", curl_buf->data);
 
@@ -597,6 +599,7 @@ static int send_request(struct session *session)
 		curl_buf = bti_curl_buffer_alloc(session->action);
 		if (!curl_buf)
 			return -ENOMEM;
+		curl_buf->session = session;
 
 		curl = curl_init();
 		if (!curl)
@@ -776,7 +779,7 @@ static int send_request(struct session *session)
 
 		if ((session->action != ACTION_UPDATE) &&
 				(session->action != ACTION_RETWEET))
-			parse_timeline(reply);
+			parse_timeline(reply, session);
 	}
 	return 0;
 }
@@ -896,7 +899,7 @@ static void parse_configfile(struct session *session)
 			c += 8;
 			if (!strncasecmp(c, "true", 4) ||
 					!strncasecmp(c, "yes", 3))
-				verbose = 1;
+				session->verbose = 1;
 		} else if (!strncasecmp(c,"retweet", 7) &&
 				(c[7] == '=')) {
 			c += 8;
@@ -1367,7 +1370,6 @@ int main(int argc, char *argv[], char *envp[])
 	int page_nr;
 
 	debug = 0;
-	verbose = 0;
 
 	session = session_alloc();
 	if (!session) {
@@ -1410,7 +1412,7 @@ int main(int argc, char *argv[], char *envp[])
 			debug = 1;
 			break;
 		case 'V':
-			verbose = 1;
+			session->verbose = 1;
 			break;
 		case 'a':
 			if (session->account)
