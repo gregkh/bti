@@ -1,3 +1,39 @@
+Summary of changes from v028 to v029
+============================================
+
+Amir Mohammad Saied (2):
+      Update my copyright date.
+      Fixing Identi.ca's OAuth request_token URI
+
+Dwi Sasongko S (1):
+      Support proper 'reply_to' and 'retweet'
+
+Greg Kroah-Hartman (9):
+      updated man pages generated from the docbook source
+      Merge https://github.com/leif81/bti into main tree
+      Merge testing branch into master
+      Merge branch 'oauth-readme' of https://github.com/agimenez/bti into agimenez-oauth-readme
+      reformat README to have a bit shorter lines
+      move verbose flag into the session structure
+      create bti.h
+      add config.c
+      move output logic to one function
+
+Justin Forest (1):
+      Support shrinking with bit.ly and j.mp.
+
+L. Alberto Giménez (1):
+      Document how to configure OAuth.
+
+Leif Gruenwoldt (1):
+      user and public actions may not require auth
+
+gregor herrmann (3):
+      Add documentation for new shrink_host feature in bti-shrink-urls.
+      Document the new --retweet feature in bti.xml and add it to bash completion.
+      Active --dry-run for OAuth.
+
+
 Summary of changes from v027 to v028
 ============================================
 
