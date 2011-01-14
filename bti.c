@@ -284,8 +284,8 @@ static CURL *curl_init(void)
 }
 
 /* The final place data is sent to the screen/pty/tty */
-bti_output_line(struct session *session, xmlChar *user, xmlChar *id,
-		xmlChar *created, xmlChar *text)
+void bti_output_line(struct session *session, xmlChar *user, xmlChar *id,
+		     xmlChar *created, xmlChar *text)
 {
 	if (session->verbose)
 		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);

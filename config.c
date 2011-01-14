@@ -42,6 +42,123 @@
 #include <oauth.h>
 #include "bti.h"
 
+
+
+/*
+ * get_key function
+ *
+ * Read a line from the config file and assign it a key and a value.
+ *
+ * This logic taken almost identically from taken from udev's rule file parsing
+ * logic in the file udev-rules.c, written by Kay Sievers and licensed under
+ * the GPLv2+.  I hate writing parsers, so it makes sense to borrow working
+ * logic from those smarter than I...
+ */
+static int get_key(struct session *session, char *line, char **key, char **value)
+{
+	char *linepos;
+	char *temp;
+	char terminator;
+
+	linepos = line;
+	if (linepos == NULL || linepos[0] == '\0')
+		return -1;
+
+	/* skip whitespace */
+	while (isspace(linepos[0]) || linepos[0] == ',')
+		linepos++;
+	if (linepos[0] == '\0')
+		return -1;
+
+	*key = linepos;
+
+	for (;;) {
+		linepos++;
+		if (linepos[0] == '\0')
+			return -1;
+		if (isspace(linepos[0]))
+			break;
+		if (linepos[0] == '=')
+			break;
+	}
+
+	/* remember the end of the key */
+	temp = linepos;
+
+	/* skip whitespace after key */
+	while (isspace(linepos[0]))
+		linepos++;
+	if (linepos[0] == '\0')
+		return -1;
+
+	/* make sure this is a = operation */
+	/*
+	 * udev likes to check for += and == and lots of other complex
+	 * assignments that we don't care about.
+	 */
+	if (linepos[0] == '=')
+		linepos++;
+	else
+		return -1;
+
+	/* terminate key */
+	temp[0] = '\0';
+
+	/* skip whitespace after opearator */
+	while (isspace(linepos[0]))
+		linepos++;
+	if (linepos[0] == '\0')
+		return -1;
+
+	/*
+	 * if the value is quoted, then terminate on a ", otherwise space is
+	 * the terminator.
+	 * */
+	if (linepos[0] == '"') {
+		terminator = '"';
+		linepos++;
+	} else
+		terminator = ' ';
+
+	/* get the value */
+	*value = linepos;
+
+	/* terminate */
+	temp = strchr(linepos, terminator);
+	if (temp) {
+		temp[0] = '\0';
+		temp++;
+	} else {
+		/*
+		 * perhaps we just hit the end of the line, so there would not
+		 * be a terminator, so just use the whole rest of the string as
+		 * the value.
+		 */
+	}
+	printf("%s = %s\n", *key, *value);
+	return 0;
+}
+
+typedef int (*config_function_callback)(struct session *session, char *value);
+
+struct config_table {
+	const char *key;
+	config_function_callback callback;
+};
+
+
+int account_callback(struct session *session, char *value)
+{
+	return 0;
+}
+
+static struct config_table config_table[] = {
+	{ "account", account_callback },
+	{ NULL, NULL }
+};
+
+
+
 void bti_parse_configfile(struct session *session)
 {
 	FILE *config_file;
@@ -69,6 +186,8 @@ void bti_parse_configfile(struct session *session)
 		return;
 
 	do {
+		char *key;
+		char *value;
 		ssize_t n = getline(&line, &len, config_file);
 		if (n < 0)
 			break;
@@ -86,6 +205,8 @@ void bti_parse_configfile(struct session *session)
 		/* Ignore blank lines.  */
 		if (c[0] == '\0')
 			continue;
+
+		get_key(session, line, &key, &value);
 
 		if (!strncasecmp(c, "account", 7) && (c[7] == '=')) {
 			c += 8;
