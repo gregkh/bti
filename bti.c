@@ -52,7 +52,7 @@
 	} while (0)
 
 
-static int debug;
+int debug;
 
 static void display_help(void)
 {
