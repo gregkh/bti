@@ -13,7 +13,8 @@ bti_CFLAGS = \
 	$(LIBCURL_CFLAGS) \
 	$(XML_CFLAGS) \
 	$(LIBPCRE_CFLAGS) \
-	$(LIBOAUTH_CFLAGS)
+	$(LIBOAUTH_CFLAGS) \
+	-Wall
 
 bti_LDADD = \
 	$(LIBCURL_LIBS) \
