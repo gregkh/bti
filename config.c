@@ -295,7 +295,7 @@ static struct config_function config_table[] = {
 	{ NULL, NULL }
 };
 
-void process_line(struct session *session, char *key, char *value)
+static void process_line(struct session *session, char *key, char *value)
 {
 	struct config_function *item;
 	int result;
@@ -325,7 +325,7 @@ void bti_parse_configfile(struct session *session)
 	char *key = NULL;
 	char *value = NULL;
 	size_t len = 0;
-	size_t n;
+	ssize_t n;
 	char *c;
 
 	config_file = fopen(session->configfile, "r");

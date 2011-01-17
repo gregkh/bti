@@ -284,7 +284,7 @@ static CURL *curl_init(void)
 }
 
 /* The final place data is sent to the screen/pty/tty */
-void bti_output_line(struct session *session, xmlChar *user, xmlChar *id,
+static void bti_output_line(struct session *session, xmlChar *user, xmlChar *id,
 		     xmlChar *created, xmlChar *text)
 {
 	if (session->verbose)
