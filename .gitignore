@@ -23,3 +23,5 @@ stamp-h1
 depcomp
 INSTALL
 check-news.in
+tags
+TAGS
