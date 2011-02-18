@@ -724,6 +724,11 @@ static int send_request(struct session *session)
 				free(req_url);
 		}
 
+		if (!reply) {
+			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
+			return 1;
+		}
+
 		if ((session->action != ACTION_UPDATE) &&
 				(session->action != ACTION_RETWEET))
 			parse_timeline(reply, session);
