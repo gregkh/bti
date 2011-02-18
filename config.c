@@ -140,7 +140,7 @@ static int get_key(struct session *session, char *line, char **key, char **value
 		 * the value.
 		 */
 	}
-	printf("%s = %s\n", *key, *value);
+	/* printf("%s = %s\n", *key, *value); */
 	return 0;
 }
 
@@ -309,7 +309,10 @@ static void process_line(struct session *session, char *key, char *value)
 			break;
 
 		if (strncasecmp(item->key, key, strlen(item->key)) == 0) {
-			printf("calling %p, for key = '%s' and value = '%s'\n", item->callback, key, value);
+			/*
+			 * printf("calling %p, for key = '%s' and value = * '%s'\n",
+			 * 	  item->callback, key, value);
+			 */
 			result = item->callback(session, value);
 			if (!result)
 				return;
