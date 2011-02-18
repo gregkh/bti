@@ -726,7 +726,7 @@ static int send_request(struct session *session)
 
 		if (!reply) {
 			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
-			return 1;
+			return -EIO;
 		}
 
 		if ((session->action != ACTION_UPDATE) &&
