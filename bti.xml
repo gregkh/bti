@@ -99,7 +99,7 @@
 		options are "twitter" to send to twitter.com and "identica" to
         send to identi.ca.
 
-        If you want to send the message to a custom laconi.ca installation,
+        If you want to send the message to a custom StatusNet installation,
         you should specify the API URI. For example identi.ca's URI is:
         https://identi.ca/api/statuses
               </para>
@@ -345,7 +345,7 @@
 		 options are either "twitter" or "identica" to send to
 		 twitter.com or identi.ca respectively.
 
-         If you want to send the message to a custom laconi.ca installation,
+         If you want to send the message to a custom StatusNet installation,
          you should specify the API URI. For example identi.ca's URI is:
          https://identi.ca/api/statuses.
                </para>
