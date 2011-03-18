@@ -641,11 +641,36 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
 		if (!session->dry_run) {
 			res = curl_easy_perform(curl);
-			if (res && !session->background) {
-				fprintf(stderr, "error(%d) trying to perform "
+                        if (!session->background) {
+                                if (res) {
+                                        fprintf(stderr, "error(%d) trying to perform "
 						"operation\n", res);
-				return -EINVAL;
-			}
+                                        return -EINVAL;
+                                } else {
+                                        xmlDocPtr doc;
+                                        xmlNodePtr current;
+
+                                        doc = xmlReadMemory(curl_buf->data, curl_buf->length,
+                                                            "response.xml", NULL, XML_PARSE_NOERROR);
+                                        if (doc == NULL)
+                                                return -EINVAL;
+
+                                        current = xmlDocGetRootElement(doc);
+                                        if (current == NULL) {
+                                                fprintf(stderr, "empty document\n");
+                                                xmlFreeDoc(doc);
+                                                return -EINVAL;
+                                        }
+
+                                        if (xmlStrcmp(current->name, (const xmlChar *) "status")) {
+                                                fprintf(stderr, "unexpected document type\n");
+                                                xmlFreeDoc(doc);
+                                                return -EINVAL;
+                                        }
+
+                                        xmlFreeDoc(doc);
+                                }
+                        }
 		}
 
 		curl_easy_cleanup(curl);
