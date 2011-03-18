@@ -42,25 +42,294 @@
 #include <oauth.h>
 #include "bti.h"
 
+typedef int (*config_function_callback)(struct session *session, char *value);
+
+struct config_function {
+	const char *key;
+	config_function_callback callback;
+};
+
+/*
+ * get_key function
+ *
+ * Read a line from the config file and assign it a key and a value.
+ *
+ * This logic taken almost identically from taken from udev's rule file parsing
+ * logic in the file udev-rules.c, written by Kay Sievers and licensed under
+ * the GPLv2+.  I hate writing parsers, so it makes sense to borrow working
+ * logic from those smarter than I...
+ */
+static int get_key(struct session *session, char *line, char **key, char **value)
+{
+	char *linepos;
+	char *temp;
+	char terminator;
+
+	linepos = line;
+	if (linepos == NULL || linepos[0] == '\0')
+		return -1;
+
+	/* skip whitespace */
+	while (isspace(linepos[0]) || linepos[0] == ',')
+		linepos++;
+	if (linepos[0] == '\0')
+		return -1;
+
+	*key = linepos;
+
+	for (;;) {
+		linepos++;
+		if (linepos[0] == '\0')
+			return -1;
+		if (isspace(linepos[0]))
+			break;
+		if (linepos[0] == '=')
+			break;
+	}
+
+	/* remember the end of the key */
+	temp = linepos;
+
+	/* skip whitespace after key */
+	while (isspace(linepos[0]))
+		linepos++;
+	if (linepos[0] == '\0')
+		return -1;
+
+	/* make sure this is a = operation */
+	/*
+	 * udev likes to check for += and == and lots of other complex
+	 * assignments that we don't care about.
+	 */
+	if (linepos[0] == '=')
+		linepos++;
+	else
+		return -1;
+
+	/* terminate key */
+	temp[0] = '\0';
+
+	/* skip whitespace after opearator */
+	while (isspace(linepos[0]))
+		linepos++;
+	if (linepos[0] == '\0')
+		return -1;
+
+	/*
+	 * if the value is quoted, then terminate on a ", otherwise space is
+	 * the terminator.
+	 * */
+	if (linepos[0] == '"') {
+		terminator = '"';
+		linepos++;
+	} else
+		terminator = ' ';
+
+	/* get the value */
+	*value = linepos;
+
+	/* terminate */
+	temp = strchr(linepos, terminator);
+	if (temp) {
+		temp[0] = '\0';
+		temp++;
+	} else {
+		/*
+		 * perhaps we just hit the end of the line, so there would not
+		 * be a terminator, so just use the whole rest of the string as
+		 * the value.
+		 */
+	}
+	/* printf("%s = %s\n", *key, *value); */
+	return 0;
+}
+
+static int session_string(char **field, char *value)
+{
+	char *string;
+
+	string = strdup(value);
+	if (string) {
+		if (*field)
+			free(*field);
+		*field = string;
+		return 0;
+	}
+	return -1;
+}
+
+static int session_bool(int *field, char *value)
+{
+	if ((strncasecmp(value, "true", 4) == 0) ||
+	    strncasecmp(value, "yes", 3) == 0)
+		*field = 1;
+	return 0;
+}
+
+static int account_callback(struct session *session, char *value)
+{
+	return session_string(&session->account, value);
+}
+
+static int password_callback(struct session *session, char *value)
+{
+	return session_string(&session->password, value);
+}
+
+static int proxy_callback(struct session *session, char *value)
+{
+	return session_string(&session->proxy, value);
+}
+
+static int user_callback(struct session *session, char *value)
+{
+	return session_string(&session->user, value);
+}
+
+static int consumer_key_callback(struct session *session, char *value)
+{
+	return session_string(&session->consumer_key, value);
+}
+
+static int consumer_secret_callback(struct session *session, char *value)
+{
+	return session_string(&session->consumer_secret, value);
+}
+
+static int access_token_key_callback(struct session *session, char *value)
+{
+	return session_string(&session->access_token_key, value);
+}
+
+static int access_token_secret_callback(struct session *session, char *value)
+{
+	return session_string(&session->access_token_secret, value);
+}
+
+static int logfile_callback(struct session *session, char *value)
+{
+	return session_string(&session->logfile, value);
+}
+
+static int replyto_callback(struct session *session, char *value)
+{
+	return session_string(&session->replyto, value);
+}
+
+static int retweet_callback(struct session *session, char *value)
+{
+	return session_string(&session->retweet, value);
+}
+
+static int host_callback(struct session *session, char *value)
+{
+	if (strcasecmp(value, "twitter") == 0) {
+		session->host = HOST_TWITTER;
+		session->hosturl = strdup(twitter_host);
+		session->hostname = strdup(twitter_name);
+	} else if (strcasecmp(value, "identica") == 0) {
+		session->host = HOST_IDENTICA;
+		session->hosturl = strdup(identica_host);
+		session->hostname = strdup(identica_name);
+	} else {
+		session->host = HOST_CUSTOM;
+		session->hosturl = strdup(value);
+		session->hostname = strdup(value);
+	}
+	return 0;
+}
+
+static int action_callback(struct session *session, char *value)
+{
+	if (strcasecmp(value, "update") == 0)
+		session->action = ACTION_UPDATE;
+	else if (strcasecmp(value, "friends") == 0)
+		session->action = ACTION_FRIENDS;
+	else if (strcasecmp(value, "user") == 0)
+		session->action = ACTION_USER;
+	else if (strcasecmp(value, "replies") == 0)
+		session->action = ACTION_REPLIES;
+	else if (strcasecmp(value, "public") == 0)
+		session->action = ACTION_PUBLIC;
+	else if (strcasecmp(value, "group") == 0)
+		session->action = ACTION_GROUP;
+	else
+		session->action= ACTION_UNKNOWN;
+	return 0;
+}
+
+static int verbose_callback(struct session *session, char *value)
+{
+	return session_bool(&session->verbose, value);
+}
+
+static int shrink_urls_callback(struct session *session, char *value)
+{
+	return session_bool(&session->shrink_urls, value);
+}
+
+/*
+ * List of all of the config file options.
+ *
+ * To add a new option, just add a string for the key name, and the callback
+ * function that will be called with the value read from the config file.
+ *
+ * Make sure the table is NULL terminated, otherwise bad things will happen.
+ */
+static struct config_function config_table[] = {
+	{ "account", account_callback },
+	{ "password", password_callback },
+	{ "proxy", proxy_callback },
+	{ "user", user_callback },
+	{ "consumer_key", consumer_key_callback },
+	{ "consumer_secret", consumer_secret_callback },
+	{ "access_token_key", access_token_key_callback },
+	{ "access_token_secret", access_token_secret_callback },
+	{ "logfile", logfile_callback },
+	{ "replyto", replyto_callback },
+	{ "retweet", retweet_callback },
+	{ "host", host_callback },
+	{ "action", action_callback },
+	{ "verbose", verbose_callback },
+	{ "shrink-urls", shrink_urls_callback },
+	{ NULL, NULL }
+};
+
+static void process_line(struct session *session, char *key, char *value)
+{
+	struct config_function *item;
+	int result;
+
+	if (key == NULL || value == NULL)
+		return;
+
+	item = &config_table[0];
+	for (;;) {
+		if (item->key == NULL || item->callback == NULL)
+			break;
+
+		if (strncasecmp(item->key, key, strlen(item->key)) == 0) {
+			/*
+			 * printf("calling %p, for key = '%s' and value = * '%s'\n",
+			 * 	  item->callback, key, value);
+			 */
+			result = item->callback(session, value);
+			if (!result)
+				return;
+		}
+		item++;
+	}
+}
+
 void bti_parse_configfile(struct session *session)
 {
 	FILE *config_file;
 	char *line = NULL;
+	char *key = NULL;
+	char *value = NULL;
 	size_t len = 0;
-	char *account = NULL;
-	char *password = NULL;
-	char *consumer_key = NULL;
-	char *consumer_secret = NULL;
-	char *access_token_key = NULL;
-	char *access_token_secret = NULL;
-	char *host = NULL;
-	char *proxy = NULL;
-	char *logfile = NULL;
-	char *action = NULL;
-	char *user = NULL;
-	char *replyto = NULL;
-	char *retweet = NULL;
-	int shrink_urls = 0;
+	ssize_t n;
+	char *c;
 
 	config_file = fopen(session->configfile, "r");
 
@@ -69,166 +338,29 @@ void bti_parse_configfile(struct session *session)
 		return;
 
 	do {
-		ssize_t n = getline(&line, &len, config_file);
+		n = getline(&line, &len, config_file);
 		if (n < 0)
 			break;
 		if (line[n - 1] == '\n')
 			line[n - 1] = '\0';
-		/* Parse file.  Format is the usual value pairs:
-		   account=name
-		   passwort=value
-		   # is a comment character
-		*/
+
+		/* '#' is comment markers, like bash style */
 		*strchrnul(line, '#') = '\0';
-		char *c = line;
+		c = line;
 		while (isspace(*c))
 			c++;
 		/* Ignore blank lines.  */
 		if (c[0] == '\0')
 			continue;
 
-		if (!strncasecmp(c, "account", 7) && (c[7] == '=')) {
-			c += 8;
-			if (c[0] != '\0')
-				account = strdup(c);
-		} else if (!strncasecmp(c, "password", 8) &&
-			   (c[8] == '=')) {
-			c += 9;
-			if (c[0] != '\0')
-				password = strdup(c);
-		} else if (!strncasecmp(c, "consumer_key", 12) &&
-			   (c[12] == '=')) {
-			c += 13;
-			if (c[0] != '\0')
-				consumer_key = strdup(c);
-		} else if (!strncasecmp(c, "consumer_secret", 15) &&
-			   (c[15] == '=')) {
-			c += 16;
-			if (c[0] != '\0')
-				consumer_secret = strdup(c);
-		} else if (!strncasecmp(c, "access_token_key", 16) &&
-			   (c[16] == '=')) {
-			c += 17;
-			if (c[0] != '\0')
-				access_token_key = strdup(c);
-		} else if (!strncasecmp(c, "access_token_secret", 19) &&
-			   (c[19] == '=')) {
-			c += 20;
-			if (c[0] != '\0')
-				access_token_secret = strdup(c);
-		} else if (!strncasecmp(c, "host", 4) &&
-			   (c[4] == '=')) {
-			c += 5;
-			if (c[0] != '\0')
-				host = strdup(c);
-		} else if (!strncasecmp(c, "proxy", 5) &&
-			   (c[5] == '=')) {
-			c += 6;
-			if (c[0] != '\0')
-				proxy = strdup(c);
-		} else if (!strncasecmp(c, "logfile", 7) &&
-			   (c[7] == '=')) {
-			c += 8;
-			if (c[0] != '\0')
-				logfile = strdup(c);
-		} else if (!strncasecmp(c, "replyto", 7) &&
-			   (c[7] == '=')) {
-			c += 8;
-			if (c[0] != '\0')
-				replyto = strdup(c);
-		} else if (!strncasecmp(c, "action", 6) &&
-			   (c[6] == '=')) {
-			c += 7;
-			if (c[0] != '\0')
-				action = strdup(c);
-		} else if (!strncasecmp(c, "user", 4) &&
-				(c[4] == '=')) {
-			c += 5;
-			if (c[0] != '\0')
-				user = strdup(c);
-		} else if (!strncasecmp(c, "shrink-urls", 11) &&
-				(c[11] == '=')) {
-			c += 12;
-			if (!strncasecmp(c, "true", 4) ||
-					!strncasecmp(c, "yes", 3))
-				shrink_urls = 1;
-		} else if (!strncasecmp(c, "verbose", 7) &&
-				(c[7] == '=')) {
-			c += 8;
-			if (!strncasecmp(c, "true", 4) ||
-					!strncasecmp(c, "yes", 3))
-				session->verbose = 1;
-		} else if (!strncasecmp(c,"retweet", 7) &&
-				(c[7] == '=')) {
-			c += 8;
-			if (c[0] != '\0')
-				retweet = strdup(c);
-		}
-	} while (!feof(config_file));
+		/* parse the line into a key and value pair */
+		get_key(session, c, &key, &value);
 
-	if (password)
-		session->password = password;
-	if (account)
-		session->account = account;
-	if (consumer_key)
-		session->consumer_key = consumer_key;
-	if (consumer_secret)
-		session->consumer_secret = consumer_secret;
-	if (access_token_key)
-		session->access_token_key = access_token_key;
-	if (access_token_secret)
-		session->access_token_secret = access_token_secret;
-	if (host) {
-		if (strcasecmp(host, "twitter") == 0) {
-			session->host = HOST_TWITTER;
-			session->hosturl = strdup(twitter_host);
-			session->hostname = strdup(twitter_name);
-		} else if (strcasecmp(host, "identica") == 0) {
-			session->host = HOST_IDENTICA;
-			session->hosturl = strdup(identica_host);
-			session->hostname = strdup(identica_name);
-		} else {
-			session->host = HOST_CUSTOM;
-			session->hosturl = strdup(host);
-			session->hostname = strdup(host);
-		}
-		free(host);
-	}
-	if (proxy) {
-		if (session->proxy)
-			free(session->proxy);
-		session->proxy = proxy;
-	}
-	if (logfile)
-		session->logfile = logfile;
-	if (replyto)
-		session->replyto = replyto;
-	if (retweet)
-		session->retweet = retweet;
-	if (action) {
-		if (strcasecmp(action, "update") == 0)
-			session->action = ACTION_UPDATE;
-		else if (strcasecmp(action, "friends") == 0)
-			session->action = ACTION_FRIENDS;
-		else if (strcasecmp(action, "user") == 0)
-			session->action = ACTION_USER;
-		else if (strcasecmp(action, "replies") == 0)
-			session->action = ACTION_REPLIES;
-		else if (strcasecmp(action, "public") == 0)
-			session->action = ACTION_PUBLIC;
-		else if (strcasecmp(action, "group") == 0)
-			session->action = ACTION_GROUP;
-		else
-			session->action = ACTION_UNKNOWN;
-		free(action);
-	}
-	if (user)
-		session->user = user;
-	session->shrink_urls = shrink_urls;
+		process_line(session, key, value);
+	} while (!feof(config_file));
 
 	/* Free buffer and close file.  */
 	free(line);
 	fclose(config_file);
 }
-
 

@@ -82,7 +82,16 @@ extern const char twitter_host[];
 extern const char identica_host[];
 extern const char twitter_name[];
 extern const char identica_name[];
+extern int debug;
 
 extern void bti_parse_configfile(struct session *session);
+
+#define dbg(format, arg...)						\
+	do {								\
+		if (debug)						\
+			fprintf(stdout, "bti: %s: " format , __func__ , \
+				## arg);				\
+	} while (0)
+
 
 #endif

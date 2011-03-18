@@ -52,7 +52,7 @@
 	} while (0)
 
 
-static int debug;
+int debug;
 
 static void display_help(void)
 {
@@ -284,8 +284,8 @@ static CURL *curl_init(void)
 }
 
 /* The final place data is sent to the screen/pty/tty */
-bti_output_line(struct session *session, xmlChar *user, xmlChar *id,
-		xmlChar *created, xmlChar *text)
+static void bti_output_line(struct session *session, xmlChar *user,
+			    xmlChar *id, xmlChar *created, xmlChar *text)
 {
 	if (session->verbose)
 		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);
@@ -724,6 +724,11 @@ static int send_request(struct session *session)
 				free(req_url);
 		}
 
+		if (!reply) {
+			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
+			return -EIO;
+		}
+
 		if ((session->action != ACTION_UPDATE) &&
 				(session->action != ACTION_RETWEET))
 			parse_timeline(reply, session);
@@ -1119,7 +1124,6 @@ int main(int argc, char *argv[], char *envp[])
 	struct session *session;
 	pid_t child;
 	char *tweet;
-	char *retweet;
 	static char password[80];
 	int retval = 0;
 	int option;
@@ -1161,7 +1165,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	while (1) {
 		option = getopt_long_only(argc, argv,
-					  "dp:P:H:a:A:u:c:hg:G:sr:nVv",
+					  "dp:P:H:a:A:u:c:hg:G:sr:nVvw:",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1360,17 +1364,21 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	if (session->action == ACTION_RETWEET) {
-		fprintf(stdout, "Status ID to retweet: ");
-		retweet = get_string_from_stdin();
+		if (!session->retweet) {
+			char *rtid;
 
-		if (!retweet || strlen(retweet) == 0) {
+			fprintf(stdout, "Status ID to retweet: ");
+			rtid = get_string_from_stdin();
+			session->retweet = zalloc(strlen(rtid) + 10);
+			sprintf(session->retweet,"%s", rtid);
+			free(rtid);
+		}
+
+		if (!session->retweet || strlen(session->retweet) == 0) {
 			dbg("no retweet?\n");
 			return -1;
 		}
 
-		session->retweet = zalloc(strlen(retweet) + 10);
-		sprintf(session->retweet,"%s", retweet);
-		free(retweet);
 		dbg("retweet ID = %s\n", session->retweet);
 	}
 
