@@ -6,7 +6,7 @@
 account=twitmaster
 password=icanhascheezburger
 host=identica
-# Example of a custom laconica installation
+# Example of a custom StatusNet installation
 #host=http://army.twit.tv/api/statuses
 logfile=.bti.log
 #action=update
