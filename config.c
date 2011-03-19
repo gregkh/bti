@@ -355,9 +355,18 @@ void bti_parse_configfile(struct session *session)
 		if (line == hashmarker)
 			line[0] = '\0';
 		else {
-			--hashmarker;
-			if (isblank(hashmarker[0]))
-				hashmarker[0] = '\0';
+			while (hashmarker[0] != '\0') {
+				--hashmarker;
+				if (isblank(hashmarker[0]))
+					hashmarker[0] = '\0';
+				else {
+					/*
+					 * false positive; '#' occured
+					 * within a string
+					 */
+					hashmarker = strchrnul(hashmarker+2, '#');
+				}
+			}
 		}
 		c = line;
 		while (isspace(*c))
