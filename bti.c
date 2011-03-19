@@ -324,7 +324,8 @@ static void parse_statuses(struct session *session,
 			}
 
 			if (user && text && created && id) {
-				bti_output_line(session, user, id, created, text);
+				bti_output_line(session, user, id,
+						created, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
@@ -445,7 +446,7 @@ static int request_access_token(struct session *session)
 {
 	char *post_params = NULL;
 	char *request_url = NULL;
-	char *reply    	  = NULL;
+	char *reply       = NULL;
 	char *at_key      = NULL;
 	char *at_secret   = NULL;
 	char *verifier    = NULL;
@@ -573,8 +574,10 @@ static int send_request(struct session *session)
 
 			if (session->replyto)
 				curl_formadd(&formpost, &lastptr,
-					     CURLFORM_COPYNAME, "in_reply_to_status_id",
-					     CURLFORM_COPYCONTENTS, session->replyto,
+					     CURLFORM_COPYNAME,
+					     "in_reply_to_status_id",
+					     CURLFORM_COPYCONTENTS,
+					     session->replyto,
 					     CURLFORM_END);
 
 			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
@@ -641,36 +644,38 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
 		if (!session->dry_run) {
 			res = curl_easy_perform(curl);
-                        if (!session->background) {
-                                if (res) {
-                                        fprintf(stderr, "error(%d) trying to perform "
-						"operation\n", res);
-                                        return -EINVAL;
-                                } else {
-                                        xmlDocPtr doc;
-                                        xmlNodePtr current;
+			if (!session->background) {
+				xmlDocPtr doc;
+				xmlNodePtr current;
 
-                                        doc = xmlReadMemory(curl_buf->data, curl_buf->length,
-                                                            "response.xml", NULL, XML_PARSE_NOERROR);
-                                        if (doc == NULL)
-                                                return -EINVAL;
+				if (res) {
+					fprintf(stderr, "error(%d) trying to "
+						"perform operation\n", res);
+					return -EINVAL;
+				}
 
-                                        current = xmlDocGetRootElement(doc);
-                                        if (current == NULL) {
-                                                fprintf(stderr, "empty document\n");
-                                                xmlFreeDoc(doc);
-                                                return -EINVAL;
-                                        }
+				doc = xmlReadMemory(curl_buf->data,
+						    curl_buf->length,
+						    "response.xml", NULL,
+						    XML_PARSE_NOERROR);
+				if (doc == NULL)
+					return -EINVAL;
 
-                                        if (xmlStrcmp(current->name, (const xmlChar *) "status")) {
-                                                fprintf(stderr, "unexpected document type\n");
-                                                xmlFreeDoc(doc);
-                                                return -EINVAL;
-                                        }
+				current = xmlDocGetRootElement(doc);
+				if (current == NULL) {
+					fprintf(stderr, "empty document\n");
+					xmlFreeDoc(doc);
+					return -EINVAL;
+				}
 
-                                        xmlFreeDoc(doc);
-                                }
-                        }
+				if (xmlStrcmp(current->name, (const xmlChar *)"status")) {
+					fprintf(stderr, "unexpected document type\n");
+					xmlFreeDoc(doc);
+					return -EINVAL;
+				}
+
+				xmlFreeDoc(doc);
+			}
 		}
 
 		curl_easy_cleanup(curl);
@@ -1245,7 +1250,7 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_PUBLIC;
 			else if (strcasecmp(optarg, "group") == 0)
 				session->action = ACTION_GROUP;
-			else if (strcasecmp(optarg,"retweet") == 0)
+			else if (strcasecmp(optarg, "retweet") == 0)
 				session->action = ACTION_RETWEET;
 			else
 				session->action = ACTION_UNKNOWN;
@@ -1339,7 +1344,10 @@ int main(int argc, char *argv[], char *envp[])
 		if (!session->consumer_key || !session->consumer_secret) {
 			if (session->action == ACTION_USER ||
 					session->action == ACTION_PUBLIC) {
-				/* Some actions may still work without authentication */
+				/*
+				 * Some actions may still work without
+				 * authentication
+				 */
 				session->guest = 1;
 			} else {
 				fprintf(stderr,
@@ -1395,7 +1403,7 @@ int main(int argc, char *argv[], char *envp[])
 			fprintf(stdout, "Status ID to retweet: ");
 			rtid = get_string_from_stdin();
 			session->retweet = zalloc(strlen(rtid) + 10);
-			sprintf(session->retweet,"%s", rtid);
+			sprintf(session->retweet, "%s", rtid);
 			free(rtid);
 		}
 
