@@ -327,6 +327,7 @@ void bti_parse_configfile(struct session *session)
 	char *line = NULL;
 	char *key = NULL;
 	char *value = NULL;
+	char *hashmarker;
 	size_t len = 0;
 	ssize_t n;
 	char *c;
@@ -344,14 +345,20 @@ void bti_parse_configfile(struct session *session)
 		if (line[n - 1] == '\n')
 			line[n - 1] = '\0';
 
-		/* '#' is comment markers, like bash style
-		   but it is a valid character in some fields, so
-		   only treat it as a comment marker if it occurs
-		   at the beginning of the line, or after whitespace */
-		char *hashmarker = strchrnul(line, '#');
-		if (line == hashmarker) line[0] = '\0';
-		if (*(--hashmarker) == ' ' || *hashmarker == '\t')
-			*hashmarker = '\0';
+		/*
+		 * '#' is comment markers, like bash style but it is a valid
+		 * character in some fields, so only treat it as a comment
+		 * marker if it occurs at the beginning of the line, or after
+		 * whitespace
+		 */
+		hashmarker = strchrnul(line, '#');
+		if (line == hashmarker)
+			line[0] = '\0';
+		else {
+			--hashmarker;
+			if (isblank(hashmarker[0]))
+				hashmarker[0] = '\0';
+		}
 		c = line;
 		while (isspace(*c))
 			c++;
