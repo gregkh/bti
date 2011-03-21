@@ -1,3 +1,10 @@
+bti 031
+=============
+- Check for identi.ca server success or not in non-background mode
+  thanks to Flameeyes
+- Handle '#' in a password in the config file properly thanks to Michel
+  Alexandre Salim
+
 bti 030
 =============
 More minor bugfixes
