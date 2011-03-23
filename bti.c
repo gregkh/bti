@@ -116,7 +116,7 @@ static char *get_string(const char *name)
  * lib/ss/get_readline.c file, which is licensed under the MIT license.
  *
  * This keeps us from having to relicense the bti codebase if readline
- * ever changes its license, as there is no link-time dependancy.
+ * ever changes its license, as there is no link-time dependency.
  * It is a run-time thing only, and we handle any readline-like library
  * in the same manner, making bti not be a derivative work of any
  * other program.

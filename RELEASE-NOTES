@@ -29,7 +29,7 @@ some readline fixups from Pete
 
 bti 025
 =============
-remove readline link-time dependancy to make the distro's lives easier
+remove readline link-time dependency to make the distro's lives easier
 bugfixes for minor things by Amir and Gregor
 
 bti 024
