@@ -268,6 +268,9 @@ static const char replies_uri[]  = "/replies.xml";
 static const char retweet_uri[]  = "/retweet/";
 static const char group_uri[]    = "/../statusnet/groups/timeline/";
 
+static const char config_default[]	= "/etc/bti";
+static const char config_user_default[]	= ".bti";
+
 static CURL *curl_init(void)
 {
 	CURL *curl;
@@ -1128,6 +1131,8 @@ int main(int argc, char *argv[], char *envp[])
 	int retval = 0;
 	int option;
 	char *http_proxy;
+	char *home;
+	const char *config_file;
 	time_t t;
 	int page_nr;
 
@@ -1144,12 +1149,23 @@ int main(int argc, char *argv[], char *envp[])
 	session->time = strdup(ctime(&t));
 	session->time[strlen(session->time)-1] = 0x00;
 
-	/* Get the home directory so we can try to find a config file */
-	session->homedir = strdup(getenv("HOME"));
+	/*
+	 * Get the home directory so we can try to find a config file.
+	 * If we have no home dir set up, look in /etc/bti
+	 */
+	home = getenv("HOME");
+	if (home) {
+		/* We have a home dir, so this might be a user */
+		session->homedir = strdup(home);
+		config_file = config_user_default;
+	} else {
+		session->homedir = strdup("");
+		config_file = config_default;
+	}
 
 	/* set up a default config file location (traditionally ~/.bti) */
-	session->configfile = zalloc(strlen(session->homedir) + 7);
-	sprintf(session->configfile, "%s/.bti", session->homedir);
+	session->configfile = zalloc(strlen(session->homedir) + strlen(config_file) + 7);
+	sprintf(session->configfile, "%s/%s", session->homedir, config_file);
 
 	/* Set environment variables first, before reading command line options
 	 * or config file values. */
