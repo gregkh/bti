@@ -1,3 +1,39 @@
+Summary of changes from v030 to v031
+============================================
+
+Diego Elio Pettenò (1):
+      In non-background execution, check whether the server reports success.
+
+Greg Kroah-Hartman (2):
+      code formatting cleanups
+      config: fix possible access of non-allocated memory
+
+Michel Alexandre Salim (2):
+      Only treat # as a comment marker if it's at the beginning of line or is preceded by a whitespace character
+      Keep searching for '#' comment marker if previous occurence was a false positive
+
+
+Summary of changes from v029 to v030
+============================================
+
+Greg Kroah-Hartman (9):
+      turn on some better compiler warnings.
+      move debug to bti.h
+      fix compiler warning with bti_output_line
+      rewrite the config parser
+      Revert "turn on some better compiler warnings."
+      config.c: fix up some compiler warnings
+      config.c: remove config debug lines.
+      bti.c: fix another compiler warning about global functions.
+      send_request needs to return a negative error value.
+
+L. Alberto Giménez (4):
+      Fix trivial compiler warnings
+      Added tags files to .gitignore
+      Fix retweet batch operation
+      Fix a segfault when specifying an invalid host.
+
+
 Summary of changes from v028 to v029
 ============================================
 
