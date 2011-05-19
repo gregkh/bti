@@ -68,6 +68,7 @@ struct session {
 	enum host host;
 	enum action action;
 	void *readline_handle;
+	int colorize;
 	char *(*readline)(const char *);
 };
 

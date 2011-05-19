@@ -268,6 +268,11 @@ static int shrink_urls_callback(struct session *session, char *value)
 	return session_bool(&session->shrink_urls, value);
 }
 
+static int colorize_callback(struct session *session, char *value)
+{
+	return session_bool(&session->colorize, value);
+}
+
 /*
  * List of all of the config file options.
  *
@@ -292,6 +297,7 @@ static struct config_function config_table[] = {
 	{ "action", action_callback },
 	{ "verbose", verbose_callback },
 	{ "shrink-urls", shrink_urls_callback },
+	{ "colorize", colorize_callback },
 	{ NULL, NULL }
 };
 

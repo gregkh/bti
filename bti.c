@@ -44,6 +44,17 @@
 
 #define zalloc(size)	calloc(size, 1)
 
+#define COLOR_RESET "\033[0m"
+
+/* @mentions */
+#define COLOR_GREEN "\033[32m"
+
+/* #hashtags */
+#define COLOR_BLUE "\033[34m"
+
+/* http[s]://urls */
+#define COLOR_MAGENTA "\033[35m"
+
 #define dbg(format, arg...)						\
 	do {								\
 		if (debug)						\
@@ -53,6 +64,16 @@
 
 
 int debug;
+
+/*
+ * Kind of token that we are in when colorizing output
+ */
+enum color_state {
+	NO_COLOR,
+	MENTION,
+	HASHTAG = MENTION,
+	URL
+};
 
 static void display_help(void)
 {
@@ -286,14 +307,61 @@ static CURL *curl_init(void)
 	return curl;
 }
 
+/*
+ * Handle the string keychars to enable colors
+ */
+static void color_output(char *str)
+{
+	enum color_state in_color = NO_COLOR;
+
+	while (*str) {
+		if (*str == '@') {
+			in_color = MENTION;
+			fputs(COLOR_GREEN, stdout);
+		} else if (*str == '#') {
+			in_color = HASHTAG;
+			fputs(COLOR_BLUE, stdout);
+		} else if (*str == 'h') {
+			if (!strncmp(str, "http://", 7) || !strncmp(str, "https://", 8)) {
+				in_color = URL;
+				fputs(COLOR_MAGENTA, stdout);
+			}
+		} else if ((in_color == URL) && isblank(*str)) {
+			fputs(COLOR_RESET, stdout);
+			in_color = NO_COLOR;
+		} else if ((in_color == HASHTAG || in_color == MENTION) &&
+					!isalnum(*str) && (*str != '_')) {
+			fputs(COLOR_RESET, stdout);
+			in_color = NO_COLOR;
+		}
+		putchar(*str++);
+	}
+
+	puts(COLOR_RESET);
+
+}
+
 /* The final place data is sent to the screen/pty/tty */
 static void bti_output_line(struct session *session, xmlChar *user,
 			    xmlChar *id, xmlChar *created, xmlChar *text)
 {
+	char *str;
+
+	str = zalloc(1024);
 	if (session->verbose)
-		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);
+		snprintf(str, 1024, "[@%s] {%s} (%.16s) %s", user, id, created, text);
 	else
-		printf("[%s] %s\n", user, text);
+		snprintf(str, 1024, "[@%s] %s", user, text);
+
+	str[1023] = '\0';
+
+	if (!session->colorize || !isatty(1)) {
+		puts(str);
+	} else {
+		color_output(str);
+	}
+
+	free(str);
 }
 
 static void parse_statuses(struct session *session,
