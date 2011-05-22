@@ -321,6 +321,31 @@ static void process_line(struct session *session, char *key, char *value)
 	}
 }
 
+#ifndef HAVE_GETLINE
+#ifdef HAVE_FGETLN
+static inline ssize_t getline(char **lineptr, size_t *n, FILE *stream)
+{
+	char *line;
+	size_t len;
+
+	line = fgetln(stream, &len);
+	if (!line)
+		return -1;
+	if (len >= *n) {
+		char *tmp = realloc(*lineptr, len + 1);
+		if (tmp == NULL)
+			return -1;
+		*lineptr = tmp;
+		*n = len + 1;
+	}
+	memcpy(*lineptr, line, len);
+	return len;
+}
+#else
+#error Need getline or fgetln to work
+#endif
+#endif
+
 void bti_parse_configfile(struct session *session)
 {
 	FILE *config_file;
@@ -351,7 +376,7 @@ void bti_parse_configfile(struct session *session)
 		 * marker if it occurs at the beginning of the line, or after
 		 * whitespace
 		 */
-		hashmarker = strchrnul(line, '#');
+		hashmarker = strchr(line, '#') ?: &line[n - 1];
 		if (line == hashmarker)
 			line[0] = '\0';
 		else {
@@ -364,7 +389,7 @@ void bti_parse_configfile(struct session *session)
 					 * false positive; '#' occured
 					 * within a string
 					 */
-					hashmarker = strchrnul(hashmarker+2, '#');
+					hashmarker = strchr(hashmarker+2, '#') ?: &hashmarker[strlen(hashmarker)];
 				}
 			}
 		}
@@ -382,7 +407,9 @@ void bti_parse_configfile(struct session *session)
 	} while (!feof(config_file));
 
 	/* Free buffer and close file.  */
+#if defined(USE_GETLINE)
 	free(line);
+#endif
 	fclose(config_file);
 }
 
