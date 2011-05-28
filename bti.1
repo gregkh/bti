@@ -1,13 +1,22 @@
 '\" t
 .\"     Title: bti
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
 .\"      Date: May 2008
 .\"    Manual: bti
 .\"    Source: bti
 .\"  Language: English
 .\"
 .TH "BTI" "1" "May 2008" "bti" "bti"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
 .\" -----------------------------------------------------------------
 .\" * set default formatting
 .\" -----------------------------------------------------------------
@@ -40,17 +49,17 @@ Specify the password of your twitter\&.com or identi\&.ca account\&.
 .PP
 \fB\-\-action action\fR
 .RS 4
-Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\'s timeline\&. Default is "update"\&.
+Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages, "user" to see a specific user\*(Aqs timeline and "direct" to send a direct message to a friend\&. Default is "update"\&.
 .RE
 .PP
 \fB\-\-user screenname\fR
 .RS 4
-Specify the user whose messages you want to see when the action is "user"\&.
+Specify the user whose messages you want to see when the action is "user", and the reciever of the direct message when the action is "direct" (the sender most be following the receiver)\&.
 .RE
 .PP
 \fB\-\-host HOST_NAME\fR
 .RS 4
-Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&. If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses
+Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&. If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\*(Aqs URI is: https://identi\&.ca/api/statuses
 .sp
 If no host is specified, the default is to send to twitter\&.com\&.
 .RE
@@ -59,12 +68,12 @@ If no host is specified, the default is to send to twitter\&.com\&.
 .RS 4
 Specify a http proxy value\&. This is not a required option, and only needed by systems that are behind a http proxy\&.
 .sp
-If \-\-proxy is not specified but the environment variable \'http_proxy\' is set the latter will be used\&.
+If \-\-proxy is not specified but the environment variable \*(Aqhttp_proxy\*(Aq is set the latter will be used\&.
 .RE
 .PP
 \fB\-\-logfile LOGFILE\fR
 .RS 4
-Specify a logfile for bti to write status messages to\&. LOGFILE is in relation to the user\'s home directory, not an absolute path to a file\&.
+Specify a logfile for bti to write status messages to\&. LOGFILE is in relation to the user\*(Aqs home directory, not an absolute path to a file\&.
 .RE
 .PP
 \fB\-\-config CONFIGFILE\fR
@@ -117,7 +126,7 @@ Verbose mode\&. Print status IDs and timestamps\&.
 .PP
 \fB\-\-bash\fR
 .RS 4
-Add the working directory and a \'$\' in the tweet message to help specify it is coming from a command line\&. Don\'t put the working directory and the \'$\' in the tweet message\&.
+Add the working directory and a \*(Aq$\*(Aq in the tweet message to help specify it is coming from a command line\&. Don\*(Aqt put the working directory and the \*(Aq$\*(Aq in the tweet message\&.
 .sp
 This option implies
 \fB\-\-background\fR\&.
@@ -141,12 +150,12 @@ Print help text\&.
 .PP
 bti provides an easy way to send tweet messages direct from the command line or any script\&. It reads the message on standard input and uses the account and password settings either from the command line options, or from a config file, to send the message out\&.
 .PP
-Its primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\'m doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\'s anything interesting going on\&.
+Its primary focus is to allow you to log everything that you type into a bash shell, in a crazy, "this is what I\*(Aqm doing right now!" type of way, letting the world follow along with you constant moving between directories and refreshing your email queue to see if there\*(Aqs anything interesting going on\&.
 .PP
 To hook bti up to your bash shell, export the following variable:
 .PP
 
-PROMPT_COMMAND=\'history 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\'
+PROMPT_COMMAND=\*(Aqhistory 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\*(Aq
 .PP
 This example assumes that you have the
 ~/\&.bti
@@ -168,7 +177,7 @@ The twitter\&.com or identi\&.ca password for the account you wish to use to sen
 .PP
 \fB\-\-action action\fR
 .RS 4
-Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\'s timeline\&.
+Specify the action which you want to perform\&. Valid options are "update" to send a message, "friends" to see your friends timeline, "public" to track public timeline, "replies" to see replies to your messages and "user" to see a specific user\*(Aqs timeline\&.
 .RE
 .PP
 \fB\-\-user screenname\fR
@@ -178,7 +187,7 @@ Specify the user you want to see his/her messages while the action is "user"\&.
 .PP
 \fBhost\fR
 .RS 4
-The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&. If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\'s URI is: https://identi\&.ca/api/statuses\&.
+The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&. If you want to send the message to a custom laconi\&.ca installation, you should specify the API URI\&. For example identi\&.ca\*(Aqs URI is: https://identi\&.ca/api/statuses\&.
 .RE
 .PP
 \fBproxy\fR
@@ -188,7 +197,7 @@ The http proxy needed to send data out to the Internet\&.
 .PP
 \fBlogfile\fR
 .RS 4
-The logfile name for bti to write what happened to\&. This file is relative to the user\'s home directory\&. If this file is not specified here or on the command line, no logging will be written to the disk\&.
+The logfile name for bti to write what happened to\&. This file is relative to the user\*(Aqs home directory\&. If this file is not specified here or on the command line, no logging will be written to the disk\&.
 .RE
 .PP
 \fBreplyto\fR
@@ -200,12 +209,12 @@ There is no sane reason for a need to have this set in a config file\&. One such
 .PP
 \fBshrink\-urls\fR
 .RS 4
-Setting this variable to \'true\' or \'yes\' will enable the URL shrinking feature\&. This is equivalent to using the \-\-shrink\-urls option\&.
+Setting this variable to \*(Aqtrue\*(Aq or \*(Aqyes\*(Aq will enable the URL shrinking feature\&. This is equivalent to using the \-\-shrink\-urls option\&.
 .RE
 .PP
 \fBverbose\fR
 .RS 4
-Setting this variable to \'true\' or \'yes\' will enable the verbose mode\&.
+Setting this variable to \*(Aqtrue\*(Aq or \*(Aqyes\*(Aq will enable the verbose mode\&.
 .RE
 .PP
 There is an example config file called

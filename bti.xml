@@ -77,8 +77,9 @@
 		Specify the action which you want to perform.  Valid options
 		are "update" to send a message, "friends" to see your friends
 		timeline, "public" to track public timeline, "replies" to see
-		replies to your messages and "user" to see a specific user's
-		timeline.  Default is "update".
+		replies to your messages, "user" to see a specific user's
+		timeline and "direct" to send a direct message to a friend.
+		Default is "update".
               </para>
             </listitem>
           </varlistentry>
@@ -87,7 +88,9 @@
             <listitem>
               <para>
 		Specify the user whose messages you want to see when the
-		action is "user".
+		action is "user", and the reciever of the direct message when
+		the action is "direct" (the sender most be following the 
+		receiver).
               </para>
             </listitem>
           </varlistentry>
