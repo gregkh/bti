@@ -100,8 +100,10 @@ static char *get_string(const char *name)
 		exit(1);
 	if (name != NULL)
 		fprintf(stdout, "%s", name);
-	if (!fgets(string, 999, stdin))
+	if (!fgets(string, 999, stdin)) {
+		free(string);
 		return NULL;
+	}
 	temp = strchr(string, '\n');
 	if (temp)
 		*temp = '\0';
@@ -835,8 +837,10 @@ static char *get_string_from_stdin(void)
 	if (!string)
 		return NULL;
 
-	if (!fgets(string, 999, stdin))
+	if (!fgets(string, 999, stdin)) {
+		free(string);
 		return NULL;
+	}
 	temp = strchr(string, '\n');
 	if (temp)
 		*temp = '\0';
