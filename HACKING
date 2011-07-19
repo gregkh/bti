@@ -1,7 +1,7 @@
 Patches are gladly accepted for bti code, please send them to
 greg@kroah.com, or you can use github to send a pull request.
 
-The code tree for smubatch is located at:
+The code tree for bti is located at:
 	http://github.com/gregkh/bti
 and can be cloned using git from:
 	git://github.com/gregkh/bti.git
