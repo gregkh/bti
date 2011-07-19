@@ -557,8 +557,10 @@ static int send_request(struct session *session)
 		curl_buf->session = session;
 
 		curl = curl_init();
-		if (!curl)
+		if (!curl) {
+			bti_curl_buffer_free(curl_buf);
 			return -EINVAL;
+		}
 
 		if (!session->hosturl)
 			session->hosturl = strdup(twitter_host);
@@ -658,6 +660,10 @@ static int send_request(struct session *session)
 				if (res) {
 					fprintf(stderr, "error(%d) trying to "
 						"perform operation\n", res);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
@@ -665,19 +671,32 @@ static int send_request(struct session *session)
 						    curl_buf->length,
 						    "response.xml", NULL,
 						    XML_PARSE_NOERROR);
-				if (doc == NULL)
+				if (doc == NULL) {
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
+				}
 
 				current = xmlDocGetRootElement(doc);
 				if (current == NULL) {
 					fprintf(stderr, "empty document\n");
 					xmlFreeDoc(doc);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
 				if (xmlStrcmp(current->name, (const xmlChar *)"status")) {
 					fprintf(stderr, "unexpected document type\n");
 					xmlFreeDoc(doc);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
