@@ -75,6 +75,7 @@ static void display_help(void)
 		"  --retweet ID\n"
 		"  --shrink-urls\n"
 		"  --page PAGENUMBER\n"
+		"  --column COLUMNWIDTH\n"
 		"  --bash\n"
 		"  --background\n"
 		"  --debug\n"
@@ -291,9 +292,10 @@ static void bti_output_line(struct session *session, xmlChar *user,
 			    xmlChar *id, xmlChar *created, xmlChar *text)
 {
 	if (session->verbose)
-		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);
+		printf("[%*s] {%s} (%.16s) %s\n", -session->column_output, user,
+				id, created, text);
 	else
-		printf("[%s] %s\n", user, text);
+		printf("[%*s] %s\n", -session->column_output, user, text);
 }
 
 static void parse_statuses(struct session *session,
@@ -1148,6 +1150,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "background", 0, NULL, 'B' },
 		{ "dry-run", 0, NULL, 'n' },
 		{ "page", 1, NULL, 'g' },
+		{ "column", 1, NULL, 'o' },
 		{ "version", 0, NULL, 'v' },
 		{ "config", 1, NULL, 'c' },
 		{ "replyto", 1, NULL, 'r' },
@@ -1211,7 +1214,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	while (1) {
 		option = getopt_long_only(argc, argv,
-					  "dp:P:H:a:A:u:c:hg:G:sr:nVvw:",
+					  "dp:P:H:a:A:u:c:hg:o:G:sr:nVvw:",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1232,6 +1235,10 @@ int main(int argc, char *argv[], char *envp[])
 			page_nr = atoi(optarg);
 			dbg("page = %d\n", page_nr);
 			session->page = page_nr;
+			break;
+		case 'o':
+			session->column_output = atoi(optarg);
+			dbg("column_output = %d\n", session->column_output);
 			break;
 		case 'r':
 			session->replyto = strdup(optarg);
