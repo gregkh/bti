@@ -65,6 +65,7 @@ struct session {
 	int no_oauth;
 	int guest;
 	int verbose;
+	int column_output;
 	enum host host;
 	enum action action;
 	void *readline_handle;
