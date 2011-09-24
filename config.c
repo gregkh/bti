@@ -351,20 +351,21 @@ void bti_parse_configfile(struct session *session)
 		 * marker if it occurs at the beginning of the line, or after
 		 * whitespace
 		 */
-		hashmarker = strchrnul(line, '#');
+		hashmarker = strchr(line, '#');
 		if (line == hashmarker)
 			line[0] = '\0';
 		else {
-			while (hashmarker[0] != '\0') {
+			while (hashmarker != NULL) {
 				--hashmarker;
-				if (isblank(hashmarker[0]))
+				if (isblank(hashmarker[0])) {
 					hashmarker[0] = '\0';
-				else {
+					break;
+				} else {
 					/*
 					 * false positive; '#' occured
 					 * within a string
 					 */
-					hashmarker = strchrnul(hashmarker+2, '#');
+					hashmarker = strchr(hashmarker+2, '#');
 				}
 			}
 		}
