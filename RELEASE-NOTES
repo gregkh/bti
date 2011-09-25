@@ -1,3 +1,10 @@
+bti 031
+=============
+- Check for identi.ca server success or not in non-background mode
+  thanks to Flameeyes
+- Handle '#' in a password in the config file properly thanks to Michel
+  Alexandre Salim
+
 bti 030
 =============
 More minor bugfixes
@@ -22,7 +29,7 @@ some readline fixups from Pete
 
 bti 025
 =============
-remove readline link-time dependancy to make the distro's lives easier
+remove readline link-time dependency to make the distro's lives easier
 bugfixes for minor things by Amir and Gregor
 
 bti 024

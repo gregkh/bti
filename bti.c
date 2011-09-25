@@ -75,6 +75,7 @@ static void display_help(void)
 		"  --retweet ID\n"
 		"  --shrink-urls\n"
 		"  --page PAGENUMBER\n"
+		"  --column COLUMNWIDTH\n"
 		"  --bash\n"
 		"  --background\n"
 		"  --debug\n"
@@ -116,7 +117,7 @@ static char *get_string(const char *name)
  * lib/ss/get_readline.c file, which is licensed under the MIT license.
  *
  * This keeps us from having to relicense the bti codebase if readline
- * ever changes its license, as there is no link-time dependancy.
+ * ever changes its license, as there is no link-time dependency.
  * It is a run-time thing only, and we handle any readline-like library
  * in the same manner, making bti not be a derivative work of any
  * other program.
@@ -268,6 +269,9 @@ static const char replies_uri[]  = "/replies.xml";
 static const char retweet_uri[]  = "/retweet/";
 static const char group_uri[]    = "/../statusnet/groups/timeline/";
 
+static const char config_default[]	= "/etc/bti";
+static const char config_user_default[]	= ".bti";
+
 static CURL *curl_init(void)
 {
 	CURL *curl;
@@ -288,9 +292,10 @@ static void bti_output_line(struct session *session, xmlChar *user,
 			    xmlChar *id, xmlChar *created, xmlChar *text)
 {
 	if (session->verbose)
-		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);
+		printf("[%*s] {%s} (%.16s) %s\n", -session->column_output, user,
+				id, created, text);
 	else
-		printf("[%s] %s\n", user, text);
+		printf("[%*s] %s\n", -session->column_output, user, text);
 }
 
 static void parse_statuses(struct session *session,
@@ -324,7 +329,8 @@ static void parse_statuses(struct session *session,
 			}
 
 			if (user && text && created && id) {
-				bti_output_line(session, user, id, created, text);
+				bti_output_line(session, user, id,
+						created, text);
 				xmlFree(user);
 				xmlFree(text);
 				xmlFree(created);
@@ -445,7 +451,7 @@ static int request_access_token(struct session *session)
 {
 	char *post_params = NULL;
 	char *request_url = NULL;
-	char *reply    	  = NULL;
+	char *reply       = NULL;
 	char *at_key      = NULL;
 	char *at_secret   = NULL;
 	char *verifier    = NULL;
@@ -573,8 +579,10 @@ static int send_request(struct session *session)
 
 			if (session->replyto)
 				curl_formadd(&formpost, &lastptr,
-					     CURLFORM_COPYNAME, "in_reply_to_status_id",
-					     CURLFORM_COPYCONTENTS, session->replyto,
+					     CURLFORM_COPYNAME,
+					     "in_reply_to_status_id",
+					     CURLFORM_COPYCONTENTS,
+					     session->replyto,
 					     CURLFORM_END);
 
 			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
@@ -641,10 +649,37 @@ static int send_request(struct session *session)
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, curl_buf);
 		if (!session->dry_run) {
 			res = curl_easy_perform(curl);
-			if (res && !session->background) {
-				fprintf(stderr, "error(%d) trying to perform "
-						"operation\n", res);
-				return -EINVAL;
+			if (!session->background) {
+				xmlDocPtr doc;
+				xmlNodePtr current;
+
+				if (res) {
+					fprintf(stderr, "error(%d) trying to "
+						"perform operation\n", res);
+					return -EINVAL;
+				}
+
+				doc = xmlReadMemory(curl_buf->data,
+						    curl_buf->length,
+						    "response.xml", NULL,
+						    XML_PARSE_NOERROR);
+				if (doc == NULL)
+					return -EINVAL;
+
+				current = xmlDocGetRootElement(doc);
+				if (current == NULL) {
+					fprintf(stderr, "empty document\n");
+					xmlFreeDoc(doc);
+					return -EINVAL;
+				}
+
+				if (xmlStrcmp(current->name, (const xmlChar *)"status")) {
+					fprintf(stderr, "unexpected document type\n");
+					xmlFreeDoc(doc);
+					return -EINVAL;
+				}
+
+				xmlFreeDoc(doc);
 			}
 		}
 
@@ -1115,6 +1150,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "background", 0, NULL, 'B' },
 		{ "dry-run", 0, NULL, 'n' },
 		{ "page", 1, NULL, 'g' },
+		{ "column", 1, NULL, 'o' },
 		{ "version", 0, NULL, 'v' },
 		{ "config", 1, NULL, 'c' },
 		{ "replyto", 1, NULL, 'r' },
@@ -1128,6 +1164,8 @@ int main(int argc, char *argv[], char *envp[])
 	int retval = 0;
 	int option;
 	char *http_proxy;
+	char *home;
+	const char *config_file;
 	time_t t;
 	int page_nr;
 
@@ -1144,12 +1182,23 @@ int main(int argc, char *argv[], char *envp[])
 	session->time = strdup(ctime(&t));
 	session->time[strlen(session->time)-1] = 0x00;
 
-	/* Get the home directory so we can try to find a config file */
-	session->homedir = strdup(getenv("HOME"));
+	/*
+	 * Get the home directory so we can try to find a config file.
+	 * If we have no home dir set up, look in /etc/bti
+	 */
+	home = getenv("HOME");
+	if (home) {
+		/* We have a home dir, so this might be a user */
+		session->homedir = strdup(home);
+		config_file = config_user_default;
+	} else {
+		session->homedir = strdup("");
+		config_file = config_default;
+	}
 
 	/* set up a default config file location (traditionally ~/.bti) */
-	session->configfile = zalloc(strlen(session->homedir) + 7);
-	sprintf(session->configfile, "%s/.bti", session->homedir);
+	session->configfile = zalloc(strlen(session->homedir) + strlen(config_file) + 7);
+	sprintf(session->configfile, "%s/%s", session->homedir, config_file);
 
 	/* Set environment variables first, before reading command line options
 	 * or config file values. */
@@ -1165,7 +1214,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	while (1) {
 		option = getopt_long_only(argc, argv,
-					  "dp:P:H:a:A:u:c:hg:G:sr:nVvw:",
+					  "dp:P:H:a:A:u:c:hg:o:G:sr:nVvw:",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1186,6 +1235,10 @@ int main(int argc, char *argv[], char *envp[])
 			page_nr = atoi(optarg);
 			dbg("page = %d\n", page_nr);
 			session->page = page_nr;
+			break;
+		case 'o':
+			session->column_output = atoi(optarg);
+			dbg("column_output = %d\n", session->column_output);
 			break;
 		case 'r':
 			session->replyto = strdup(optarg);
@@ -1220,7 +1273,7 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_PUBLIC;
 			else if (strcasecmp(optarg, "group") == 0)
 				session->action = ACTION_GROUP;
-			else if (strcasecmp(optarg,"retweet") == 0)
+			else if (strcasecmp(optarg, "retweet") == 0)
 				session->action = ACTION_RETWEET;
 			else
 				session->action = ACTION_UNKNOWN;
@@ -1314,7 +1367,10 @@ int main(int argc, char *argv[], char *envp[])
 		if (!session->consumer_key || !session->consumer_secret) {
 			if (session->action == ACTION_USER ||
 					session->action == ACTION_PUBLIC) {
-				/* Some actions may still work without authentication */
+				/*
+				 * Some actions may still work without
+				 * authentication
+				 */
 				session->guest = 1;
 			} else {
 				fprintf(stderr,
@@ -1370,7 +1426,7 @@ int main(int argc, char *argv[], char *envp[])
 			fprintf(stdout, "Status ID to retweet: ");
 			rtid = get_string_from_stdin();
 			session->retweet = zalloc(strlen(rtid) + 10);
-			sprintf(session->retweet,"%s", rtid);
+			sprintf(session->retweet, "%s", rtid);
 			free(rtid);
 		}
 
