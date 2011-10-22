@@ -19,6 +19,9 @@ PKG_CHECK_MODULES(LIBPCRE, libpcre)
 PKG_CHECK_MODULES([LIBCURL], [libcurl])
 PKG_CHECK_MODULES([XML], [libxml-2.0])
 
+AC_CHECK_FUNCS(getline)
+AC_CHECK_FUNCS(fgetln)
+
 AC_SEARCH_LIBS([dlopen], [dl])
 
 AC_CONFIG_FILES([Makefile])
