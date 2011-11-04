@@ -100,8 +100,10 @@ static char *get_string(const char *name)
 		exit(1);
 	if (name != NULL)
 		fprintf(stdout, "%s", name);
-	if (!fgets(string, 999, stdin))
+	if (!fgets(string, 999, stdin)) {
+		free(string);
 		return NULL;
+	}
 	temp = strchr(string, '\n');
 	if (temp)
 		*temp = '\0';
@@ -256,9 +258,9 @@ const char identica_name[] = "identi.ca";
 static const char twitter_request_token_uri[]  = "http://twitter.com/oauth/request_token";
 static const char twitter_access_token_uri[]   = "http://twitter.com/oauth/access_token";
 static const char twitter_authorize_uri[]      = "http://twitter.com/oauth/authorize?oauth_token=";
-static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/request_token?oauth_callback=oob";
-static const char identica_access_token_uri[]  = "http://identi.ca/api/oauth/access_token";
-static const char identica_authorize_uri[]     = "http://identi.ca/api/oauth/authorize?oauth_token=";
+static const char identica_request_token_uri[] = "https://identi.ca/api/oauth/request_token?oauth_callback=oob";
+static const char identica_access_token_uri[]  = "https://identi.ca/api/oauth/access_token";
+static const char identica_authorize_uri[]     = "https://identi.ca/api/oauth/authorize?oauth_token=";
 
 static const char user_uri[]     = "/user_timeline/";
 static const char update_uri[]   = "/update.xml";
@@ -555,8 +557,10 @@ static int send_request(struct session *session)
 		curl_buf->session = session;
 
 		curl = curl_init();
-		if (!curl)
+		if (!curl) {
+			bti_curl_buffer_free(curl_buf);
 			return -EINVAL;
+		}
 
 		if (!session->hosturl)
 			session->hosturl = strdup(twitter_host);
@@ -656,6 +660,10 @@ static int send_request(struct session *session)
 				if (res) {
 					fprintf(stderr, "error(%d) trying to "
 						"perform operation\n", res);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
@@ -663,19 +671,32 @@ static int send_request(struct session *session)
 						    curl_buf->length,
 						    "response.xml", NULL,
 						    XML_PARSE_NOERROR);
-				if (doc == NULL)
+				if (doc == NULL) {
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
+				}
 
 				current = xmlDocGetRootElement(doc);
 				if (current == NULL) {
 					fprintf(stderr, "empty document\n");
 					xmlFreeDoc(doc);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
 				if (xmlStrcmp(current->name, (const xmlChar *)"status")) {
 					fprintf(stderr, "unexpected document type\n");
 					xmlFreeDoc(doc);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
@@ -835,8 +856,10 @@ static char *get_string_from_stdin(void)
 	if (!string)
 		return NULL;
 
-	if (!fgets(string, 999, stdin))
+	if (!fgets(string, 999, stdin)) {
+		free(string);
 		return NULL;
+	}
 	temp = strchr(string, '\n');
 	if (temp)
 		*temp = '\0';
