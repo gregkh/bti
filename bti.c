@@ -519,10 +519,10 @@ static int request_access_token(struct session *session)
 
 	fprintf(stdout,
 		"Please put these two lines in your bti "
-		"configuration file (~/.bti):\n"
+		"configuration file (%s):\n"
 		"access_token_key=%s\n"
 		"access_token_secret=%s\n",
-		at_key, at_secret);
+		session->configfile, at_key, at_secret);
 
 	return 0;
 }
