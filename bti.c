@@ -887,7 +887,6 @@ static char *get_string_from_stdin(void)
 static void read_password(char *buf, size_t len, char *host)
 {
 	char pwd[80];
-	int retval;
 	struct termios old;
 	struct termios tp;
 
@@ -900,7 +899,13 @@ static void read_password(char *buf, size_t len, char *host)
 	fprintf(stdout, "Enter password for %s: ", host);
 	fflush(stdout);
 	tcflow(0, TCOOFF);
-	retval = scanf("%79s", pwd);
+
+	/*
+	 * I'd like to do something with the return value here, but really,
+	 * what can be done?
+	 */
+	(void)scanf("%79s", pwd);
+
 	tcflow(0, TCOON);
 	fprintf(stdout, "\n");
 
@@ -1048,11 +1053,11 @@ error_in:
 
 static int pcloseRWE(int pid, int *rwepipe)
 {
-	int rc, status;
+	int status;
 	close(rwepipe[0]);
 	close(rwepipe[1]);
 	close(rwepipe[2]);
-	rc = waitpid(pid, &status, 0);
+	(void)waitpid(pid, &status, 0);
 	return status;
 }
 
