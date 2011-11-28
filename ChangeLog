@@ -1,3 +1,40 @@
+Summary of changes from v031 to v032
+============================================
+
+Amir Mohammad Saied (1):
+      s/http/https/g
+
+Fabian Groffen (1):
+      bti: allow compilation on non-GNU platforms
+
+Galen Charlton (1):
+      teach bti how to do OAuth for custom StatusNet installations
+
+Greg Kroah-Hartman (4):
+      bti: Handle NULL HOME environment variables
+      bti.xml: docsheet url cleanup
+      update bti.1 with latest docbook template goodness
+      fix up some compiler warnings
+
+Jonathan Neuschäfer (4):
+      fix common misspellings
+      get_string*: fix a memory leak
+      HACKING: this is bti, not smugbatch
+      send_request: don't leak the curl stuff
+
+gregor herrmann (7):
+      Die if no host is provided.
+      Name correct hosts in prompts.
+      Add documentation for new shrink_host feature in bti-shrink-urls.
+      Document the new --retweet feature in bti.xml and add it to bash completion.
+      Active --dry-run for OAuth.
+      laconi.ca was renamed to StatusNet
+      Output actually used config file name instead of hardcoded ~/.bti in request_access_token().
+
+siers (1):
+      Output can be evened like a table with --column 20.
+
+
 Summary of changes from v030 to v031
 ============================================
 

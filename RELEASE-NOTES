@@ -1,3 +1,11 @@
+bti 032
+=============
+- oauth for custom StatusNet installations now works properly.
+- non-GNU platform support
+- --retweet support
+- much better error handling if servers are down
+- other minor bugfixes
+
 bti 031
 =============
 - Check for identi.ca server success or not in non-background mode
