@@ -547,7 +547,7 @@ static int request_access_token(struct session *session)
 
 static int send_request(struct session *session)
 {
-	char endpoint[500];
+	char endpoint[2000];
 	char user_password[500];
 	char data[500];
 	struct bti_curl_buffer *curl_buf;
