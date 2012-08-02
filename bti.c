@@ -85,6 +85,17 @@ static void display_help(void)
 		"  --help\n", VERSION);
 }
 
+int strlen_utf8(char *s)
+{
+	int i = 0, j = 0;
+	while (s[i])
+	{
+		if ((s[i] & 0xc0) != 0x80) j++;
+		i++;
+	}
+	return j;
+}
+
 static void display_version(void)
 {
 	fprintf(stdout, "bti - version %s\n", VERSION);
@@ -730,6 +741,14 @@ static int send_request(struct session *session)
 	} else {
 		switch (session->action) {
 		case ACTION_UPDATE:
+			if(strlen_utf8(session->tweet) > 140)
+			{
+				printf("E: tweet is too long!\n");
+				goto skip_tweet;
+			}
+			
+			//TODO: add tweet crunching function.
+				
 			escaped_tweet = oauth_url_escape(session->tweet);
 			if (session->replyto) {
 				sprintf(endpoint,
@@ -803,6 +822,8 @@ static int send_request(struct session *session)
 			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
 			return -EIO;
 		}
+		
+		skip_tweet:
 
 		if ((session->action != ACTION_UPDATE) &&
 				(session->action != ACTION_RETWEET))
