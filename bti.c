@@ -547,7 +547,8 @@ static int request_access_token(struct session *session)
 
 static int send_request(struct session *session)
 {
-	char endpoint[2000];
+	const int endpoint_size = 2000;
+	char endpoint[endpoint_size];
 	char user_password[500];
 	char data[500];
 	struct bti_curl_buffer *curl_buf;
@@ -611,7 +612,7 @@ static int send_request(struct session *session)
 			slist = curl_slist_append(slist, "Expect:");
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 
-			sprintf(endpoint, "%s%s", session->hosturl, update_uri);
+			snprintf(endpoint, endpoint_size, "%s%s", session->hosturl, update_uri);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
@@ -619,14 +620,14 @@ static int send_request(struct session *session)
 		case ACTION_FRIENDS:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 					friends_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_USER:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d", session->hosturl,
 				user_uri, session->user, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
@@ -634,20 +635,20 @@ static int send_request(struct session *session)
 		case ACTION_REPLIES:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 				replies_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_PUBLIC:
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 				public_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
 		case ACTION_GROUP:
-			sprintf(endpoint, "%s%s%s.xml?page=%d",
+			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d",
 				session->hosturl, group_uri, session->group,
 				session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
