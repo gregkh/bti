@@ -275,7 +275,9 @@ static const char retweet_uri[]  = "/retweet/";
 static const char group_uri[]    = "/../statusnet/groups/timeline/";
 
 static const char config_default[]	= "/etc/bti";
+static const char config_xdg_default[] = ".config/bti";
 static const char config_user_default[]	= ".bti";
+
 
 static CURL *curl_init(void)
 {
@@ -1203,6 +1205,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "retweet", 1, NULL, 'w' },
 		{ }
 	};
+    struct stat s;
 	struct session *session;
 	pid_t child;
 	char *tweet;
@@ -1236,13 +1239,19 @@ int main(int argc, char *argv[], char *envp[])
 	if (home) {
 		/* We have a home dir, so this might be a user */
 		session->homedir = strdup(home);
-		config_file = config_user_default;
+
+        /* if '.config/' exists, use XDG standard, else don't */
+        if (-1 == stat("~/.config"), &s) {
+            config_file = config_xdg_default;
+        } else {
+    		config_file = config_user_default;
+        }
 	} else {
 		session->homedir = strdup("");
 		config_file = config_default;
 	}
 
-	/* set up a default config file location (traditionally ~/.bti) */
+	/* set up a default config file location (traditionally "~/.bti" or "~/.config/bti") */
 	session->configfile = zalloc(strlen(session->homedir) + strlen(config_file) + 7);
 	sprintf(session->configfile, "%s/%s", session->homedir, config_file);
 

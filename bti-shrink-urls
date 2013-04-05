@@ -17,7 +17,7 @@
 needs_escape=true
 
 shrink_host=2tu.us
-test -f ~/.bti && . ~/.bti
+test -f ~/.bti && source ~/.bti || test -f ~/.config/bti && source ~/.config/bti
 
 while test -n "$1" ; do
         word="$1"
