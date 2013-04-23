@@ -254,7 +254,7 @@ static int action_callback(struct session *session, char *value)
 	else if (strcasecmp(value, "group") == 0)
 		session->action = ACTION_GROUP;
 	else
-		session->action= ACTION_UNKNOWN;
+		session->action = ACTION_UNKNOWN;
 	return 0;
 }
 
@@ -311,7 +311,7 @@ static void process_line(struct session *session, char *key, char *value)
 		if (strncasecmp(item->key, key, strlen(item->key)) == 0) {
 			/*
 			 * printf("calling %p, for key = '%s' and value = * '%s'\n",
-			 * 	  item->callback, key, value);
+			 *	  item->callback, key, value);
 			 */
 			result = item->callback(session, value);
 			if (!result)

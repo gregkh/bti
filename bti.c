@@ -730,8 +730,9 @@ static int send_request(struct session *session)
 				xmlNodePtr current;
 
 				if (res) {
-					fprintf(stderr, "error(%d) trying to "
-						"perform operation\n", res);
+					fprintf(stderr,
+						"error(%d) trying to perform operation\n",
+						res);
 					curl_easy_cleanup(curl);
 					if (session->action == ACTION_UPDATE)
 						curl_formfree(formpost);
@@ -1569,5 +1570,5 @@ int main(int argc, char *argv[], char *envp[])
 exit:
 	session_readline_cleanup(session);
 	session_free(session);
-	return retval;;
+	return retval;
 }
