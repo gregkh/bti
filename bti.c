@@ -1254,6 +1254,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "retweet", 1, NULL, 'w' },
 		{ }
 	};
+	struct stat s;
 	struct session *session;
 	pid_t child;
 	char *tweet;
@@ -1411,6 +1412,12 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->configfile);
 			session->configfile = strdup(optarg);
 			dbg("configfile = %s\n", session->configfile);
+			if (stat(session->configfile, &s) == -1) {
+				fprintf(stderr,
+					"Config file '%s' is not found.\n",
+					session->configfile);
+				goto exit;
+			}
 
 			/*
 			 * read the config file now.  Yes, this could override
