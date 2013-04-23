@@ -81,6 +81,17 @@ static void display_help(void)
 		"  --help\n", VERSION);
 }
 
+int strlen_utf8(char *s)
+{
+	int i = 0, j = 0;
+	while (s[i])
+	{
+		if ((s[i] & 0xc0) != 0x80) j++;
+		i++;
+	}
+	return j;
+}
+
 static void display_version(void)
 {
 	fprintf(stdout, "bti - version %s\n", VERSION);
@@ -597,7 +608,8 @@ static int request_access_token(struct session *session)
 
 static int send_request(struct session *session)
 {
-	char endpoint[500];
+	const int endpoint_size = 2000;
+	char endpoint[endpoint_size];
 	char user_password[500];
 	char data[500];
 	struct bti_curl_buffer *curl_buf;
@@ -661,7 +673,7 @@ static int send_request(struct session *session)
 			slist = curl_slist_append(slist, "Expect:");
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 
-			sprintf(endpoint, "%s%s", session->hosturl, update_uri);
+			snprintf(endpoint, endpoint_size, "%s%s", session->hosturl, update_uri);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
@@ -669,14 +681,14 @@ static int send_request(struct session *session)
 		case ACTION_FRIENDS:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 					friends_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_USER:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d", session->hosturl,
 				user_uri, session->user, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
@@ -684,20 +696,20 @@ static int send_request(struct session *session)
 		case ACTION_REPLIES:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 				replies_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_PUBLIC:
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 				public_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
 		case ACTION_GROUP:
-			sprintf(endpoint, "%s%s%s.xml?page=%d",
+			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d",
 				session->hosturl, group_uri, session->group,
 				session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
@@ -780,6 +792,14 @@ static int send_request(struct session *session)
 	} else {
 		switch (session->action) {
 		case ACTION_UPDATE:
+			if(strlen_utf8(session->tweet) > 140)
+			{
+				printf("E: tweet is too long!\n");
+				goto skip_tweet;
+			}
+			
+			//TODO: add tweet crunching function.
+				
 			escaped_tweet = oauth_url_escape(session->tweet);
 			if (session->replyto) {
 				sprintf(endpoint,
@@ -853,6 +873,8 @@ static int send_request(struct session *session)
 			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
 			return -EIO;
 		}
+		
+		skip_tweet:
 
 		if ((session->action != ACTION_UPDATE) &&
 				(session->action != ACTION_RETWEET))
