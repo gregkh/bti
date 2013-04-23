@@ -294,6 +294,58 @@ static CURL *curl_init(void)
 	return curl;
 }
 
+static void find_config_file(struct session *session)
+{
+	struct stat s;
+	char *home;
+	char *file;
+	int homedir_size;
+
+	/*
+	 * Get the home directory so we can try to find a config file.
+	 * If we have no home dir set up, look in /etc/bti
+	 */
+	home = getenv("HOME");
+	if (!home) {
+		/* No home dir, so take the defaults and get out of here */
+		session->homedir = strdup("");
+		session->configfile = strdup(config_default);
+		return;
+	}
+
+	/* We have a home dir, so this might be a user */
+	session->homedir = strdup(home);
+	homedir_size = strlen(session->homedir);
+
+	/*
+	 * Try to find a config file, we do so in this order:
+	 * ~/.bti		old-school config file
+	 * ~/.config/bti	new-school config file
+	 */
+	file = zalloc(homedir_size + strlen(config_user_default) + 7);
+	sprintf(file, "%s/%s", home, config_user_default);
+	if (stat(file, &s) == 0) {
+		/* Found the config file at ~/.bti */
+		session->configfile = strdup(file);
+		free(file);
+		return;
+	}
+
+	free(file);
+	file = zalloc(homedir_size + strlen(config_xdg_default) + 7);
+	sprintf(file, "%s/%s", home, config_xdg_default);
+	if (stat(file, &s) == 0) {
+		/* config file is at ~/.config/bti */
+		session->configfile = strdup(file);
+		free(file);
+		return;
+	}
+
+	/* No idea where the config file is, so punt */
+	free(file);
+	session->configfile = strdup("");
+}
+
 /* The final place data is sent to the screen/pty/tty */
 static void bti_output_line(struct session *session, xmlChar *user,
 			    xmlChar *id, xmlChar *created, xmlChar *text)
@@ -1205,7 +1257,6 @@ int main(int argc, char *argv[], char *envp[])
 		{ "retweet", 1, NULL, 'w' },
 		{ }
 	};
-	struct stat s;
 	struct session *session;
 	pid_t child;
 	char *tweet;
@@ -1213,8 +1264,6 @@ int main(int argc, char *argv[], char *envp[])
 	int retval = 0;
 	int option;
 	char *http_proxy;
-	char *home;
-	const char *config_file;
 	time_t t;
 	int page_nr;
 
@@ -1231,29 +1280,7 @@ int main(int argc, char *argv[], char *envp[])
 	session->time = strdup(ctime(&t));
 	session->time[strlen(session->time)-1] = 0x00;
 
-	/*
-	 * Get the home directory so we can try to find a config file.
-	 * If we have no home dir set up, look in /etc/bti
-	 */
-	home = getenv("HOME");
-	if (home) {
-		/* We have a home dir, so this might be a user */
-		session->homedir = strdup(home);
-
-		/* if '.config/' exists, use XDG standard, else don't */
-		if (-1 == stat("~/.config", &s)) {
-			config_file = config_xdg_default;
-		} else {
-			config_file = config_user_default;
-		}
-	} else {
-		session->homedir = strdup("");
-		config_file = config_default;
-	}
-
-	/* set up a default config file location (traditionally "~/.bti" or "~/.config/bti") */
-	session->configfile = zalloc(strlen(session->homedir) + strlen(config_file) + 7);
-	sprintf(session->configfile, "%s/%s", session->homedir, config_file);
+	find_config_file(session);
 
 	/* Set environment variables first, before reading command line options
 	 * or config file values. */
