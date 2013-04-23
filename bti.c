@@ -1205,7 +1205,7 @@ int main(int argc, char *argv[], char *envp[])
 		{ "retweet", 1, NULL, 'w' },
 		{ }
 	};
-    struct stat s;
+	struct stat s;
 	struct session *session;
 	pid_t child;
 	char *tweet;
@@ -1240,12 +1240,12 @@ int main(int argc, char *argv[], char *envp[])
 		/* We have a home dir, so this might be a user */
 		session->homedir = strdup(home);
 
-        /* if '.config/' exists, use XDG standard, else don't */
-        if (-1 == stat("~/.config"), &s) {
-            config_file = config_xdg_default;
-        } else {
-    		config_file = config_user_default;
-        }
+		/* if '.config/' exists, use XDG standard, else don't */
+		if (-1 == stat("~/.config", &s)) {
+			config_file = config_xdg_default;
+		} else {
+			config_file = config_user_default;
+		}
 	} else {
 		session->homedir = strdup("");
 		config_file = config_default;
