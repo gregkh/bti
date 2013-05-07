@@ -458,23 +458,24 @@ static int parse_response(char *document, struct session *session)
 				"response.xml", NULL,
 				XML_PARSE_NOERROR);
 	if (doc == NULL)
-		return -EINVAL;
+		return -EREMOTEIO;
 
 	current = xmlDocGetRootElement(doc);
 	if (current == NULL) {
 		fprintf(stderr, "empty document\n");
 		xmlFreeDoc(doc);
-		return -EINVAL;
+		return -EREMOTEIO;
 	}
 
 	if (xmlStrcmp(current->name, (const xmlChar *) "status")) {
 		if (xmlStrcmp(current->name, (const xmlChar *) "direct_message")) {
-			if (xmlStrcmp(current->name, (const xmlChar *) "hash")) {
+			if (xmlStrcmp(current->name, (const xmlChar *) "hash")
+                        	&& xmlStrcmp(current->name, (const xmlChar *) "errors")) {
 				fprintf(stderr, "unexpected document type\n");
 				xmlFreeDoc(doc);
-				return -EINVAL;
+				return -EREMOTEIO;
 			} else {
-				xmlChar *text;
+				xmlChar *text=NULL;
 				while (current != NULL) {
 					if (current->type == XML_ELEMENT_NODE)
 						if (!xmlStrcmp(current->name, (const xmlChar *)"error")) {
@@ -494,7 +495,7 @@ static int parse_response(char *document, struct session *session)
 					fprintf(stderr, "unknown error condition\n");
 
 				xmlFreeDoc(doc);
-				return -EINVAL;
+				return -EREMOTEIO;
 			}
 		}
 	}
@@ -853,7 +854,8 @@ static int send_request(struct session *session)
 	} else {
 		switch (session->action) {
 		case ACTION_UPDATE:
-			if (strlen_utf8(session->tweet) > 140) {
+			/* dont test it here, let twitter return an error that we show */
+			if (strlen_utf8(session->tweet) > 140 + 1000 ) {
 				printf("E: tweet is too long!\n");
 				goto skip_tweet;
 			}
@@ -939,8 +941,6 @@ static int send_request(struct session *session)
 			return -EIO;
 		}
 
-	skip_tweet:
-
 		if (!session->dry_run) {
 			if ((session->action != ACTION_UPDATE) &&
 					(session->action != ACTION_RETWEET) &&
@@ -951,6 +951,9 @@ static int send_request(struct session *session)
 					(session->action == ACTION_DIRECT))
 				return parse_response(reply, session);
 		}
+
+		skip_tweet: ;
+
 	}
 	return 0;
 }
