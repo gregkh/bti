@@ -30,7 +30,8 @@ enum action {
 	ACTION_PUBLIC  = 8,
 	ACTION_GROUP   = 16,
 	ACTION_RETWEET = 32,
-	ACTION_UNKNOWN = 64
+	ACTION_DIRECT  = 64,
+	ACTION_UNKNOWN = 128
 };
 
 struct session {

@@ -60,7 +60,7 @@ static void display_help(void)
 		"  --account accountname\n"
 		"  --password password\n"
 		"  --action action\n"
-		"    ('update', 'friends', 'public', 'replies', or 'user')\n"
+		"    ('update', 'friends', 'public', 'replies', 'user', or 'direct')\n"
 		"  --user screenname\n"
 		"  --group groupname\n"
 		"  --proxy PROXY:PORT\n"
@@ -258,6 +258,7 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 }
 
 const char twitter_host[]  = "http://api.twitter.com/1/statuses";
+const char twitter_host_simple[]  = "http://api.twitter.com/1";
 const char identica_host[] = "https://identi.ca/api/statuses";
 const char twitter_name[]  = "twitter";
 const char identica_name[] = "identi.ca";
@@ -280,6 +281,7 @@ static const char mentions_uri[] = "/mentions.xml";
 static const char replies_uri[]  = "/replies.xml";
 static const char retweet_uri[]  = "/retweet/";
 static const char group_uri[]    = "/../statusnet/groups/timeline/";
+static const char direct_uri[]   = "/direct_messages/new.xml";
 
 static const char config_default[]	= "/etc/bti";
 static const char config_xdg_default[] = ".config/bti";
@@ -445,6 +447,62 @@ static void parse_timeline(char *document, struct session *session)
 	xmlFreeDoc(doc);
 
 	return;
+}
+
+static int parse_response(char *document, struct session *session)
+{
+	xmlDocPtr doc;
+	xmlNodePtr current;
+
+	doc = xmlReadMemory(document, strlen(document),
+				"response.xml", NULL,
+				XML_PARSE_NOERROR);
+	if (doc == NULL)
+		return -EREMOTEIO;
+
+	current = xmlDocGetRootElement(doc);
+	if (current == NULL) {
+		fprintf(stderr, "empty document\n");
+		xmlFreeDoc(doc);
+		return -EREMOTEIO;
+	}
+
+	if (xmlStrcmp(current->name, (const xmlChar *) "status")) {
+		if (xmlStrcmp(current->name, (const xmlChar *) "direct_message")) {
+			if (xmlStrcmp(current->name, (const xmlChar *) "hash")
+                        	&& xmlStrcmp(current->name, (const xmlChar *) "errors")) {
+				fprintf(stderr, "unexpected document type\n");
+				xmlFreeDoc(doc);
+				return -EREMOTEIO;
+			} else {
+				xmlChar *text=NULL;
+				while (current != NULL) {
+					if (current->type == XML_ELEMENT_NODE)
+						if (!xmlStrcmp(current->name, (const xmlChar *)"error")) {
+							text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
+							break;
+						}
+					if (current->children)
+						current = current->children;
+					else
+						current = current->next;
+				}
+
+				if (text) {
+					fprintf(stderr, "error condition detected = %s\n", text);
+					xmlFree(text);
+				} else
+					fprintf(stderr, "unknown error condition\n");
+
+				xmlFreeDoc(doc);
+				return -EREMOTEIO;
+			}
+		}
+	}
+
+	xmlFreeDoc(doc);
+
+	return 0;
 }
 
 static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
@@ -715,6 +773,10 @@ static int send_request(struct session *session)
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
+		case ACTION_DIRECT:
+		    /* NOT IMPLEMENTED - twitter requires authentication anyway */
+			break;
+
 		default:
 			break;
 		}
@@ -792,7 +854,8 @@ static int send_request(struct session *session)
 	} else {
 		switch (session->action) {
 		case ACTION_UPDATE:
-			if (strlen_utf8(session->tweet) > 140) {
+			/* dont test it here, let twitter return an error that we show */
+			if (strlen_utf8(session->tweet) > 140 + 1000 ) {
 				printf("E: tweet is too long!\n");
 				goto skip_tweet;
 			}
@@ -839,6 +902,12 @@ static int send_request(struct session *session)
 				retweet_uri, session->retweet);
 			is_post = 1;
 			break;
+		case ACTION_DIRECT:
+			escaped_tweet = oauth_url_escape(session->tweet);
+			sprintf(endpoint, "%s%s?user=%s&text=%s", twitter_host_simple,
+				direct_uri, session->user, escaped_tweet);
+			is_post = 1;
+			break;
 		default:
 			break;
 		}
@@ -872,11 +941,19 @@ static int send_request(struct session *session)
 			return -EIO;
 		}
 
-	skip_tweet:
+		if (!session->dry_run) {
+			if ((session->action != ACTION_UPDATE) &&
+					(session->action != ACTION_RETWEET) &&
+					(session->action != ACTION_DIRECT))
+				parse_timeline(reply, session);
 
-		if ((session->action != ACTION_UPDATE) &&
-				(session->action != ACTION_RETWEET))
-			parse_timeline(reply, session);
+			if ((session->action == ACTION_UPDATE) ||
+					(session->action == ACTION_DIRECT))
+				return parse_response(reply, session);
+		}
+
+		skip_tweet: ;
+
 	}
 	return 0;
 }
@@ -928,6 +1005,15 @@ static void log_session(struct session *session, int retval)
 	case ACTION_GROUP:
 		fprintf(log_file, "%s: host=%s retrieving group timeline\n",
 			session->time, session->hostname);
+		break;
+	case ACTION_DIRECT:
+		if (retval)
+			fprintf(log_file, "%s: host=%s tweet failed\n",
+				session->time, session->hostname);
+		else
+			fprintf(log_file, "%s: host=%s tweet=%s\n",
+				session->time, session->hostname,
+				session->tweet);
 		break;
 	default:
 		break;
@@ -1375,6 +1461,8 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_GROUP;
 			else if (strcasecmp(optarg, "retweet") == 0)
 				session->action = ACTION_RETWEET;
+			else if (strcasecmp(optarg, "direct") == 0)
+				session->action = ACTION_DIRECT;
 			else
 				session->action = ACTION_UNKNOWN;
 			dbg("action = %d\n", session->action);
@@ -1516,7 +1604,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->action == ACTION_UNKNOWN) {
 		fprintf(stderr, "Unknown action, valid actions are:\n"
-			"'update', 'friends', 'public', 'replies', 'group' or 'user'.\n");
+			"'update', 'friends', 'public', 'replies', 'group', 'user' or 'direct'.\n");
 		goto exit;
 	}
 
@@ -1544,7 +1632,7 @@ int main(int argc, char *argv[], char *envp[])
 		dbg("retweet ID = %s\n", session->retweet);
 	}
 
-	if (session->action == ACTION_UPDATE) {
+	if (session->action == ACTION_UPDATE || session->action == ACTION_DIRECT) {
 		if (session->background || !session->interactive)
 			tweet = get_string_from_stdin();
 		else
