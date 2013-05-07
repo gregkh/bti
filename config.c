@@ -11,10 +11,6 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #define _GNU_SOURCE
@@ -254,7 +250,7 @@ static int action_callback(struct session *session, char *value)
 	else if (strcasecmp(value, "group") == 0)
 		session->action = ACTION_GROUP;
 	else
-		session->action= ACTION_UNKNOWN;
+		session->action = ACTION_UNKNOWN;
 	return 0;
 }
 
@@ -311,7 +307,7 @@ static void process_line(struct session *session, char *key, char *value)
 		if (strncasecmp(item->key, key, strlen(item->key)) == 0) {
 			/*
 			 * printf("calling %p, for key = '%s' and value = * '%s'\n",
-			 * 	  item->callback, key, value);
+			 *	  item->callback, key, value);
 			 */
 			result = item->callback(session, value);
 			if (!result)
@@ -351,20 +347,21 @@ void bti_parse_configfile(struct session *session)
 		 * marker if it occurs at the beginning of the line, or after
 		 * whitespace
 		 */
-		hashmarker = strchrnul(line, '#');
+		hashmarker = strchr(line, '#');
 		if (line == hashmarker)
 			line[0] = '\0';
 		else {
-			while (hashmarker[0] != '\0') {
+			while (hashmarker != NULL) {
 				--hashmarker;
-				if (isblank(hashmarker[0]))
+				if (isblank(hashmarker[0])) {
 					hashmarker[0] = '\0';
-				else {
+					break;
+				} else {
 					/*
 					 * false positive; '#' occured
 					 * within a string
 					 */
-					hashmarker = strchrnul(hashmarker+2, '#');
+					hashmarker = strchr(hashmarker+2, '#');
 				}
 			}
 		}

@@ -11,10 +11,6 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #define _GNU_SOURCE
@@ -75,6 +71,7 @@ static void display_help(void)
 		"  --retweet ID\n"
 		"  --shrink-urls\n"
 		"  --page PAGENUMBER\n"
+		"  --column COLUMNWIDTH\n"
 		"  --bash\n"
 		"  --background\n"
 		"  --debug\n"
@@ -82,6 +79,17 @@ static void display_help(void)
 		"  --dry-run\n"
 		"  --version\n"
 		"  --help\n", VERSION);
+}
+
+static int strlen_utf8(char *s)
+{
+	int i = 0, j = 0;
+	while (s[i]) {
+		if ((s[i] & 0xc0) != 0x80)
+			j++;
+		i++;
+	}
+	return j;
 }
 
 static void display_version(void)
@@ -99,8 +107,10 @@ static char *get_string(const char *name)
 		exit(1);
 	if (name != NULL)
 		fprintf(stdout, "%s", name);
-	if (!fgets(string, 999, stdin))
+	if (!fgets(string, 999, stdin)) {
+		free(string);
 		return NULL;
+	}
 	temp = strchr(string, '\n');
 	if (temp)
 		*temp = '\0';
@@ -256,9 +266,12 @@ const char identica_name[] = "identi.ca";
 static const char twitter_request_token_uri[]  = "http://twitter.com/oauth/request_token";
 static const char twitter_access_token_uri[]   = "http://twitter.com/oauth/access_token";
 static const char twitter_authorize_uri[]      = "http://twitter.com/oauth/authorize?oauth_token=";
-static const char identica_request_token_uri[] = "http://identi.ca/api/oauth/request_token?oauth_callback=oob";
-static const char identica_access_token_uri[]  = "http://identi.ca/api/oauth/access_token";
-static const char identica_authorize_uri[]     = "http://identi.ca/api/oauth/authorize?oauth_token=";
+static const char identica_request_token_uri[] = "https://identi.ca/api/oauth/request_token?oauth_callback=oob";
+static const char identica_access_token_uri[]  = "https://identi.ca/api/oauth/access_token";
+static const char identica_authorize_uri[]     = "https://identi.ca/api/oauth/authorize?oauth_token=";
+static const char custom_request_token_uri[]   = "/../oauth/request_token?oauth_callback=oob";
+static const char custom_access_token_uri[]    = "/../oauth/access_token";
+static const char custom_authorize_uri[]       = "/../oauth/authorize?oauth_token=";
 
 static const char user_uri[]     = "/user_timeline/";
 static const char update_uri[]   = "/update.xml";
@@ -271,7 +284,9 @@ static const char group_uri[]    = "/../statusnet/groups/timeline/";
 static const char direct_uri[]   = "/direct_messages/new.xml";
 
 static const char config_default[]	= "/etc/bti";
+static const char config_xdg_default[] = ".config/bti";
 static const char config_user_default[]	= ".bti";
+
 
 static CURL *curl_init(void)
 {
@@ -288,14 +303,67 @@ static CURL *curl_init(void)
 	return curl;
 }
 
+static void find_config_file(struct session *session)
+{
+	struct stat s;
+	char *home;
+	char *file;
+	int homedir_size;
+
+	/*
+	 * Get the home directory so we can try to find a config file.
+	 * If we have no home dir set up, look in /etc/bti
+	 */
+	home = getenv("HOME");
+	if (!home) {
+		/* No home dir, so take the defaults and get out of here */
+		session->homedir = strdup("");
+		session->configfile = strdup(config_default);
+		return;
+	}
+
+	/* We have a home dir, so this might be a user */
+	session->homedir = strdup(home);
+	homedir_size = strlen(session->homedir);
+
+	/*
+	 * Try to find a config file, we do so in this order:
+	 * ~/.bti		old-school config file
+	 * ~/.config/bti	new-school config file
+	 */
+	file = zalloc(homedir_size + strlen(config_user_default) + 7);
+	sprintf(file, "%s/%s", home, config_user_default);
+	if (stat(file, &s) == 0) {
+		/* Found the config file at ~/.bti */
+		session->configfile = strdup(file);
+		free(file);
+		return;
+	}
+
+	free(file);
+	file = zalloc(homedir_size + strlen(config_xdg_default) + 7);
+	sprintf(file, "%s/%s", home, config_xdg_default);
+	if (stat(file, &s) == 0) {
+		/* config file is at ~/.config/bti */
+		session->configfile = strdup(file);
+		free(file);
+		return;
+	}
+
+	/* No idea where the config file is, so punt */
+	free(file);
+	session->configfile = strdup("");
+}
+
 /* The final place data is sent to the screen/pty/tty */
 static void bti_output_line(struct session *session, xmlChar *user,
 			    xmlChar *id, xmlChar *created, xmlChar *text)
 {
 	if (session->verbose)
-		printf("[%s] {%s} (%.16s) %s\n", user, id, created, text);
+		printf("[%*s] {%s} (%.16s) %s\n", -session->column_output, user,
+				id, created, text);
 	else
-		printf("[%s] %s\n", user, text);
+		printf("[%*s] %s\n", -session->column_output, user, text);
 }
 
 static void parse_statuses(struct session *session,
@@ -511,6 +579,7 @@ static int request_access_token(struct session *session)
 	char *at_secret   = NULL;
 	char *verifier    = NULL;
 	char at_uri[90];
+	char token_uri[90];
 
 	if (!session)
 		return -EINVAL;
@@ -525,6 +594,14 @@ static int request_access_token(struct session *session)
 				identica_request_token_uri, NULL,
 				OA_HMAC, NULL, session->consumer_key,
 				session->consumer_secret, NULL, NULL);
+	else {
+		sprintf(token_uri, "%s%s",
+			session->hosturl, custom_request_token_uri);
+		request_url = oauth_sign_url2(
+				token_uri, NULL,
+				OA_HMAC, NULL, session->consumer_key,
+				session->consumer_secret, NULL, NULL);
+	}
 	reply = oauth_http_get(request_url, post_params);
 
 	if (request_url)
@@ -555,6 +632,12 @@ static int request_access_token(struct session *session)
 		verifier = session->readline(NULL);
 		sprintf(at_uri, "%s?oauth_verifier=%s",
 			identica_access_token_uri, verifier);
+	} else {
+		fprintf(stdout, "%s%s%s\nPIN: ",
+			session->hosturl, custom_authorize_uri, at_key);
+		verifier = session->readline(NULL);
+		sprintf(at_uri, "%s%s?oauth_verifier=%s",
+			session->hosturl, custom_access_token_uri, verifier);
 	}
 	request_url = oauth_sign_url2(at_uri, NULL, OA_HMAC, NULL,
 				      session->consumer_key,
@@ -572,17 +655,18 @@ static int request_access_token(struct session *session)
 
 	fprintf(stdout,
 		"Please put these two lines in your bti "
-		"configuration file (~/.bti):\n"
+		"configuration file (%s):\n"
 		"access_token_key=%s\n"
 		"access_token_secret=%s\n",
-		at_key, at_secret);
+		session->configfile, at_key, at_secret);
 
 	return 0;
 }
 
 static int send_request(struct session *session)
 {
-	char endpoint[500];
+	const int endpoint_size = 2000;
+	char endpoint[endpoint_size];
 	char user_password[500];
 	char data[500];
 	struct bti_curl_buffer *curl_buf;
@@ -610,8 +694,10 @@ static int send_request(struct session *session)
 		curl_buf->session = session;
 
 		curl = curl_init();
-		if (!curl)
+		if (!curl) {
+			bti_curl_buffer_free(curl_buf);
 			return -EINVAL;
+		}
 
 		if (!session->hosturl)
 			session->hosturl = strdup(twitter_host);
@@ -644,7 +730,7 @@ static int send_request(struct session *session)
 			slist = curl_slist_append(slist, "Expect:");
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 
-			sprintf(endpoint, "%s%s", session->hosturl, update_uri);
+			snprintf(endpoint, endpoint_size, "%s%s", session->hosturl, update_uri);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
@@ -652,14 +738,14 @@ static int send_request(struct session *session)
 		case ACTION_FRIENDS:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 					friends_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_USER:
-			sprintf(endpoint, "%s%s%s.xml?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d", session->hosturl,
 				user_uri, session->user, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
@@ -667,20 +753,20 @@ static int send_request(struct session *session)
 		case ACTION_REPLIES:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 				replies_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
 			break;
 
 		case ACTION_PUBLIC:
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
 				public_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
 		case ACTION_GROUP:
-			sprintf(endpoint, "%s%s%s.xml?page=%d",
+			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d",
 				session->hosturl, group_uri, session->group,
 				session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
@@ -713,8 +799,13 @@ static int send_request(struct session *session)
 				xmlNodePtr current;
 
 				if (res) {
-					fprintf(stderr, "error(%d) trying to "
-						"perform operation\n", res);
+					fprintf(stderr,
+						"error(%d) trying to perform operation\n",
+						res);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
@@ -722,19 +813,32 @@ static int send_request(struct session *session)
 						    curl_buf->length,
 						    "response.xml", NULL,
 						    XML_PARSE_NOERROR);
-				if (doc == NULL)
+				if (doc == NULL) {
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
+				}
 
 				current = xmlDocGetRootElement(doc);
 				if (current == NULL) {
 					fprintf(stderr, "empty document\n");
 					xmlFreeDoc(doc);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
 				if (xmlStrcmp(current->name, (const xmlChar *)"status")) {
 					fprintf(stderr, "unexpected document type\n");
 					xmlFreeDoc(doc);
+					curl_easy_cleanup(curl);
+					if (session->action == ACTION_UPDATE)
+						curl_formfree(formpost);
+					bti_curl_buffer_free(curl_buf);
 					return -EINVAL;
 				}
 
@@ -749,6 +853,12 @@ static int send_request(struct session *session)
 	} else {
 		switch (session->action) {
 		case ACTION_UPDATE:
+			if (strlen_utf8(session->tweet) > 140) {
+				printf("E: tweet is too long!\n");
+				goto skip_tweet;
+			}
+
+			/* TODO: add tweet crunching function. */
 			escaped_tweet = oauth_url_escape(session->tweet);
 			if (session->replyto) {
 				sprintf(endpoint,
@@ -828,6 +938,8 @@ static int send_request(struct session *session)
 			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
 			return -EIO;
 		}
+
+	skip_tweet:
 
 		if (!session->dry_run) {
 			if ((session->action != ACTION_UPDATE) &&
@@ -916,8 +1028,10 @@ static char *get_string_from_stdin(void)
 	if (!string)
 		return NULL;
 
-	if (!fgets(string, 999, stdin))
+	if (!fgets(string, 999, stdin)) {
+		free(string);
 		return NULL;
+	}
 	temp = strchr(string, '\n');
 	if (temp)
 		*temp = '\0';
@@ -927,7 +1041,6 @@ static char *get_string_from_stdin(void)
 static void read_password(char *buf, size_t len, char *host)
 {
 	char pwd[80];
-	int retval;
 	struct termios old;
 	struct termios tp;
 
@@ -940,7 +1053,13 @@ static void read_password(char *buf, size_t len, char *host)
 	fprintf(stdout, "Enter password for %s: ", host);
 	fflush(stdout);
 	tcflow(0, TCOOFF);
-	retval = scanf("%79s", pwd);
+
+	/*
+	 * I'd like to do something with the return value here, but really,
+	 * what can be done?
+	 */
+	(void)scanf("%79s", pwd);
+
 	tcflow(0, TCOON);
 	fprintf(stdout, "\n");
 
@@ -1088,11 +1207,11 @@ error_in:
 
 static int pcloseRWE(int pid, int *rwepipe)
 {
-	int rc, status;
+	int status;
 	close(rwepipe[0]);
 	close(rwepipe[1]);
 	close(rwepipe[2]);
-	rc = waitpid(pid, &status, 0);
+	(void)waitpid(pid, &status, 0);
 	return status;
 }
 
@@ -1231,12 +1350,14 @@ int main(int argc, char *argv[], char *envp[])
 		{ "background", 0, NULL, 'B' },
 		{ "dry-run", 0, NULL, 'n' },
 		{ "page", 1, NULL, 'g' },
+		{ "column", 1, NULL, 'o' },
 		{ "version", 0, NULL, 'v' },
 		{ "config", 1, NULL, 'c' },
 		{ "replyto", 1, NULL, 'r' },
 		{ "retweet", 1, NULL, 'w' },
 		{ }
 	};
+	struct stat s;
 	struct session *session;
 	pid_t child;
 	char *tweet;
@@ -1244,8 +1365,6 @@ int main(int argc, char *argv[], char *envp[])
 	int retval = 0;
 	int option;
 	char *http_proxy;
-	char *home;
-	const char *config_file;
 	time_t t;
 	int page_nr;
 
@@ -1262,23 +1381,7 @@ int main(int argc, char *argv[], char *envp[])
 	session->time = strdup(ctime(&t));
 	session->time[strlen(session->time)-1] = 0x00;
 
-	/*
-	 * Get the home directory so we can try to find a config file.
-	 * If we have no home dir set up, look in /etc/bti
-	 */
-	home = getenv("HOME");
-	if (home) {
-		/* We have a home dir, so this might be a user */
-		session->homedir = strdup(home);
-		config_file = config_user_default;
-	} else {
-		session->homedir = strdup("");
-		config_file = config_default;
-	}
-
-	/* set up a default config file location (traditionally ~/.bti) */
-	session->configfile = zalloc(strlen(session->homedir) + strlen(config_file) + 7);
-	sprintf(session->configfile, "%s/%s", session->homedir, config_file);
+	find_config_file(session);
 
 	/* Set environment variables first, before reading command line options
 	 * or config file values. */
@@ -1294,7 +1397,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	while (1) {
 		option = getopt_long_only(argc, argv,
-					  "dp:P:H:a:A:u:c:hg:G:sr:nVvw:",
+					  "dp:P:H:a:A:u:c:hg:o:G:sr:nVvw:",
 					  options, NULL);
 		if (option == -1)
 			break;
@@ -1315,6 +1418,10 @@ int main(int argc, char *argv[], char *envp[])
 			page_nr = atoi(optarg);
 			dbg("page = %d\n", page_nr);
 			session->page = page_nr;
+			break;
+		case 'o':
+			session->column_output = atoi(optarg);
+			dbg("column_output = %d\n", session->column_output);
 			break;
 		case 'r':
 			session->replyto = strdup(optarg);
@@ -1410,6 +1517,12 @@ int main(int argc, char *argv[], char *envp[])
 				free(session->configfile);
 			session->configfile = strdup(optarg);
 			dbg("configfile = %s\n", session->configfile);
+			if (stat(session->configfile, &s) == -1) {
+				fprintf(stderr,
+					"Config file '%s' is not found.\n",
+					session->configfile);
+				goto exit;
+			}
 
 			/*
 			 * read the config file now.  Yes, this could override
@@ -1565,5 +1678,5 @@ int main(int argc, char *argv[], char *envp[])
 exit:
 	session_readline_cleanup(session);
 	session_free(session);
-	return retval;;
+	return retval;
 }
