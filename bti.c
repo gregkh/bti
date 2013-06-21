@@ -550,7 +550,7 @@ static void json_parse(json_object * jobj, int nestlevel) {
   nestlevel++;
   enum json_type type;
   json_object_object_foreach_alt(jobj, key, val) {
-    type = json_object_get_type(val);
+    if (val) type = json_object_get_type(val); else type=json_type_null; /* work around pre10 */
     if (debug) for (i=0; i<nestlevel; ++i) printf("  ");
     if (debug) printf("key %-34s ",key);
     if (debug) for (i=0; i<8-nestlevel; ++i) printf("  ");
