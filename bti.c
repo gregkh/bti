@@ -32,6 +32,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <json/json.h>
 #include <pcre.h>
 #include <termios.h>
 #include <dlfcn.h>
@@ -257,15 +258,15 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-const char twitter_host[]  = "http://api.twitter.com/1/statuses";
-const char twitter_host_simple[]  = "http://api.twitter.com/1";
+const char twitter_host[]  = "http://api.twitter.com/1.1/statuses";
+const char twitter_host_simple[]  = "http://api.twitter.com/1.1";
 const char identica_host[] = "https://identi.ca/api/statuses";
 const char twitter_name[]  = "twitter";
 const char identica_name[] = "identi.ca";
 
-static const char twitter_request_token_uri[]  = "http://twitter.com/oauth/request_token";
-static const char twitter_access_token_uri[]   = "http://twitter.com/oauth/access_token";
-static const char twitter_authorize_uri[]      = "http://twitter.com/oauth/authorize?oauth_token=";
+static const char twitter_request_token_uri[]  = "https://twitter.com/oauth/request_token";
+static const char twitter_access_token_uri[]   = "https://twitter.com/oauth/access_token";
+static const char twitter_authorize_uri[]      = "https://twitter.com/oauth/authorize?oauth_token=";
 static const char identica_request_token_uri[] = "https://identi.ca/api/oauth/request_token?oauth_callback=oob";
 static const char identica_access_token_uri[]  = "https://identi.ca/api/oauth/access_token";
 static const char identica_authorize_uri[]     = "https://identi.ca/api/oauth/authorize?oauth_token=";
@@ -274,14 +275,15 @@ static const char custom_access_token_uri[]    = "/../oauth/access_token";
 static const char custom_authorize_uri[]       = "/../oauth/authorize?oauth_token=";
 
 static const char user_uri[]     = "/user_timeline/";
-static const char update_uri[]   = "/update.xml";
+static const char update_uri[]   = "/update.json";
 static const char public_uri[]   = "/public_timeline.xml";
 static const char friends_uri[]  = "/friends_timeline.xml";
 static const char mentions_uri[] = "/mentions.xml";
 static const char replies_uri[]  = "/replies.xml";
 static const char retweet_uri[]  = "/retweet/";
 static const char group_uri[]    = "/../statusnet/groups/timeline/";
-static const char direct_uri[]   = "/direct_messages/new.xml";
+/*static const char direct_uri[]   = "/direct_messages/new.xml";*/
+static const char direct_uri[]   = "/direct_messages/new.json";
 
 static const char config_default[]	= "/etc/bti";
 static const char config_xdg_default[] = ".config/bti";
@@ -449,7 +451,162 @@ static void parse_timeline(char *document, struct session *session)
 	return;
 }
 
-static int parse_response(char *document, struct session *session)
+
+/* avoids the c99 option */
+#define json_object_object_foreach_alt(obj,key,val)  \
+char *key; struct json_object *val; struct lh_entry *entry;\
+for(entry = json_object_get_object(obj)->head; ({ if(entry) { key = (char*)entry->k; val = (struct json_object*)entry->v; } ; entry; }); entry = entry->next )
+
+
+/*printing the value corresponding to boolean, double, integer and strings*/
+/*void print_json_value(json_object *jobj);
+void json_parse(json_object * jobj); / *Forward Declaration* /
+void json_parse_array( json_object *jobj, char *key);
+*/
+static void json_parse(json_object * jobj, int nestlevel); /*Forward Declaration*/
+
+static void print_json_value(json_object *jobj, int nestlevel){
+  enum json_type type;
+  type = json_object_get_type(jobj); /*Getting the type of the json object*/
+  switch (type) {
+    case json_type_boolean: printf("boolean   ");
+                         printf("value: %s\n", json_object_get_boolean(jobj)? "true": "false");
+                         break;
+    case json_type_double:  printf("double    ");
+                        printf("value: %lf\n", json_object_get_double(jobj));
+                         break;
+    case json_type_int:     printf("int       ");
+                        printf("value: %d\n", json_object_get_int(jobj));
+                         break;
+    case json_type_string:  printf("string    ");
+                         printf("value: %s\n", json_object_get_string(jobj));
+                         break;
+	default: break;
+  }
+
+}
+
+#define MAXKEYSTACK 20
+char *keystack[MAXKEYSTACK];
+
+static void json_parse_array( json_object *jobj, char *key, int nestlevel) {
+  enum json_type type;
+
+  nestlevel++;
+  json_object *jarray = jobj; /*Simply get the array*/
+  if(key) {
+    jarray = json_object_object_get(jobj, key); /*Getting the array if it is a key value pair*/
+  }
+
+  int arraylen = json_object_array_length(jarray); /*Getting the length of the array*/
+  if (debug) printf("Array Length: %d\n",arraylen);
+  int i;
+  json_object * jvalue;
+
+  for (i=0; i< arraylen; i++){
+    jvalue = json_object_array_get_idx(jarray, i); /*Getting the array element at position i*/
+    type = json_object_get_type(jvalue);
+    if (type == json_type_array) {
+      json_parse_array(jvalue, NULL, nestlevel);
+    } else if (type != json_type_object) {
+      if (debug) printf("value[%d]: ",i);
+      if (debug) print_json_value(jvalue,nestlevel);
+    } else {
+      /*printf("obj: ");*/
+      keystack[nestlevel%MAXKEYSTACK]="[]";
+      json_parse(jvalue,nestlevel);
+    }
+  }
+}
+
+
+struct results {
+  int code;
+  char * message;
+} results;
+
+static void json_interpret(json_object * jobj, int nestlevel) {
+  if (nestlevel==3 
+    && strcmp(keystack[1],"errors")==0
+    && strcmp(keystack[2],"[]")==0) {
+
+    if (strcmp(keystack[3],"message")==0) {
+      if ( json_object_get_type(jobj)==json_type_string) 
+        results.message=(char *)json_object_get_string(jobj);
+    }
+    if (strcmp(keystack[3],"code")==0) {
+      if ( json_object_get_type(jobj)==json_type_int) 
+        results.code=json_object_get_int(jobj);
+    }
+  }
+}
+	/*Parsing the json object*/
+static void json_parse(json_object * jobj, int nestlevel) {
+  int i;
+  if (jobj==NULL) {
+    fprintf(stderr,"jobj null\n");
+    return;
+  }
+  nestlevel++;
+  enum json_type type;
+  json_object_object_foreach_alt(jobj, key, val) {
+    type = json_object_get_type(val);
+    if (debug) for (i=0; i<nestlevel; ++i) printf("  ");
+    if (debug) printf("key %-34s ",key);
+    if (debug) for (i=0; i<8-nestlevel; ++i) printf("  ");
+    switch (type) {
+      case json_type_boolean: 
+      case json_type_double: 
+      case json_type_int: 
+      case json_type_string: 
+            if (debug) print_json_value(val,nestlevel);
+            if (debug) for (i=0; i<nestlevel+1; ++i) printf("  ");
+            if (debug) printf("(");
+            if (debug) for (i=1; i<nestlevel; ++i) { printf("%s->",keystack[i]); }
+            if (debug) printf("%s)\n",key);
+            keystack[nestlevel%MAXKEYSTACK]=key;
+            json_interpret(val,nestlevel);
+            break; 
+      case json_type_object: 
+            if (debug) printf("json_type_object\n");
+            keystack[nestlevel%MAXKEYSTACK]=key;
+            json_parse(json_object_object_get(jobj, key), nestlevel); 
+            break;
+      case json_type_array: 
+            if (debug) printf("json_type_array, ");
+            keystack[nestlevel%MAXKEYSTACK]=key;
+            json_parse_array(jobj, key, nestlevel);
+            break;
+      case json_type_null: 
+            if (debug) printf("null\n");
+            break;
+      default: 
+            if (debug) printf("\n");
+        break;
+    }
+  }
+} 
+
+
+
+static int parse_response_json(char *document, struct session *session)
+{
+	dbg("Got this json response:\n");
+	dbg("%s\n",document);
+    results.code=0;
+    results.message=NULL;
+	json_object * jobj = json_tokener_parse(document);
+	json_parse(jobj,0);
+    if (results.code && results.message!=NULL) {
+      if (debug) printf("Got an error code:\n  code=%d\n  message=%s\n",results.code,results.message);
+      fprintf(stderr, "error condition detected: %d = %s\n", results.code, results.message);
+      return -EREMOTEIO;
+    }
+	return 0;
+}
+
+#ifdef OLDXML
+static int parse_response_xml(char *document, struct session *session)
 {
 	xmlDocPtr doc;
 	xmlNodePtr current;
@@ -504,6 +661,7 @@ static int parse_response(char *document, struct session *session)
 
 	return 0;
 }
+#endif
 
 static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
 			    void *userp)
@@ -930,8 +1088,8 @@ static int send_request(struct session *session)
 				reply = oauth_http_get(req_url, postarg);
 			}
 
-			dbg("%s\n", req_url);
-			dbg("%s\n", reply);
+			dbg("req_url:%s\n", req_url);
+			dbg("reply:%s\n", reply);
 			if (req_url)
 				free(req_url);
 		}
@@ -949,7 +1107,8 @@ static int send_request(struct session *session)
 
 			if ((session->action == ACTION_UPDATE) ||
 					(session->action == ACTION_DIRECT))
-				return parse_response(reply, session);
+				/*return parse_response_xml(reply, session);*/
+				return parse_response_json(reply, session);
 		}
 
 		skip_tweet: ;
