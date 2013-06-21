@@ -596,7 +596,9 @@ static int parse_response_json(char *document, struct session *session)
     results.code=0;
     results.message=NULL;
 	json_object * jobj = json_tokener_parse(document);
-	json_parse(jobj,0);
+    if (!is_error(jobj)) { /* guards against a json pre 0.10 bug */
+	  json_parse(jobj,0);
+    }
     if (results.code && results.message!=NULL) {
       if (debug) printf("Got an error code:\n  code=%d\n  message=%s\n",results.code,results.message);
       fprintf(stderr, "error condition detected: %d = %s\n", results.code, results.message);
