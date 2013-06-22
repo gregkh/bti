@@ -259,6 +259,7 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 }
 
 const char twitter_host[]  = "http://api.twitter.com/1.1/statuses";
+const char twitter_host_stream[]  = "https://stream.twitter.com/1.1/statuses"; /*this is not reset, and doesnt work */
 const char twitter_host_simple[]  = "http://api.twitter.com/1.1";
 const char identica_host[] = "https://identi.ca/api/statuses";
 const char twitter_name[]  = "twitter";
@@ -274,11 +275,11 @@ static const char custom_request_token_uri[]   = "/../oauth/request_token?oauth_
 static const char custom_access_token_uri[]    = "/../oauth/access_token";
 static const char custom_authorize_uri[]       = "/../oauth/authorize?oauth_token=";
 
-static const char user_uri[]     = "/user_timeline/";
+static const char user_uri[]     = "/user_timeline.json";
 static const char update_uri[]   = "/update.json";
-static const char public_uri[]   = "/public_timeline.xml";
-static const char friends_uri[]  = "/friends_timeline.xml";
-static const char mentions_uri[] = "/mentions.xml";
+static const char public_uri[]   = "/sample.json";
+static const char friends_uri[]  = "/home_timeline.json";
+static const char mentions_uri[] = "/mentions_timeline.json";
 static const char replies_uri[]  = "/replies.xml";
 static const char retweet_uri[]  = "/retweet/";
 static const char group_uri[]    = "/../statusnet/groups/timeline/";
@@ -455,7 +456,7 @@ static void parse_timeline(char *document, struct session *session)
 /* avoids the c99 option */
 #define json_object_object_foreach_alt(obj,key,val)  \
 char *key; struct json_object *val; struct lh_entry *entry;\
-for(entry = json_object_get_object(obj)->head; ({ if(entry) { key = (char*)entry->k; val = (struct json_object*)entry->v; } ; entry; }); entry = entry->next )
+for(entry = json_object_get_object(obj)->head; ({ if(entry && !is_error(entry)) { key = (char*)entry->k; val = (struct json_object*)entry->v; } ; entry; }); entry = entry->next )
 
 
 /*printing the value corresponding to boolean, double, integer and strings*/
@@ -504,6 +505,11 @@ static void json_parse_array( json_object *jobj, char *key, int nestlevel) {
   json_object * jvalue;
 
   for (i=0; i< arraylen; i++){
+    if (debug) {
+      int j;
+      for (j=0; j<nestlevel; ++j) printf("  ");
+      printf("element[%d]\n",i); 
+    }
     jvalue = json_object_array_get_idx(jarray, i); /*Getting the array element at position i*/
     type = json_object_get_type(jvalue);
     if (type == json_type_array) {
@@ -524,6 +530,13 @@ struct results {
   int code;
   char * message;
 } results;
+struct session *store_session;
+struct tweetdetail {
+  char * id;
+  char * text;
+  char * screen_name;
+  char * created_at;
+} tweetdetail;
 
 static void json_interpret(json_object * jobj, int nestlevel) {
   if (nestlevel==3 
@@ -539,6 +552,39 @@ static void json_interpret(json_object * jobj, int nestlevel) {
         results.code=json_object_get_int(jobj);
     }
   }
+  
+  if (nestlevel>=2 && strcmp(keystack[1],"[]")==0
+    ) { 
+    if (strcmp(keystack[2],"created_at")==0) {
+      if (debug) printf("%s : %s\n",keystack[2],json_object_get_string(jobj));
+      tweetdetail.created_at=(char *)json_object_get_string(jobj);
+    }
+    if (strcmp(keystack[2],"text")==0) {
+      if (debug) printf("%s : %s\n",keystack[2],json_object_get_string(jobj));
+      tweetdetail.text=(char *)json_object_get_string(jobj);
+    }
+    if (strcmp(keystack[2],"id")==0) {
+      if (debug) printf("%s : %s\n",keystack[2],json_object_get_string(jobj));
+      tweetdetail.id=(char *)json_object_get_string(jobj);
+    }
+    if (nestlevel>=3 && strcmp(keystack[2],"user")==0) {
+      if (strcmp(keystack[3],"screen_name")==0) {
+        if (debug) printf("%s->%s : %s\n",keystack[2],keystack[3],json_object_get_string(jobj));
+        tweetdetail.screen_name=(char *)json_object_get_string(jobj);
+				bti_output_line(store_session, (xmlChar *)tweetdetail.screen_name, (xmlChar *)tweetdetail.id,
+						(xmlChar *)tweetdetail.created_at, (xmlChar *)tweetdetail.text);
+      }
+    }
+/*
+ * created_at
+ * 
+ * id
+ * user
+ * screen_name
+ */
+    
+  }
+
 }
 	/*Parsing the json object*/
 static void json_parse(json_object * jobj, int nestlevel) {
@@ -596,6 +642,7 @@ static int parse_response_json(char *document, struct session *session)
     results.code=0;
     results.message=NULL;
 	json_object * jobj = json_tokener_parse(document);
+    store_session=session; /* make global for now */
     if (!is_error(jobj)) { /* guards against a json pre 0.10 bug */
 	  json_parse(jobj,0);
     }
@@ -605,6 +652,27 @@ static int parse_response_json(char *document, struct session *session)
       return -EREMOTEIO;
     }
 	return 0;
+}
+
+static void parse_timeline_json(char *document, struct session *session)
+{
+	dbg("Got this json response:\n");
+	dbg("%s\n",document);
+    results.code=0;
+    results.message=NULL;
+	json_object * jobj = json_tokener_parse(document);
+    store_session=session; /* make global for now */
+    if (!is_error(jobj)) { /* guards against a json pre 0.10 bug */
+      if (json_object_get_type(jobj)==json_type_array) {
+        json_parse_array(jobj, NULL, 0);
+      } else {
+	    json_parse(jobj,0);
+      }
+    }
+    if (results.code && results.message!=NULL) {
+      if (debug) printf("Got an error code:\n  code=%d\n  message=%s\n",results.code,results.message);
+      fprintf(stderr, "error condition detected: %d = %s\n", results.code, results.message);
+    }
 }
 
 #ifdef OLDXML
@@ -921,8 +989,9 @@ static int send_request(struct session *session)
 			break;
 
 		case ACTION_PUBLIC:
-			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
-				public_uri, session->page);
+			/*snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,*/
+			snprintf(endpoint, endpoint_size, "%s%s", twitter_host_stream,
+				public_uri);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
@@ -1036,7 +1105,7 @@ static int send_request(struct session *session)
 			is_post = 1;
 			break;
 		case ACTION_USER:
-			sprintf(endpoint, "%s%s%s.xml?page=%d",
+			sprintf(endpoint, "%s%s?screen_name=%s&page=%d",
 				session->hosturl, user_uri, session->user,
 				session->page);
 			break;
@@ -1045,8 +1114,8 @@ static int send_request(struct session *session)
 				mentions_uri, session->page);
 			break;
 		case ACTION_PUBLIC:
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
-				public_uri, session->page);
+			sprintf(endpoint, "%s%s", twitter_host_stream,
+				public_uri);
 			break;
 		case ACTION_GROUP:
 			sprintf(endpoint, "%s%s%s.xml?page=%d",
@@ -1105,7 +1174,7 @@ static int send_request(struct session *session)
 			if ((session->action != ACTION_UPDATE) &&
 					(session->action != ACTION_RETWEET) &&
 					(session->action != ACTION_DIRECT))
-				parse_timeline(reply, session);
+				parse_timeline_json(reply, session);
 
 			if ((session->action == ACTION_UPDATE) ||
 					(session->action == ACTION_DIRECT))
