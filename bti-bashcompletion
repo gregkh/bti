@@ -16,7 +16,7 @@ _bti()
 	fi
 
 	if [[ "${prev}" == "--action" ]] ; then
-		COMPREPLY=( $(compgen -W "friends public update user replies" -- ${cur} ) )
+		COMPREPLY=( $(compgen -W "friends public update user replies direct" -- ${cur} ) )
 	fi
 
 	return 0
