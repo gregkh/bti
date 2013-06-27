@@ -1,3 +1,40 @@
+Summary of changes from v032 to v033
+============================================
+
+Greg Kroah-Hartman (9):
+      Merge pull request #24 from pferor/master
+      Fix build issue
+      rework finding the config file.
+      Minor coding style cleanups.
+      Remove the FSF's address, as we don't care about that.
+      Error out if the command line option for a config file fails.
+      Merge pull request #23 from maneulyori/master
+      coding style cleanups
+      fix up coding style differences generated in the json parsing functions
+
+Paul Salanitri (3):
+      Add direct message capability.     Also adds rudimentry error checking on both updates and direct messages.
+      Update the man page to show direct message ability.
+      Add direct message action.
+
+Pferor (1):
+      Add XDG compilance (~/.config/bti) support
+
+maneulyori (3):
+      increased size of char endpoint to 2KByte. It will fix bti crashes while tweeting long unicode string.
+      use snprintf instead of sprintf. It will prevent BOF.
+      Stop tweeting when tweet length is over 140 character.
+
+paulrho (7):
+      Merge https://github.com/gregkh/bti
+      Better error checking     Use twitter to detect >140 chars
+      Typo fix
+      write status update and direct message with json url     read json error messages
+      include JSON library     guard against a pre 0.10 json library bug
+      another json pre10 issue to work around
+      Enable showing timeline: friends, user     (public does not work)
+
+
 Summary of changes from v031 to v032
 ============================================
 

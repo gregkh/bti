@@ -1,7 +1,7 @@
-AC_INIT([bti], [032], [greg@kroah.com])
+AC_INIT([bti], [033], [greg@kroah.com])
 AC_PREREQ(2.60)
 
-AM_INIT_AUTOMAKE(bti, 032)
+AM_INIT_AUTOMAKE(bti, 033)
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 

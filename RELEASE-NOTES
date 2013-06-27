@@ -1,3 +1,10 @@
+bti 033
+=============
+- fixes due to Twitter turning off old XML interface thanks to Paul Salanitri
+- direct message capability thanks to Paul Salanitri
+- XDG compliance for configuration file
+- other minor bugfixes
+
 bti 032
 =============
 - oauth for custom StatusNet installations now works properly.
