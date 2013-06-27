@@ -454,203 +454,239 @@ static void parse_timeline(char *document, struct session *session)
 
 
 /* avoids the c99 option */
-#define json_object_object_foreach_alt(obj,key,val)  \
-char *key; struct json_object *val; struct lh_entry *entry;\
-for(entry = json_object_get_object(obj)->head; ({ if(entry && !is_error(entry)) { key = (char*)entry->k; val = (struct json_object*)entry->v; } ; entry; }); entry = entry->next )
+#define json_object_object_foreach_alt(obj,key,val)		\
+	char *key;						\
+	struct json_object *val;				\
+	struct lh_entry *entry;					\
+	for (entry = json_object_get_object(obj)->head;		\
+		({ if(entry && !is_error(entry)) {		\
+			key = (char*)entry->k;			\
+			val = (struct json_object*)entry->v;	\
+		} ; entry; });					\
+		entry = entry->next )
 
 
-/*printing the value corresponding to boolean, double, integer and strings*/
-/*void print_json_value(json_object *jobj);
-void json_parse(json_object * jobj); / *Forward Declaration* /
-void json_parse_array( json_object *jobj, char *key);
-*/
-static void json_parse(json_object * jobj, int nestlevel); /*Forward Declaration*/
+/* Forward Declaration */
+static void json_parse(json_object * jobj, int nestlevel);
 
-static void print_json_value(json_object *jobj, int nestlevel){
-  enum json_type type;
-  type = json_object_get_type(jobj); /*Getting the type of the json object*/
-  switch (type) {
-    case json_type_boolean: printf("boolean   ");
-                         printf("value: %s\n", json_object_get_boolean(jobj)? "true": "false");
-                         break;
-    case json_type_double:  printf("double    ");
-                        printf("value: %lf\n", json_object_get_double(jobj));
-                         break;
-    case json_type_int:     printf("int       ");
-                        printf("value: %d\n", json_object_get_int(jobj));
-                         break;
-    case json_type_string:  printf("string    ");
-                         printf("value: %s\n", json_object_get_string(jobj));
-                         break;
-	default: break;
-  }
+static void print_json_value(json_object *jobj, int nestlevel)
+{
+	enum json_type type;
 
+	type = json_object_get_type(jobj);
+	switch (type) {
+	case json_type_boolean:
+		printf("boolean   ");
+		printf("value: %s\n", json_object_get_boolean(jobj)? "true": "false");
+		break;
+	case json_type_double:
+		printf("double    ");
+		printf("value: %lf\n", json_object_get_double(jobj));
+		break;
+	case json_type_int:
+		printf("int       ");
+		printf("value: %d\n", json_object_get_int(jobj));
+		break;
+	case json_type_string:
+		printf("string    ");
+		printf("value: %s\n", json_object_get_string(jobj));
+		break;
+	default:
+		break;
+	}
 }
 
 #define MAXKEYSTACK 20
 char *keystack[MAXKEYSTACK];
 
-static void json_parse_array( json_object *jobj, char *key, int nestlevel) {
-  enum json_type type;
+static void json_parse_array(json_object *jobj, char *key, int nestlevel)
+{
+	enum json_type type;
 
-  nestlevel++;
-  json_object *jarray = jobj; /*Simply get the array*/
-  if(key) {
-    jarray = json_object_object_get(jobj, key); /*Getting the array if it is a key value pair*/
-  }
+	nestlevel++;
+	/* Simply get the array */
+	json_object *jarray = jobj;
+	if (key) {
+		/* Get the array if it is a key value pair */
+		jarray = json_object_object_get(jobj, key);
+	}
 
-  int arraylen = json_object_array_length(jarray); /*Getting the length of the array*/
-  if (debug) printf("Array Length: %d\n",arraylen);
-  int i;
-  json_object * jvalue;
+	/* Get the length of the array */
+	int arraylen = json_object_array_length(jarray);
+	if (debug)
+		printf("Array Length: %d\n",arraylen);
+	int i;
+	json_object *jvalue;
 
-  for (i=0; i< arraylen; i++){
-    if (debug) {
-      int j;
-      for (j=0; j<nestlevel; ++j) printf("  ");
-      printf("element[%d]\n",i); 
-    }
-    jvalue = json_object_array_get_idx(jarray, i); /*Getting the array element at position i*/
-    type = json_object_get_type(jvalue);
-    if (type == json_type_array) {
-      json_parse_array(jvalue, NULL, nestlevel);
-    } else if (type != json_type_object) {
-      if (debug) printf("value[%d]: ",i);
-      if (debug) print_json_value(jvalue,nestlevel);
-    } else {
-      /*printf("obj: ");*/
-      keystack[nestlevel%MAXKEYSTACK]="[]";
-      json_parse(jvalue,nestlevel);
-    }
-  }
+	for (i = 0; i < arraylen; i++) {
+		if (debug) {
+			int j;
+			for (j=0; j < nestlevel; ++j)
+				printf("  ");
+			printf("element[%d]\n",i);
+		}
+
+		/* Get the array element at position i */
+		jvalue = json_object_array_get_idx(jarray, i);
+		type = json_object_get_type(jvalue);
+		if (type == json_type_array) {
+			json_parse_array(jvalue, NULL, nestlevel);
+		} else if (type != json_type_object) {
+			if (debug) {
+				printf("value[%d]: ", i);
+				print_json_value(jvalue,nestlevel);
+			}
+		} else {
+			/* printf("obj: "); */
+			keystack[nestlevel%MAXKEYSTACK]="[]";
+			json_parse(jvalue,nestlevel);
+		}
+	}
 }
 
 
 struct results {
-  int code;
-  char * message;
+	int code;
+	char *message;
 } results;
+
 struct session *store_session;
 struct tweetdetail {
-  char * id;
-  char * text;
-  char * screen_name;
-  char * created_at;
+	char *id;
+	char *text;
+	char *screen_name;
+	char *created_at;
 } tweetdetail;
 
-static void json_interpret(json_object * jobj, int nestlevel) {
-  if (nestlevel==3 
-    && strcmp(keystack[1],"errors")==0
-    && strcmp(keystack[2],"[]")==0) {
+static void json_interpret(json_object *jobj, int nestlevel)
+{
+	if (nestlevel == 3 &&
+	    strcmp(keystack[1], "errors") == 0 &&
+	    strcmp(keystack[2], "[]") == 0) {
+		if (strcmp(keystack[3], "message") == 0) {
+			if (json_object_get_type(jobj) == json_type_string)
+				results.message = (char *)json_object_get_string(jobj);
+		}
+		if (strcmp(keystack[3], "code") == 0) {
+			if (json_object_get_type(jobj) == json_type_int)
+				results.code = json_object_get_int(jobj);
+		}
+	}
 
-    if (strcmp(keystack[3],"message")==0) {
-      if ( json_object_get_type(jobj)==json_type_string) 
-        results.message=(char *)json_object_get_string(jobj);
-    }
-    if (strcmp(keystack[3],"code")==0) {
-      if ( json_object_get_type(jobj)==json_type_int) 
-        results.code=json_object_get_int(jobj);
-    }
-  }
-  
-  if (nestlevel>=2 && strcmp(keystack[1],"[]")==0
-    ) { 
-    if (strcmp(keystack[2],"created_at")==0) {
-      if (debug) printf("%s : %s\n",keystack[2],json_object_get_string(jobj));
-      tweetdetail.created_at=(char *)json_object_get_string(jobj);
-    }
-    if (strcmp(keystack[2],"text")==0) {
-      if (debug) printf("%s : %s\n",keystack[2],json_object_get_string(jobj));
-      tweetdetail.text=(char *)json_object_get_string(jobj);
-    }
-    if (strcmp(keystack[2],"id")==0) {
-      if (debug) printf("%s : %s\n",keystack[2],json_object_get_string(jobj));
-      tweetdetail.id=(char *)json_object_get_string(jobj);
-    }
-    if (nestlevel>=3 && strcmp(keystack[2],"user")==0) {
-      if (strcmp(keystack[3],"screen_name")==0) {
-        if (debug) printf("%s->%s : %s\n",keystack[2],keystack[3],json_object_get_string(jobj));
-        tweetdetail.screen_name=(char *)json_object_get_string(jobj);
-				bti_output_line(store_session, (xmlChar *)tweetdetail.screen_name, (xmlChar *)tweetdetail.id,
-						(xmlChar *)tweetdetail.created_at, (xmlChar *)tweetdetail.text);
-      }
-    }
-/*
- * created_at
- * 
- * id
- * user
- * screen_name
- */
-    
-  }
-
+	if (nestlevel >= 2 &&
+	    strcmp(keystack[1],"[]") == 0) {
+		if (strcmp(keystack[2], "created_at") == 0) {
+			if (debug)
+				printf("%s : %s\n", keystack[2], json_object_get_string(jobj));
+			tweetdetail.created_at = (char *)json_object_get_string(jobj);
+		}
+		if (strcmp(keystack[2], "text") == 0) {
+			if (debug)
+				printf("%s : %s\n", keystack[2], json_object_get_string(jobj));
+			tweetdetail.text = (char *)json_object_get_string(jobj);
+		}
+		if (strcmp(keystack[2], "id") == 0) {
+			if (debug)
+				printf("%s : %s\n", keystack[2], json_object_get_string(jobj));
+			tweetdetail.id = (char *)json_object_get_string(jobj);
+		}
+		if (nestlevel >= 3 &&
+		    strcmp(keystack[2], "user") == 0) {
+			if (strcmp(keystack[3], "screen_name") == 0) {
+				if (debug)
+					printf("%s->%s : %s\n", keystack[2], keystack[3], json_object_get_string(jobj));
+				tweetdetail.screen_name=(char *)json_object_get_string(jobj);
+				bti_output_line(store_session,
+						(xmlChar *)tweetdetail.screen_name,
+						(xmlChar *)tweetdetail.id,
+						(xmlChar *)tweetdetail.created_at,
+						(xmlChar *)tweetdetail.text);
+				}
+		}
+	}
 }
-	/*Parsing the json object*/
-static void json_parse(json_object * jobj, int nestlevel) {
-  int i;
-  if (jobj==NULL) {
-    fprintf(stderr,"jobj null\n");
-    return;
-  }
-  nestlevel++;
-  enum json_type type;
-  json_object_object_foreach_alt(jobj, key, val) {
-    if (val) type = json_object_get_type(val); else type=json_type_null; /* work around pre10 */
-    if (debug) for (i=0; i<nestlevel; ++i) printf("  ");
-    if (debug) printf("key %-34s ",key);
-    if (debug) for (i=0; i<8-nestlevel; ++i) printf("  ");
-    switch (type) {
-      case json_type_boolean: 
-      case json_type_double: 
-      case json_type_int: 
-      case json_type_string: 
-            if (debug) print_json_value(val,nestlevel);
-            if (debug) for (i=0; i<nestlevel+1; ++i) printf("  ");
-            if (debug) printf("(");
-            if (debug) for (i=1; i<nestlevel; ++i) { printf("%s->",keystack[i]); }
-            if (debug) printf("%s)\n",key);
-            keystack[nestlevel%MAXKEYSTACK]=key;
-            json_interpret(val,nestlevel);
-            break; 
-      case json_type_object: 
-            if (debug) printf("json_type_object\n");
-            keystack[nestlevel%MAXKEYSTACK]=key;
-            json_parse(json_object_object_get(jobj, key), nestlevel); 
-            break;
-      case json_type_array: 
-            if (debug) printf("json_type_array, ");
-            keystack[nestlevel%MAXKEYSTACK]=key;
-            json_parse_array(jobj, key, nestlevel);
-            break;
-      case json_type_null: 
-            if (debug) printf("null\n");
-            break;
-      default: 
-            if (debug) printf("\n");
-        break;
-    }
-  }
-} 
 
+/* Parsing the json object */
+static void json_parse(json_object * jobj, int nestlevel)
+{
+	int i;
 
+	if (jobj==NULL) {
+		fprintf(stderr,"jobj null\n");
+		return;
+	}
+	nestlevel++;
+	enum json_type type;
+	json_object_object_foreach_alt(jobj, key, val) {
+		/* work around pre10 */
+		if (val)
+			type = json_object_get_type(val);
+		else
+			type=json_type_null;
+		if (debug)
+			for (i = 0; i < nestlevel; ++i)
+				printf("  ");
+		if (debug)
+			printf("key %-34s ", key);
+		if (debug)
+			for (i = 0; i < 8 - nestlevel; ++i)
+				printf("  ");
+		switch (type) {
+		case json_type_boolean:
+		case json_type_double:
+		case json_type_int:
+		case json_type_string:
+			if (debug) print_json_value(val,nestlevel);
+			if (debug) for (i=0; i<nestlevel+1; ++i) printf("  ");
+			if (debug) printf("(");
+			if (debug) for (i=1; i<nestlevel; ++i) { printf("%s->",keystack[i]); }
+			if (debug) printf("%s)\n",key);
+			keystack[nestlevel%MAXKEYSTACK] = key;
+			json_interpret(val,nestlevel);
+			break;
+		case json_type_object:
+			if (debug) printf("json_type_object\n");
+			keystack[nestlevel%MAXKEYSTACK] = key;
+			json_parse(json_object_object_get(jobj, key), nestlevel);
+			break;
+		case json_type_array:
+			if (debug) printf("json_type_array, ");
+			keystack[nestlevel%MAXKEYSTACK] = key;
+			json_parse_array(jobj, key, nestlevel);
+			break;
+		case json_type_null:
+			if (debug) printf("null\n");
+			break;
+		default:
+			if (debug) printf("\n");
+			break;
+		}
+	}
+}
 
 static int parse_response_json(char *document, struct session *session)
 {
 	dbg("Got this json response:\n");
 	dbg("%s\n",document);
-    results.code=0;
-    results.message=NULL;
-	json_object * jobj = json_tokener_parse(document);
-    store_session=session; /* make global for now */
-    if (!is_error(jobj)) { /* guards against a json pre 0.10 bug */
-	  json_parse(jobj,0);
-    }
-    if (results.code && results.message!=NULL) {
-      if (debug) printf("Got an error code:\n  code=%d\n  message=%s\n",results.code,results.message);
-      fprintf(stderr, "error condition detected: %d = %s\n", results.code, results.message);
-      return -EREMOTEIO;
-    }
+
+	results.code=0;
+	results.message=NULL;
+	json_object *jobj = json_tokener_parse(document);
+
+	/* make global for now */
+	store_session = session;
+	if (!is_error(jobj)) {
+		/* guards against a json pre 0.10 bug */
+		json_parse(jobj,0);
+	}
+	if (results.code && results.message != NULL) {
+		if (debug)
+			printf("Got an error code:\n  code=%d\n  message=%s\n",
+				results.code, results.message);
+		fprintf(stderr, "error condition detected: %d = %s\n",
+			results.code, results.message);
+		return -EREMOTEIO;
+	}
 	return 0;
 }
 
@@ -658,21 +694,27 @@ static void parse_timeline_json(char *document, struct session *session)
 {
 	dbg("Got this json response:\n");
 	dbg("%s\n",document);
-    results.code=0;
-    results.message=NULL;
-	json_object * jobj = json_tokener_parse(document);
-    store_session=session; /* make global for now */
-    if (!is_error(jobj)) { /* guards against a json pre 0.10 bug */
-      if (json_object_get_type(jobj)==json_type_array) {
-        json_parse_array(jobj, NULL, 0);
-      } else {
-	    json_parse(jobj,0);
-      }
-    }
-    if (results.code && results.message!=NULL) {
-      if (debug) printf("Got an error code:\n  code=%d\n  message=%s\n",results.code,results.message);
-      fprintf(stderr, "error condition detected: %d = %s\n", results.code, results.message);
-    }
+	results.code = 0;
+	results.message = NULL;
+	json_object *jobj = json_tokener_parse(document);
+
+	/* make global for now */
+	store_session = session;
+	if (!is_error(jobj)) {
+		/* guards against a json pre 0.10 bug */
+		if (json_object_get_type(jobj)==json_type_array) {
+			json_parse_array(jobj, NULL, 0);
+		} else {
+			json_parse(jobj,0);
+		}
+	}
+	if (results.code && results.message != NULL) {
+		if (debug)
+			printf("Got an error code:\n  code=%d\n  message=%s\n",
+				results.code, results.message);
+		fprintf(stderr, "error condition detected: %d = %s\n",
+			results.code, results.message);
+	}
 }
 
 #ifdef OLDXML
