@@ -685,7 +685,7 @@ static int parse_response_json(char *document, struct session *session)
 				results.code, results.message);
 		fprintf(stderr, "error condition detected: %d = %s\n",
 			results.code, results.message);
-		return -EREMOTEIO;
+		return -EIO;
 	}
 	return 0;
 }
@@ -727,13 +727,13 @@ static int parse_response_xml(char *document, struct session *session)
 				"response.xml", NULL,
 				XML_PARSE_NOERROR);
 	if (doc == NULL)
-		return -EREMOTEIO;
+		return -EIO;
 
 	current = xmlDocGetRootElement(doc);
 	if (current == NULL) {
 		fprintf(stderr, "empty document\n");
 		xmlFreeDoc(doc);
-		return -EREMOTEIO;
+		return -EIO;
 	}
 
 	if (xmlStrcmp(current->name, (const xmlChar *) "status")) {
@@ -742,7 +742,7 @@ static int parse_response_xml(char *document, struct session *session)
                         	&& xmlStrcmp(current->name, (const xmlChar *) "errors")) {
 				fprintf(stderr, "unexpected document type\n");
 				xmlFreeDoc(doc);
-				return -EREMOTEIO;
+				return -EIO;
 			} else {
 				xmlChar *text=NULL;
 				while (current != NULL) {
@@ -764,7 +764,7 @@ static int parse_response_xml(char *document, struct session *session)
 					fprintf(stderr, "unknown error condition\n");
 
 				xmlFreeDoc(doc);
-				return -EREMOTEIO;
+				return -EIO;
 			}
 		}
 	}
