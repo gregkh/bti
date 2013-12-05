@@ -32,7 +32,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-#include <json/json.h>
+#include <json-c/json.h>
 #include <pcre.h>
 #include <termios.h>
 #include <dlfcn.h>
