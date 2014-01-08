@@ -712,64 +712,6 @@ static void parse_timeline_json(char *document, struct session *session)
 	}
 }
 
-#ifdef OLDXML
-static int parse_response_xml(char *document, struct session *session)
-{
-	xmlDocPtr doc;
-	xmlNodePtr current;
-
-	doc = xmlReadMemory(document, strlen(document),
-				"response.xml", NULL,
-				XML_PARSE_NOERROR);
-	if (doc == NULL)
-		return -EIO;
-
-	current = xmlDocGetRootElement(doc);
-	if (current == NULL) {
-		fprintf(stderr, "empty document\n");
-		xmlFreeDoc(doc);
-		return -EIO;
-	}
-
-	if (xmlStrcmp(current->name, (const xmlChar *) "status")) {
-		if (xmlStrcmp(current->name, (const xmlChar *) "direct_message")) {
-			if (xmlStrcmp(current->name, (const xmlChar *) "hash")
-                        	&& xmlStrcmp(current->name, (const xmlChar *) "errors")) {
-				fprintf(stderr, "unexpected document type\n");
-				xmlFreeDoc(doc);
-				return -EIO;
-			} else {
-				xmlChar *text=NULL;
-				while (current != NULL) {
-					if (current->type == XML_ELEMENT_NODE)
-						if (!xmlStrcmp(current->name, (const xmlChar *)"error")) {
-							text = xmlNodeListGetString(doc, current->xmlChildrenNode, 1);
-							break;
-						}
-					if (current->children)
-						current = current->children;
-					else
-						current = current->next;
-				}
-
-				if (text) {
-					fprintf(stderr, "error condition detected = %s\n", text);
-					xmlFree(text);
-				} else
-					fprintf(stderr, "unknown error condition\n");
-
-				xmlFreeDoc(doc);
-				return -EIO;
-			}
-		}
-	}
-
-	xmlFreeDoc(doc);
-
-	return 0;
-}
-#endif
-
 static size_t curl_callback(void *buffer, size_t size, size_t nmemb,
 			    void *userp)
 {
