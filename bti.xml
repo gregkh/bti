@@ -21,7 +21,7 @@
 
       <refnamediv>
         <refname>bti</refname>
-        <refpurpose>send a tweet to twitter.com or identi.ca from the command line</refpurpose>
+        <refpurpose>send a tweet to twitter.com from the command line</refpurpose>
       </refnamediv>
 
       <refsynopsisdiv>
@@ -49,7 +49,7 @@
       </refsynopsisdiv>
 
       <refsect1><title>DESCRIPTION</title>
-        <para>bti sends a tweet message to twitter.com or identi.ca.
+        <para>bti sends a tweet message to twitter.com.
         </para>
       </refsect1>
 
@@ -59,7 +59,7 @@
             <term><option>--account account</option></term>
             <listitem>
               <para>
-	        Specify the twitter.com or identi.ca account name.
+	        Specify the twitter.com account name.
 	      </para>
             </listitem>
           </varlistentry>
@@ -67,7 +67,7 @@
             <term><option>--password password</option></term>
             <listitem>
               <para>
-                Specify the password of your twitter.com or identi.ca account.
+                Specify the password of your twitter.com account.
               </para>
             </listitem>
           </varlistentry>
@@ -100,12 +100,7 @@
             <listitem>
               <para>
 		Specify the host which you want to send your message to.  Valid
-		options are "twitter" to send to twitter.com and "identica" to
-        send to identi.ca.
-
-        If you want to send the message to a custom StatusNet installation,
-        you should specify the API URI. For example identi.ca's URI is:
-        https://identi.ca/api/statuses
+		options are "twitter" to send to twitter.com.
               </para>
               <para>
 		If no host is specified, the default is to send to twitter.com.
@@ -306,7 +301,7 @@
              <term><option>account</option></term>
              <listitem>
                <para>
-                 The twitter.com or identi.ca account name you wish to use to send this
+                 The twitter.com account name you wish to use to send this
                  message with.
                </para>
              </listitem>
@@ -315,7 +310,7 @@
              <term><option>password</option></term>
              <listitem>
                <para>
-                 The twitter.com or identi.ca password for the account you wish to use
+                 The twitter.com password for the account you wish to use
                  to send this message with.
                </para>
              </listitem>
@@ -346,12 +341,8 @@
              <listitem>
                <para>
 		 The host you want to use to send the message to.  Valid
-		 options are either "twitter" or "identica" to send to
-		 twitter.com or identi.ca respectively.
+		 options is "twitter" or "custom" to specify your own server.
 
-         If you want to send the message to a custom StatusNet installation,
-         you should specify the API URI. For example identi.ca's URI is:
-         https://identi.ca/api/statuses.
                </para>
              </listitem>
            </varlistentry>

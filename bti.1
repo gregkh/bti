@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: bti
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: May 2008
 .\"    Manual: bti
 .\"    Source: bti
@@ -28,23 +28,23 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-bti \- send a tweet to twitter\&.com or identi\&.ca from the command line
+bti \- send a tweet to twitter\&.com from the command line
 .SH "SYNOPSIS"
 .HP \w'\fBbti\fR\ 'u
 \fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-retweet\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
-bti sends a tweet message to twitter\&.com or identi\&.ca\&.
+bti sends a tweet message to twitter\&.com\&.
 .SH "OPTIONS"
 .PP
 \fB\-\-account account\fR
 .RS 4
-Specify the twitter\&.com or identi\&.ca account name\&.
+Specify the twitter\&.com account name\&.
 .RE
 .PP
 \fB\-\-password password\fR
 .RS 4
-Specify the password of your twitter\&.com or identi\&.ca account\&.
+Specify the password of your twitter\&.com account\&.
 .RE
 .PP
 \fB\-\-action action\fR
@@ -59,7 +59,7 @@ Specify the user whose messages you want to see when the action is "user", and t
 .PP
 \fB\-\-host HOST_NAME\fR
 .RS 4
-Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com and "identica" to send to identi\&.ca\&. If you want to send the message to a custom StatusNet installation, you should specify the API URI\&. For example identi\&.ca\*(Aqs URI is: https://identi\&.ca/api/statuses
+Specify the host which you want to send your message to\&. Valid options are "twitter" to send to twitter\&.com\&.
 .sp
 If no host is specified, the default is to send to twitter\&.com\&.
 .RE
@@ -154,7 +154,6 @@ Its primary focus is to allow you to log everything that you type into a bash sh
 .PP
 To hook bti up to your bash shell, export the following variable:
 .PP
-
 PROMPT_COMMAND=\*(Aqhistory 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\*(Aq
 .PP
 This example assumes that you have the
@@ -167,12 +166,12 @@ The account and password can be stored in a configuration file in the users home
 .PP
 \fBaccount\fR
 .RS 4
-The twitter\&.com or identi\&.ca account name you wish to use to send this message with\&.
+The twitter\&.com account name you wish to use to send this message with\&.
 .RE
 .PP
 \fBpassword\fR
 .RS 4
-The twitter\&.com or identi\&.ca password for the account you wish to use to send this message with\&.
+The twitter\&.com password for the account you wish to use to send this message with\&.
 .RE
 .PP
 \fB\-\-action action\fR
@@ -187,7 +186,7 @@ Specify the user you want to see his/her messages while the action is "user"\&.
 .PP
 \fBhost\fR
 .RS 4
-The host you want to use to send the message to\&. Valid options are either "twitter" or "identica" to send to twitter\&.com or identi\&.ca respectively\&. If you want to send the message to a custom StatusNet installation, you should specify the API URI\&. For example identi\&.ca\*(Aqs URI is: https://identi\&.ca/api/statuses\&.
+The host you want to use to send the message to\&. Valid options is "twitter" or "custom" to specify your own server\&.
 .RE
 .PP
 \fBproxy\fR
@@ -238,4 +237,4 @@ environment variables
 For example, command line options always override any config file option, or any environment variables\&. Unless a config file is specified by the command line\&. At that point, the new config file is read, and any previous options set by a command line option, would be overridden\&.
 .SH "AUTHOR"
 .PP
-Written by Greg Kroah\-Hartman <greg@kroah\&.com> and Amir Mohammad Saied <amirsaied@gmail\&.com>\&.
+Written by Greg Kroah\-Hartman <<greg@kroah\&.com>> and Amir Mohammad Saied <<amirsaied@gmail\&.com>>\&.

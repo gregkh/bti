@@ -223,10 +223,6 @@ static int host_callback(struct session *session, char *value)
 		session->host = HOST_TWITTER;
 		session->hosturl = strdup(twitter_host);
 		session->hostname = strdup(twitter_name);
-	} else if (strcasecmp(value, "identica") == 0) {
-		session->host = HOST_IDENTICA;
-		session->hosturl = strdup(identica_host);
-		session->hostname = strdup(identica_name);
 	} else {
 		session->host = HOST_CUSTOM;
 		session->hosturl = strdup(value);

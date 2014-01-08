@@ -261,16 +261,11 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 const char twitter_host[]  = "http://api.twitter.com/1.1/statuses";
 const char twitter_host_stream[]  = "https://stream.twitter.com/1.1/statuses"; /*this is not reset, and doesnt work */
 const char twitter_host_simple[]  = "http://api.twitter.com/1.1";
-const char identica_host[] = "https://identi.ca/api/statuses";
 const char twitter_name[]  = "twitter";
-const char identica_name[] = "identi.ca";
 
 static const char twitter_request_token_uri[]  = "https://twitter.com/oauth/request_token";
 static const char twitter_access_token_uri[]   = "https://twitter.com/oauth/access_token";
 static const char twitter_authorize_uri[]      = "https://twitter.com/oauth/authorize?oauth_token=";
-static const char identica_request_token_uri[] = "https://identi.ca/api/oauth/request_token?oauth_callback=oob";
-static const char identica_access_token_uri[]  = "https://identi.ca/api/oauth/access_token";
-static const char identica_authorize_uri[]     = "https://identi.ca/api/oauth/authorize?oauth_token=";
 static const char custom_request_token_uri[]   = "/../oauth/request_token?oauth_callback=oob";
 static const char custom_access_token_uri[]    = "/../oauth/access_token";
 static const char custom_authorize_uri[]       = "/../oauth/authorize?oauth_token=";
@@ -860,11 +855,6 @@ static int request_access_token(struct session *session)
 				twitter_request_token_uri, NULL,
 				OA_HMAC, NULL, session->consumer_key,
 				session->consumer_secret, NULL, NULL);
-	else if (session->host == HOST_IDENTICA)
-		request_url = oauth_sign_url2(
-				identica_request_token_uri, NULL,
-				OA_HMAC, NULL, session->consumer_key,
-				session->consumer_secret, NULL, NULL);
 	else {
 		sprintf(token_uri, "%s%s",
 			session->hosturl, custom_request_token_uri);
@@ -898,11 +888,6 @@ static int request_access_token(struct session *session)
 		verifier = session->readline(NULL);
 		sprintf(at_uri, "%s?oauth_verifier=%s",
 			twitter_access_token_uri, verifier);
-	} else if (session->host == HOST_IDENTICA) {
-		fprintf(stdout, "%s%s\nPIN: ", identica_authorize_uri, at_key);
-		verifier = session->readline(NULL);
-		sprintf(at_uri, "%s?oauth_verifier=%s",
-			identica_access_token_uri, verifier);
 	} else {
 		fprintf(stdout, "%s%s%s\nPIN: ",
 			session->hosturl, custom_authorize_uri, at_key);
@@ -1768,10 +1753,6 @@ int main(int argc, char *argv[], char *envp[])
 				session->host = HOST_TWITTER;
 				session->hosturl = strdup(twitter_host);
 				session->hostname = strdup(twitter_name);
-			} else if (strcasecmp(optarg, "identica") == 0) {
-				session->host = HOST_IDENTICA;
-				session->hosturl = strdup(identica_host);
-				session->hostname = strdup(identica_name);
 			} else {
 				session->host = HOST_CUSTOM;
 				session->hosturl = strdup(optarg);

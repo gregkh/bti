@@ -18,7 +18,6 @@
 
 enum host {
 	HOST_TWITTER  = 0,
-	HOST_IDENTICA = 1,
 	HOST_CUSTOM   = 2
 };
 
@@ -77,9 +76,7 @@ struct bti_curl_buffer {
 };
 
 extern const char twitter_host[];
-extern const char identica_host[];
 extern const char twitter_name[];
-extern const char identica_name[];
 extern int debug;
 
 extern void bti_parse_configfile(struct session *session);
