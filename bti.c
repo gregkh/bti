@@ -1205,14 +1205,12 @@ static int send_request(struct session *session)
 			dbg("reply:%s\n", reply);
 			if (req_url)
 				free(req_url);
-		}
 
-		if (!reply) {
-			fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
-			return -EIO;
-		}
+			if (!reply) {
+				fprintf(stderr, "Error retrieving from URL (%s)\n", endpoint);
+				return -EIO;
+			}
 
-		if (!session->dry_run) {
 			if ((session->action != ACTION_UPDATE) &&
 					(session->action != ACTION_RETWEET) &&
 					(session->action != ACTION_DIRECT))
