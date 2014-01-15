@@ -258,9 +258,9 @@ static void bti_curl_buffer_free(struct bti_curl_buffer *buffer)
 	free(buffer);
 }
 
-const char twitter_host[]  = "http://api.twitter.com/1.1/statuses";
+const char twitter_host[]  = "https://api.twitter.com/1.1/statuses";
 const char twitter_host_stream[]  = "https://stream.twitter.com/1.1/statuses"; /*this is not reset, and doesnt work */
-const char twitter_host_simple[]  = "http://api.twitter.com/1.1";
+const char twitter_host_simple[]  = "https://api.twitter.com/1.1";
 const char twitter_name[]  = "twitter";
 
 static const char twitter_request_token_uri[]  = "https://twitter.com/oauth/request_token";
