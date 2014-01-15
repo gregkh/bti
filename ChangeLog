@@ -1,3 +1,20 @@
+Summary of changes from v033 to v034
+============================================
+
+Colin Guthrie (1):
+      Build against the new JSON-C library name.
+
+Dirk Eddelbuettel (1):
+      change remaining http:// to https://
+
+Greg Kroah-Hartman (5):
+      use -EIO instead of -EREMOTEIO
+      dry-run shouldn't error out.
+      remove identi.ca support.
+      Remove unused xml parsing function
+      Merge pull request #32 from eddelbuettel/master
+
+
 Summary of changes from v032 to v033
 ============================================
 

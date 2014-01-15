@@ -1,5 +1,12 @@
 bti 033
 =============
+- fixes due to Twitter turning off http support (everything is https now.)
+  thanks to Dirk Eddelbuettel
+- BSD build fixes
+- JSON-C build fixes thanks to Colin Guthrie
+
+bti 033
+=============
 - fixes due to Twitter turning off old XML interface thanks to Paul Salanitri
 - direct message capability thanks to Paul Salanitri
 - XDG compliance for configuration file
