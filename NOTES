@@ -1,0 +1,7 @@
+release:
+	make distcheck
+	gzip -dv bti-*.tar.gz
+	gpg -a -b bti-???.tar
+	kup --host=gregkh@gtp.kernel.org put bti-???.tar bti-???.tar.asc /pub/software/web/bti/
+
+
