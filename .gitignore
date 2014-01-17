@@ -1,9 +1,11 @@
 .deps
 bti
+*.asc
+*.bz2
+*.gz
 *.o
 *.swp
-*.gz
-*.bz2
+*.tar
 INSTALL
 Makefile
 Makefile.in
