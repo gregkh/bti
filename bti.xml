@@ -89,7 +89,7 @@
             <listitem>
               <para>
 		Specify the user whose messages you want to see when the
-		action is "user", and the reciever of the direct message when
+		action is "user", and the receiver of the direct message when
 		the action is "direct" (the sender must be following the 
 		receiver).
               </para>
