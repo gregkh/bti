@@ -1,7 +1,7 @@
-bti - bash twitter/identi.ca ididocy
+bti - bash twitter idiocy
 
-Allows you to pipe your bash input to twitter or identi.ca in an easy
-and fast manner to annoy the whole world.
+Allows you to pipe your bash input to twitter in an easy and fast manner
+to annoy the whole world.
 
 See the man page bti.1 for how to use it and more information.
 
@@ -11,7 +11,7 @@ data to the world with it.
 USE AT YOUR OWN RISK!
 
 Any questions, contact Greg Kroah-Hartman <greg@kroah.com> or @gregkh
-on twitter or identi.ca.
+on twitter.
 
 bti is developed using git and the tree can be found at:
 	git://github.com/gregkh/bti.git

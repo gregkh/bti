@@ -53,7 +53,7 @@ int debug;
 
 static void display_help(void)
 {
-	fprintf(stdout, "bti - send tweet to twitter or identi.ca\n"
+	fprintf(stdout, "bti - send tweet to twitter\n"
 		"Version: %s\n"
 		"Usage:\n"
 		"  bti [options]\n"
