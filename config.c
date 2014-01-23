@@ -243,8 +243,6 @@ static int action_callback(struct session *session, char *value)
 		session->action = ACTION_REPLIES;
 	else if (strcasecmp(value, "public") == 0)
 		session->action = ACTION_PUBLIC;
-	else if (strcasecmp(value, "group") == 0)
-		session->action = ACTION_GROUP;
 	else
 		session->action = ACTION_UNKNOWN;
 	return 0;

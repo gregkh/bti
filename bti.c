@@ -63,7 +63,6 @@ static void display_help(void)
 		"  --action action\n"
 		"    ('update', 'friends', 'public', 'replies', 'user', or 'direct')\n"
 		"  --user screenname\n"
-		"  --group groupname\n"
 		"  --proxy PROXY:PORT\n"
 		"  --host HOST\n"
 		"  --logfile logfile\n"
@@ -223,7 +222,6 @@ static void session_free(struct session *session)
 	free(session->time);
 	free(session->homedir);
 	free(session->user);
-	free(session->group);
 	free(session->hosturl);
 	free(session->hostname);
 	free(session->configfile);
@@ -277,7 +275,6 @@ static const char friends_uri[]  = "/home_timeline.json";
 static const char mentions_uri[] = "/mentions_timeline.json";
 static const char replies_uri[]  = "/replies.xml";
 static const char retweet_uri[]  = "/retweet/";
-static const char group_uri[]    = "/../statusnet/groups/timeline/";
 /*static const char direct_uri[]   = "/direct_messages/new.xml";*/
 static const char direct_uri[]   = "/direct_messages/new.json";
 
@@ -964,13 +961,6 @@ static int send_request(struct session *session)
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			break;
 
-		case ACTION_GROUP:
-			snprintf(endpoint, endpoint_size, "%s%s%s.xml?page=%d",
-				session->hosturl, group_uri, session->group,
-				session->page);
-			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
-			break;
-
 		case ACTION_DIRECT:
 		    /* NOT IMPLEMENTED - twitter requires authentication anyway */
 			break;
@@ -1086,11 +1076,6 @@ static int send_request(struct session *session)
 			sprintf(endpoint, "%s%s", twitter_host_stream,
 				public_uri);
 			break;
-		case ACTION_GROUP:
-			sprintf(endpoint, "%s%s%s.xml?page=%d",
-				session->hosturl, group_uri, session->group,
-				session->page);
-			break;
 		case ACTION_FRIENDS:
 			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
 				friends_uri, session->page);
@@ -1197,10 +1182,6 @@ static void log_session(struct session *session, int retval)
 		break;
 	case ACTION_PUBLIC:
 		fprintf(log_file, "%s: host=%s retrieving public timeline\n",
-			session->time, session->hostname);
-		break;
-	case ACTION_GROUP:
-		fprintf(log_file, "%s: host=%s retrieving group timeline\n",
 			session->time, session->hostname);
 		break;
 	case ACTION_DIRECT:
@@ -1542,7 +1523,6 @@ int main(int argc, char *argv[], char *envp[])
 		{ "proxy", 1, NULL, 'P' },
 		{ "action", 1, NULL, 'A' },
 		{ "user", 1, NULL, 'u' },
-		{ "group", 1, NULL, 'G' },
 		{ "logfile", 1, NULL, 'L' },
 		{ "shrink-urls", 0, NULL, 's' },
 		{ "help", 0, NULL, 'h' },
@@ -1654,8 +1634,6 @@ int main(int argc, char *argv[], char *envp[])
 				session->action = ACTION_REPLIES;
 			else if (strcasecmp(optarg, "public") == 0)
 				session->action = ACTION_PUBLIC;
-			else if (strcasecmp(optarg, "group") == 0)
-				session->action = ACTION_GROUP;
 			else if (strcasecmp(optarg, "retweet") == 0)
 				session->action = ACTION_RETWEET;
 			else if (strcasecmp(optarg, "direct") == 0)
@@ -1671,12 +1649,6 @@ int main(int argc, char *argv[], char *envp[])
 			dbg("user = %s\n", session->user);
 			break;
 
-		case 'G':
-			if (session->group)
-				free(session->group);
-			session->group = strdup(optarg);
-			dbg("group = %s\n", session->group);
-			break;
 		case 'L':
 			if (session->logfile)
 				free(session->logfile);
@@ -1767,10 +1739,6 @@ int main(int argc, char *argv[], char *envp[])
 				goto exit;
 			}
 		}
-		if (session->action == ACTION_GROUP) {
-			fprintf(stderr, "Groups only work in Identi.ca.\n");
-			goto exit;
-		}
 	} else {
 		if (!session->consumer_key || !session->consumer_secret)
 			session->no_oauth = 1;
@@ -1797,13 +1765,8 @@ int main(int argc, char *argv[], char *envp[])
 
 	if (session->action == ACTION_UNKNOWN) {
 		fprintf(stderr, "Unknown action, valid actions are:\n"
-			"'update', 'friends', 'public', 'replies', 'group', 'user' or 'direct'.\n");
+			"'update', 'friends', 'public', 'replies', 'user' or 'direct'.\n");
 		goto exit;
-	}
-
-	if (session->action == ACTION_GROUP && !session->group) {
-		fprintf(stdout, "Enter group name: ");
-		session->group = session->readline(NULL);
 	}
 
 	if (session->action == ACTION_RETWEET) {
