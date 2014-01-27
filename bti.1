@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: bti
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets v1.78.0 <http://docbook.sf.net/>
 .\"      Date: May 2008
 .\"    Manual: bti
 .\"    Source: bti
@@ -54,7 +54,7 @@ Specify the action which you want to perform\&. Valid options are "update" to se
 .PP
 \fB\-\-user screenname\fR
 .RS 4
-Specify the user whose messages you want to see when the action is "user", and the reciever of the direct message when the action is "direct" (the sender must be following the receiver)\&.
+Specify the user whose messages you want to see when the action is "user", and the receiver of the direct message when the action is "direct" (the sender must be following the receiver)\&.
 .RE
 .PP
 \fB\-\-host HOST_NAME\fR
@@ -154,6 +154,7 @@ Its primary focus is to allow you to log everything that you type into a bash sh
 .PP
 To hook bti up to your bash shell, export the following variable:
 .PP
+
 PROMPT_COMMAND=\*(Aqhistory 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\*(Aq
 .PP
 This example assumes that you have the
