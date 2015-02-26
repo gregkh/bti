@@ -22,6 +22,10 @@ PKG_CHECK_MODULES([JSON], [json-c])
 
 AC_SEARCH_LIBS([dlopen], [dl])
 
+PKG_CHECK_VAR(bashcompdir, [bash-completion], [completionsdir], ,
+    bashcompdir="${sysconfdir}/bash_completion.d")
+AC_SUBST(bashcompdir)
+
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
@@ -34,6 +38,7 @@ echo "
 	prefix:                 ${prefix}
 	datarootdir:            ${datarootdir}
 	mandir:                 ${mandir}
+	bashcompdir:            ${bashcompdir}
 
 	compiler:               ${CC}
 	cflags:                 ${CFLAGS}
