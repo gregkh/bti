@@ -744,7 +744,7 @@ static int parse_osp_reply(const char *reply, char **token, char **secret)
 	char **rv = NULL;
 	rc = oauth_split_url_parameters(reply, &rv);
 	qsort(rv, rc, sizeof(char *), oauth_cmpstringp);
-	if (rc == 2 || rc == 4) {
+	if (rc == 2 || rc == 4 || rc == 5) {
 		if (!strncmp(rv[0], "oauth_token=", 11) &&
 		    !strncmp(rv[1], "oauth_token_secret=", 18)) {
 			if (token)
