@@ -261,7 +261,7 @@ const char twitter_host_stream[]  = "https://stream.twitter.com/1.1/statuses"; /
 const char twitter_host_simple[]  = "https://api.twitter.com/1.1";
 const char twitter_name[]  = "twitter";
 
-static const char twitter_request_token_uri[]  = "https://twitter.com/oauth/request_token";
+static const char twitter_request_token_uri[]  = "https://twitter.com/oauth/request_token?oauth_callback=oob";
 static const char twitter_access_token_uri[]   = "https://twitter.com/oauth/access_token";
 static const char twitter_authorize_uri[]      = "https://twitter.com/oauth/authorize?oauth_token=";
 static const char custom_request_token_uri[]   = "/../oauth/request_token?oauth_callback=oob";
