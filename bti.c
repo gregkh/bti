@@ -451,7 +451,7 @@ static void parse_timeline(char *document, struct session *session)
 	struct json_object *val;				\
 	struct lh_entry *entry;					\
 	for (entry = json_object_get_object(obj)->head;		\
-		({ if(entry && !is_error(entry)) {		\
+		({ if(entry && entry != NULL) {		\
 			key = (char*)entry->k;			\
 			val = (struct json_object*)entry->v;	\
 		} ; entry; });					\
@@ -667,7 +667,7 @@ static int parse_response_json(char *document, struct session *session)
 
 	/* make global for now */
 	store_session = session;
-	if (!is_error(jobj)) {
+	if (jobj != NULL) {
 		/* guards against a json pre 0.10 bug */
 		json_parse(jobj,0);
 	}
@@ -692,7 +692,7 @@ static void parse_timeline_json(char *document, struct session *session)
 
 	/* make global for now */
 	store_session = session;
-	if (!is_error(jobj)) {
+	if (jobj != NULL) {
 		/* guards against a json pre 0.10 bug */
 		if (json_object_get_type(jobj)==json_type_array) {
 			json_parse_array(jobj, NULL, 0);
