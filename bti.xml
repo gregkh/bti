@@ -43,6 +43,7 @@
           <arg><option>--debug</option></arg>
           <arg><option>--dry-run</option></arg>
           <arg><option>--verbose</option></arg>
+          <arg><option>--machine-readable</option></arg>
           <arg><option>--version</option></arg>
           <arg><option>--help</option></arg>
         </cmdsynopsis>
@@ -215,6 +216,14 @@
             <listitem>
               <para>
                 Verbose mode. Print status IDs and timestamps.
+              </para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>--machine-readable</option></term>
+            <listitem>
+              <para>
+                Machine-readable mode. Print status IDs and timestamps and separate them with tabs.
               </para>
             </listitem>
           </varlistentry>
@@ -394,6 +403,15 @@
                <para>
                    Setting this variable to 'true' or 'yes' will enable the
                    verbose mode.
+               </para>
+             </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term><option>machine-readable</option></term>
+             <listitem>
+               <para>
+                   Setting this variable to 'true' or 'yes' will enable the
+                   machine-readable mode.
                </para>
              </listitem>
            </varlistentry>

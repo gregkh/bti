@@ -253,6 +253,11 @@ static int verbose_callback(struct session *session, char *value)
 	return session_bool(&session->verbose, value);
 }
 
+static int machine_readable_callback(struct session *session, char *value)
+{
+	return session_bool(&session->machine_readable, value);
+}
+
 static int shrink_urls_callback(struct session *session, char *value)
 {
 	return session_bool(&session->shrink_urls, value);
@@ -281,6 +286,7 @@ static struct config_function config_table[] = {
 	{ "host", host_callback },
 	{ "action", action_callback },
 	{ "verbose", verbose_callback },
+	{ "machine-readable", machine_readable_callback },
 	{ "shrink-urls", shrink_urls_callback },
 	{ NULL, NULL }
 };
