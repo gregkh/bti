@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: bti
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.78.0 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
 .\"      Date: May 2008
 .\"    Manual: bti
 .\"    Source: bti
@@ -31,7 +31,7 @@
 bti \- send a tweet to twitter\&.com from the command line
 .SH "SYNOPSIS"
 .HP \w'\fBbti\fR\ 'u
-\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-retweet\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+\fBbti\fR [\fB\-\-account\ account\fR] [\fB\-\-password\ password\fR] [\fB\-\-action\ action\fR] [\fB\-\-user\ screenname\fR] [\fB\-\-host\ HOST_NAME\fR] [\fB\-\-proxy\ PROXY:PORT\fR] [\fB\-\-logfile\ LOGFILE\fR] [\fB\-\-config\ CONFIGFILE\fR] [\fB\-\-replyto\ ID\fR] [\fB\-\-retweet\ ID\fR] [\fB\-\-page\ PAGENUMBER\fR] [\fB\-\-bash\fR] [\fB\-\-shrink\-urls\fR] [\fB\-\-debug\fR] [\fB\-\-dry\-run\fR] [\fB\-\-verbose\fR] [\fB\-\-machine\-readable\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 bti sends a tweet message to twitter\&.com\&.
@@ -124,6 +124,11 @@ Performs all steps that would normally be done for a given action, but will not 
 Verbose mode\&. Print status IDs and timestamps\&.
 .RE
 .PP
+\fB\-\-machine\-readable\fR
+.RS 4
+Machine\-readable mode\&. Print status IDs and timestamps and separate them with tabs\&.
+.RE
+.PP
 \fB\-\-bash\fR
 .RS 4
 Add the working directory and a \*(Aq$\*(Aq in the tweet message to help specify it is coming from a command line\&. Don\*(Aqt put the working directory and the \*(Aq$\*(Aq in the tweet message\&.
@@ -154,7 +159,6 @@ Its primary focus is to allow you to log everything that you type into a bash sh
 .PP
 To hook bti up to your bash shell, export the following variable:
 .PP
-
 PROMPT_COMMAND=\*(Aqhistory 1 | sed \-e "s/^\es*[0\-9]*\es*//" | bti \-\-bash\*(Aq
 .PP
 This example assumes that you have the
@@ -215,6 +219,11 @@ Setting this variable to \*(Aqtrue\*(Aq or \*(Aqyes\*(Aq will enable the URL shr
 \fBverbose\fR
 .RS 4
 Setting this variable to \*(Aqtrue\*(Aq or \*(Aqyes\*(Aq will enable the verbose mode\&.
+.RE
+.PP
+\fBmachine\-readable\fR
+.RS 4
+Setting this variable to \*(Aqtrue\*(Aq or \*(Aqyes\*(Aq will enable the machine\-readable mode\&.
 .RE
 .PP
 There is an example config file called

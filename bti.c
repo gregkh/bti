@@ -33,6 +33,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <json-c/json.h>
+#include <json-c/bits.h>
 #include <pcre.h>
 #include <termios.h>
 #include <dlfcn.h>
@@ -76,6 +77,7 @@ static void display_help(void)
 		"  --background\n"
 		"  --debug\n"
 		"  --verbose\n"
+		"  --machine-readable\n"
 		"  --dry-run\n"
 		"  --version\n"
 		"  --help\n", VERSION);
@@ -357,6 +359,15 @@ static void bti_output_line(struct session *session, xmlChar *user,
 	if (session->verbose)
 		printf("[%*s] {%s} (%.16s) %s\n", -session->column_output, user,
 				id, created, text);
+	else if (session->machine_readable) {
+		char *text_no_nl = strdup((char *)text);
+		char *c = text_no_nl;
+		while((c = strchr(c, '\n')) != NULL) {
+			*c++ = ' ';
+		}
+		printf("%*s\t%s\t%.16s\t%s\n", -session->column_output, user,
+				id, created, text_no_nl);
+	}
 	else
 		printf("[%*s] %s\n", -session->column_output, user, text);
 }
@@ -1517,6 +1528,7 @@ int main(int argc, char *argv[], char *envp[])
 	static const struct option options[] = {
 		{ "debug", 0, NULL, 'd' },
 		{ "verbose", 0, NULL, 'V' },
+		{ "machine-readable", 0, NULL, 'm' },
 		{ "account", 1, NULL, 'a' },
 		{ "password", 1, NULL, 'p' },
 		{ "host", 1, NULL, 'H' },
@@ -1587,6 +1599,9 @@ int main(int argc, char *argv[], char *envp[])
 			break;
 		case 'V':
 			session->verbose = 1;
+			break;
+		case 'm':
+			session->machine_readable = 1;
 			break;
 		case 'a':
 			if (session->account)

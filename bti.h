@@ -59,6 +59,7 @@ struct session {
 	int no_oauth;
 	int guest;
 	int verbose;
+	int machine_readable;
 	int column_output;
 	enum host host;
 	enum action action;
