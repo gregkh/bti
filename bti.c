@@ -33,6 +33,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <json-c/json.h>
+#include <json-c/bits.h>
 #include <pcre.h>
 #include <termios.h>
 #include <dlfcn.h>
@@ -491,6 +492,22 @@ static void print_json_value(json_object *jobj, int nestlevel)
 #define MAXKEYSTACK 20
 char *keystack[MAXKEYSTACK];
 
+
+struct results {
+	int code;
+	char *message;
+} results;
+
+struct session *store_session;
+struct tweetdetail {
+	char *id;
+	char *text;
+	char *screen_name;
+	char *rt_text;
+	char *rt_screen_name;
+	char *created_at;
+} tweetdetail;
+
 static void json_parse_array(json_object *jobj, char *key, int nestlevel)
 {
 	enum json_type type;
@@ -533,22 +550,25 @@ static void json_parse_array(json_object *jobj, char *key, int nestlevel)
 			keystack[nestlevel%MAXKEYSTACK]="[]";
 			json_parse(jvalue,nestlevel);
 		}
+
+		if (nestlevel == 1) {
+			char *text = tweetdetail.text;
+
+			if (tweetdetail.rt_text && tweetdetail.rt_screen_name) {
+				text = alloca(strlen(tweetdetail.rt_screen_name) + strlen(tweetdetail.rt_text) + 6);
+				sprintf(text, "RT @%s: %s", tweetdetail.rt_screen_name, tweetdetail.rt_text);
+			}
+
+			bti_output_line(store_session,
+					(xmlChar *)tweetdetail.screen_name,
+					(xmlChar *)tweetdetail.id,
+					(xmlChar *)tweetdetail.created_at,
+					(xmlChar *)text);
+
+			memset(&tweetdetail, 0, sizeof(tweetdetail));
+		}
 	}
 }
-
-
-struct results {
-	int code;
-	char *message;
-} results;
-
-struct session *store_session;
-struct tweetdetail {
-	char *id;
-	char *text;
-	char *screen_name;
-	char *created_at;
-} tweetdetail;
 
 static void json_interpret(json_object *jobj, int nestlevel)
 {
@@ -572,6 +592,11 @@ static void json_interpret(json_object *jobj, int nestlevel)
 				printf("%s : %s\n", keystack[2], json_object_get_string(jobj));
 			tweetdetail.created_at = (char *)json_object_get_string(jobj);
 		}
+		if (strcmp(keystack[2], "full_text") == 0) {
+			if (debug)
+				printf("%s : %s\n", keystack[2], json_object_get_string(jobj));
+			tweetdetail.text = (char *)json_object_get_string(jobj);
+		}
 		if (strcmp(keystack[2], "text") == 0) {
 			if (debug)
 				printf("%s : %s\n", keystack[2], json_object_get_string(jobj));
@@ -583,17 +608,30 @@ static void json_interpret(json_object *jobj, int nestlevel)
 			tweetdetail.id = (char *)json_object_get_string(jobj);
 		}
 		if (nestlevel >= 3 &&
+		    strcmp(keystack[2], "retweeted_status") == 0) {
+			if (strcmp(keystack[3], "full_text") == 0) {
+				if (debug)
+					printf("%s->%s : %s\n", keystack[2], keystack[3], json_object_get_string(jobj));
+				tweetdetail.rt_text=(char *)json_object_get_string(jobj);
+			}
+		}
+		if (nestlevel >= 3 &&
 		    strcmp(keystack[2], "user") == 0) {
 			if (strcmp(keystack[3], "screen_name") == 0) {
 				if (debug)
 					printf("%s->%s : %s\n", keystack[2], keystack[3], json_object_get_string(jobj));
 				tweetdetail.screen_name=(char *)json_object_get_string(jobj);
-				bti_output_line(store_session,
-						(xmlChar *)tweetdetail.screen_name,
-						(xmlChar *)tweetdetail.id,
-						(xmlChar *)tweetdetail.created_at,
-						(xmlChar *)tweetdetail.text);
+			}
+		}
+		if (nestlevel >= 4 &&
+		    strcmp(keystack[2], "retweeted_status") == 0) {
+			if (strcmp(keystack[3], "user") == 0) {
+				if (strcmp(keystack[4], "screen_name") == 0) {
+					if (debug)
+						printf("%s->%s : %s\n", keystack[2], keystack[3], json_object_get_string(jobj));
+					tweetdetail.rt_screen_name=(char *)json_object_get_string(jobj);
 				}
+			}
 		}
 	}
 }
@@ -933,7 +971,7 @@ static int send_request(struct session *session)
 		case ACTION_FRIENDS:
 			snprintf(user_password, sizeof(user_password), "%s:%s",
 				 session->account, session->password);
-			snprintf(endpoint, endpoint_size, "%s%s?page=%d", session->hosturl,
+			snprintf(endpoint, endpoint_size, "%s%s?tweet_mode=extended&page=%d", session->hosturl,
 					friends_uri, session->page);
 			curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user_password);
@@ -1077,7 +1115,7 @@ static int send_request(struct session *session)
 				public_uri);
 			break;
 		case ACTION_FRIENDS:
-			sprintf(endpoint, "%s%s?page=%d", session->hosturl,
+			sprintf(endpoint, "%s%s?tweet_mode=extended&page=%d", session->hosturl,
 				friends_uri, session->page);
 			break;
 		case ACTION_RETWEET:
