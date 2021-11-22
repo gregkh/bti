@@ -13,14 +13,14 @@ bti_CFLAGS = \
 	$(LIBCURL_CFLAGS) \
 	$(XML_CFLAGS) \
 	$(JSON_CFLAGS) \
-	$(LIBPCRE_CFLAGS) \
+	$(PCRE2_CFLAGS) \
 	$(LIBOAUTH_CFLAGS)
 
 bti_LDADD = \
 	$(LIBCURL_LIBS) \
 	$(XML_LIBS) \
 	$(JSON_LIBS) \
-	$(LIBPCRE_LIBS) \
+	$(PCRE2_LIBS) \
 	$(LIBOAUTH_LIBS)
 
 dist_man_MANS = \
