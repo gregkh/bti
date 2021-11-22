@@ -1301,7 +1301,6 @@ static int find_urls(const char *tweet, int **pranges)
 		}
 
 		ovector = pcre2_get_ovector_pointer(match_data);
-		fprintf(stderr,"Match succeeded at offset %d to %d\n", (int)ovector[0], (int)ovector[1]);
 
 		for (i = 0; i < rc; i += 2) {
 			if ((rcount+2) == rbound) {
@@ -1318,8 +1317,6 @@ static int find_urls(const char *tweet, int **pranges)
 
 	//pcre2_match_data_free(re);
 	pcre2_code_free(re);
-
-        for (int i=0; i<rcount; i+=2) fprintf(stderr,"RANGE %d from %d to %d\n",i,ranges[i],ranges[i+1]);
 
 	*pranges = ranges;
 	return rcount;
