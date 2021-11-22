@@ -15,6 +15,9 @@
 
 #define _GNU_SOURCE
 
+#define 	is_error(ptr)   (ptr == NULL)
+
+#define PCRE2_CODE_UNIT_WIDTH 8
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -33,7 +36,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <json-c/json.h>
-#include <pcre.h>
+#include <pcre2.h>
 #include <termios.h>
 #include <dlfcn.h>
 #include <oauth.h>
@@ -1260,10 +1263,12 @@ static int find_urls(const char *tweet, int **pranges)
 		"(([a-zA-Z][0-9a-zA-Z+\\-\\.]*:)/{1,3}"
 		"[0-9a-zA-Z;/~?:@&=+$\\.\\-_'()%]+)"
 		"(#[0-9a-zA-Z;/?:@&=+$\\.\\-_!~*'()%]+)?";
-	pcre *re;
+	pcre2_code *re;
 	const char *errptr;
+	int errorcode;
 	int erroffset;
-	int ovector[10] = {0,};
+	//int ovector[10] = {0,};
+	PCRE2_SIZE *ovector;
 	const size_t ovsize = sizeof(ovector)/sizeof(*ovector);
 	int startoffset, tweetlen;
 	int i, rc;
@@ -1271,9 +1276,9 @@ static int find_urls(const char *tweet, int **pranges)
 	int rcount = 0;
 	int *ranges = malloc(sizeof(int) * rbound);
 
-	re = pcre_compile(re_magic,
-			PCRE_NO_AUTO_CAPTURE,
-			&errptr, &erroffset, NULL);
+	re = pcre2_compile((PCRE2_SPTR)re_magic, PCRE2_ZERO_TERMINATED,
+			PCRE2_NO_AUTO_CAPTURE,
+			&errorcode, (PCRE2_SIZE*) &erroffset, NULL);
 	if (!re) {
 		fprintf(stderr, "pcre_compile @%u: %s\n", erroffset, errptr);
 		exit(1);
@@ -1282,9 +1287,11 @@ static int find_urls(const char *tweet, int **pranges)
 	tweetlen = strlen(tweet);
 	for (startoffset = 0; startoffset < tweetlen; ) {
 
-		rc = pcre_exec(re, NULL, tweet, strlen(tweet), startoffset, 0,
-				ovector, ovsize);
-		if (rc == PCRE_ERROR_NOMATCH)
+		pcre2_match_data *match_data;
+		match_data = pcre2_match_data_create_from_pattern(re, NULL);
+
+		rc = pcre2_match(re, (PCRE2_SPTR)tweet, strlen(tweet), startoffset, 0, match_data, NULL);
+		if (rc == PCRE2_ERROR_NOMATCH)
 			break;
 
 		if (rc < 0) {
@@ -1292,6 +1299,9 @@ static int find_urls(const char *tweet, int **pranges)
 				erroffset, errptr);
 			exit(1);
 		}
+
+		ovector = pcre2_get_ovector_pointer(match_data);
+		fprintf(stderr,"Match succeeded at offset %d to %d\n", (int)ovector[0], (int)ovector[1]);
 
 		for (i = 0; i < rc; i += 2) {
 			if ((rcount+2) == rbound) {
@@ -1306,7 +1316,10 @@ static int find_urls(const char *tweet, int **pranges)
 		startoffset = ovector[1];
 	}
 
-	pcre_free(re);
+	//pcre2_match_data_free(re);
+	pcre2_code_free(re);
+
+        for (int i=0; i<rcount; i+=2) fprintf(stderr,"RANGE %d from %d to %d\n",i,ranges[i],ranges[i+1]);
 
 	*pranges = ranges;
 	return rcount;

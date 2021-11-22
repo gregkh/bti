@@ -15,6 +15,7 @@
 
 #define _GNU_SOURCE
 
+#define PCRE2_CODE_UNIT_WIDTH 8
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -32,7 +33,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-#include <pcre.h>
+#include <pcre2.h>
 #include <termios.h>
 #include <dlfcn.h>
 #include <oauth.h>
